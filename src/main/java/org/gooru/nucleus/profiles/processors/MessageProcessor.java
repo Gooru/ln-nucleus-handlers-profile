@@ -105,7 +105,8 @@ class MessageProcessor implements Processor {
   }
 
   private ProcessorContext createContext() {
-    return new ProcessorContext(userId, prefs, request);
+    String userIdFromURL = message.headers().get(MessageConstants.USER_ID_FROM_URL);
+    return new ProcessorContext(userId, prefs, request, userIdFromURL);
   }
 
   private ExecutionResult<MessageResponse> validateAndInitialize() {

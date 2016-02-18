@@ -31,6 +31,7 @@ public class MessageConstants {
   // Containers for different responses
   public static final String RESP_CONTAINER_MBUS = "mb.container";
   public static final String RESP_CONTAINER_EVENT = "mb.event";
+  public static final String USER_ID_FROM_URL = "userId";
   
 
 }
