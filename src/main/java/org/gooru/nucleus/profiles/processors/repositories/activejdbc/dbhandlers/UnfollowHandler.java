@@ -2,31 +2,26 @@ package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers
 
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
-import org.javalite.activejdbc.Base;
-import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.json.JsonObject;
-
-public class GetDemographicsHandler implements DBHandler {
+public class UnfollowHandler implements DBHandler {
 
   private final ProcessorContext context;
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetDemographicsHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UnfollowHandler.class);
 
-  public GetDemographicsHandler(ProcessorContext context) {
+  public UnfollowHandler(ProcessorContext context) {
     this.context = context;
   }
   
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
+    
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
       return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
@@ -43,17 +38,14 @@ public class GetDemographicsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    LOGGER.debug("request to get demographics");
-    LazyList<AJEntityUserDemographic> demographics = AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS, context.userIdFromURL());
-    JsonObject responseBody = new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(demographics.get(0)));
+    int deleteCount = AJEntityUserNetwork.delete(AJEntityUserNetwork.QUERY_UNFOLLOW, context.userId(), context.userIdFromURL());
+    if (deleteCount == 0) {
+      LOGGER.error("error in unfollow user");
+      return new ExecutionResult<>(MessageResponseFactory.createInternalErrorResponse("error in unfollow user"), ExecutionStatus.FAILED);
+    }
     
-    Long followers = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, context.userIdFromURL());
-    Long followings = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT , context.userIdFromURL());
-    
-    responseBody.put("followers", followers);
-    responseBody.put("followings", followings);
-    
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
+    LOGGER.info("user {} is removed from followers of {}", context.userIdFromURL(), context.userId());
+    return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(), ExecutionStatus.SUCCESSFUL);
   }
 
   @Override

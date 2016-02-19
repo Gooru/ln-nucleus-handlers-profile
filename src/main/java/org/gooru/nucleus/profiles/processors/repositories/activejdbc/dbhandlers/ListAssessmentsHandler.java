@@ -1,8 +1,8 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -41,14 +41,7 @@ public class ListAssessmentsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> validateRequest() {
-    LazyList<AJEntityUserIdentity> user = AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USER_TO_VALIDATE, context.userIdFromURL());
-    if (user.isEmpty()) {
-      LOGGER.warn("user not found in database");
-      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(), ExecutionStatus.FAILED);
-    }
-    
-    LOGGER.debug("validateRequest() OK");
-    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
   }
 
   @Override

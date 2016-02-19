@@ -6,4 +6,12 @@ public interface ProfileRepo {
 
   MessageResponse listDemographics();
 
+  MessageResponse follow();
+
+  MessageResponse unfollow();
+
+  MessageResponse listFollowers();
+
+  MessageResponse listFollowings();
+
 }

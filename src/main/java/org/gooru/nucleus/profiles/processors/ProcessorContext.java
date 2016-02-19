@@ -10,7 +10,7 @@ public class ProcessorContext {
   private final String userIdFromURL;
 
   public ProcessorContext(String userId, JsonObject prefs, JsonObject request, String userIdFromURL) {
-    if (prefs == null || userId == null || prefs.isEmpty() || userIdFromURL == null) {
+    if (prefs == null || userId == null || prefs.isEmpty()) {
       throw new IllegalStateException("Processor Context creation failed because of invalid values");
     }
     this.userId = userId;

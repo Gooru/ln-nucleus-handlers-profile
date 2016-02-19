@@ -57,6 +57,18 @@ class MessageProcessor implements Processor {
         case MessageConstants.MSG_OP_PROFILE_LIST_DEMOGRAPHICS:
           result = processDemographicsList();
           break;
+        case MessageConstants.MSG_OP_PROFILE_FOLLOW:
+          result = processFollow();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_UNFOLLOW:
+          result = processUnfollow();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_LIST_FOLLOWERS:
+          result = processFollowersList();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_LIST_FOLLOWINGS:
+          result = processFollowingsList();
+          break;
         default:
           LOGGER.error("Invalid operation type passed in, not able to handle");
           throw new InvalidRequestException();
@@ -102,6 +114,26 @@ class MessageProcessor implements Processor {
   private MessageResponse processDemographicsList() {
     ProcessorContext context = createContext();
     return new RepoBuilder().buildProfileRepo(context).listDemographics();
+  }
+  
+  private MessageResponse processFollow() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildProfileRepo(context).follow();
+  }
+
+  private MessageResponse processUnfollow() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildProfileRepo(context).unfollow();
+  }
+
+  private MessageResponse processFollowersList() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildProfileRepo(context).listFollowers();
+  }
+
+  private MessageResponse processFollowingsList() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildProfileRepo(context).listFollowings();
   }
 
   private ProcessorContext createContext() {

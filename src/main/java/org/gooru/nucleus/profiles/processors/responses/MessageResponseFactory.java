@@ -45,16 +45,16 @@ public class MessageResponseFactory {
     return new MessageResponse.Builder().successful().setStatusOkay().setContentTypeJson().setResponseBody(responseBody).build();
   }
 
-  public static MessageResponse createPostResponse(String location) {
-    return new MessageResponse.Builder().successful().setHeader("Location", location).setStatusCreated().build();
+  public static MessageResponse createPostResponse() {
+    return new MessageResponse.Builder().successful().setStatusCreated().build();
   }
 
   public static MessageResponse createPostResponse(String location, EventBuilder eventBuilder) {
     return new MessageResponse.Builder().successful().setHeader("Location", location).setStatusCreated().setEventData(eventBuilder.build()).build();
   }
 
-  public static MessageResponse createNoContentResponse(EventBuilder eventBuilder) {
-    return new MessageResponse.Builder().successful().setStatusNoOutput().setEventData(eventBuilder.build()).build();
+  public static MessageResponse createNoContentResponse() {
+    return new MessageResponse.Builder().successful().setStatusNoOutput().build();
   }
 
   public static MessageResponse createValidationErrorResponse(JsonObject errors) {

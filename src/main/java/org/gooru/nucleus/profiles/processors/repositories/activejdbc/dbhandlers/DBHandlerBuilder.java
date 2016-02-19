@@ -28,4 +28,20 @@ public class DBHandlerBuilder {
     return new GetDemographicsHandler(context);
   }
 
+  public DBHandler buildFollowHandler(ProcessorContext context) {
+    return new FollowHandler(context);
+  }
+
+  public DBHandler buildUnfollowHandler(ProcessorContext context) {
+    return new UnfollowHandler(context);
+  }
+
+  public DBHandler buildListFollowersHandler(ProcessorContext context) {
+    return new ListFollowersHandler(context);
+  }
+
+  public DBHandler buildListFollowingsHandler(ProcessorContext context) {
+    return new ListFollowingsHandler(context);
+  }
+
 }
