@@ -19,4 +19,9 @@ public class AJAssessmentRepo implements AssessmentRepo {
     return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListAssessmentsHandler(context));
   }
 
+  @Override
+  public MessageResponse searchAssessments() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchAssessmentsHandler(context));
+  }
+
 }

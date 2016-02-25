@@ -6,4 +6,6 @@ public interface QuestionRepo {
 
   MessageResponse listQuestions();
 
+  MessageResponse searchQuestions();
+
 }

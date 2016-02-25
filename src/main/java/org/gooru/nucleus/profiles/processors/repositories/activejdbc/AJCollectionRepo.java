@@ -19,4 +19,9 @@ public class AJCollectionRepo implements CollectionRepo {
     return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListCollectionsHandler(context));
   }
 
+  @Override
+  public MessageResponse searchCollections() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchCollectionsHandler(context));
+  }
+
 }

@@ -1,5 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
@@ -50,15 +51,15 @@ public class GetDemographicsHandler implements DBHandler {
     Long followers = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, context.userIdFromURL());
     Long followings = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT , context.userIdFromURL());
     
-    responseBody.put("followers", followers);
-    responseBody.put("followings", followings);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, followers);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWINGS, followings);
     
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
   @Override
   public boolean handlerReadOnly() {
-    return false;
+    return true;
   }
 
 }

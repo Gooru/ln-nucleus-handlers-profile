@@ -6,4 +6,6 @@ public interface AssessmentRepo {
 
   MessageResponse listAssessments();
 
+  MessageResponse searchAssessments();
+
 }

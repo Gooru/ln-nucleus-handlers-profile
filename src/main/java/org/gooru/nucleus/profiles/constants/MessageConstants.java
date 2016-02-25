@@ -21,16 +21,20 @@ public class MessageConstants {
   public static final String MSG_MESSAGE = "message";
 
   // Operation names: Also need to be updated in corresponding handlers
-  public static final String MSG_OP_PROFILE_LIST_COURSES = "list.courses";
-  public static final String MSG_OP_PROFILE_LIST_COLLECTOIONS = "list.collections";
-  public static final String MSG_OP_PROFILE_LIST_ASSESSMENTS = "list.assessments";
-  public static final String MSG_OP_PROFILE_LIST_RESOURCES = "list.resources";
-  public static final String MSG_OP_PROFILE_LIST_QUESTIONS = "list.questions";
-  public static final String MSG_OP_PROFILE_LIST_DEMOGRAPHICS = "list.demographics";
-  public static final String MSG_OP_PROFILE_FOLLOW = "follow.profile";
-  public static final String MSG_OP_PROFILE_UNFOLLOW = "unfollow.profile";
-  public static final String MSG_OP_PROFILE_LIST_FOLLOWERS = "list.followers";
-  public static final String MSG_OP_PROFILE_LIST_FOLLOWINGS = "list.followings";
+  public static final String MSG_OP_PROFILE_COURSE_LIST = "profile.course.list";
+  public static final String MSG_OP_PROFILE_COLLECTION_LIST = "profile.collection.list";
+  public static final String MSG_OP_PROFILE_ASSESSMENT_LIST = "profile.assessment.list";
+  public static final String MSG_OP_PROFILE_RESOURCE_LIST = "profile.resource.list";
+  public static final String MSG_OP_PROFILE_QUESTION_LIST = "profile.question.list";
+  public static final String MSG_OP_PROFILE_DEMOGRAPHICS_GET = "profile.demographics.get";
+  public static final String MSG_OP_PROFILE_FOLLOW = "profile.follow";
+  public static final String MSG_OP_PROFILE_UNFOLLOW = "profile.unfollow";
+  public static final String MSG_OP_PROFILE_FOLLOWERS_LIST = "profile.followers.list";
+  public static final String MSG_OP_PROFILE_FOLLOWINGS_LIST = "profile.followings.list";
+  public static final String MSG_OP_PROFILE_COLLECTION_SEARCH = "profile.collection.search";
+  public static final String MSG_OP_PROFILE_ASSESSMENT_SEARCH = "profile.assessment.search";
+  public static final String MSG_OP_PROFILE_RESOURCE_SEARCH = "profile.resource.search";
+  public static final String MSG_OP_PROFILE_QUESTION_SEARCH = "profile.question.search";
   
   // Containers for different responses
   public static final String RESP_CONTAINER_MBUS = "mb.container";

@@ -39,22 +39,22 @@ class MessageProcessor implements Processor {
 
       final String msgOp = message.headers().get(MessageConstants.MSG_HEADER_OP);
       switch (msgOp) {
-        case MessageConstants.MSG_OP_PROFILE_LIST_COURSES:
+        case MessageConstants.MSG_OP_PROFILE_COURSE_LIST:
           result = processCoursesList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_COLLECTOIONS:
+        case MessageConstants.MSG_OP_PROFILE_COLLECTION_LIST:
           result = processCollectionsList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_ASSESSMENTS:
+        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_LIST:
           result = processAssessmentsList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_RESOURCES:
+        case MessageConstants.MSG_OP_PROFILE_RESOURCE_LIST:
           result = processResourcesList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_QUESTIONS:
+        case MessageConstants.MSG_OP_PROFILE_QUESTION_LIST:
           result = processQuestionsList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_DEMOGRAPHICS:
+        case MessageConstants.MSG_OP_PROFILE_DEMOGRAPHICS_GET:
           result = processDemographicsList();
           break;
         case MessageConstants.MSG_OP_PROFILE_FOLLOW:
@@ -63,11 +63,23 @@ class MessageProcessor implements Processor {
         case MessageConstants.MSG_OP_PROFILE_UNFOLLOW:
           result = processUnfollow();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_FOLLOWERS:
+        case MessageConstants.MSG_OP_PROFILE_FOLLOWERS_LIST:
           result = processFollowersList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_LIST_FOLLOWINGS:
+        case MessageConstants.MSG_OP_PROFILE_FOLLOWINGS_LIST:
           result = processFollowingsList();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_COLLECTION_SEARCH:
+          result = processCollectionSearch();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_SEARCH:
+          result = processAssessmentSearch();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_RESOURCE_SEARCH:
+          result = processResourceSearch();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_QUESTION_SEARCH:
+          result = processQuestionSearch();
           break;
         default:
           LOGGER.error("Invalid operation type passed in, not able to handle");
@@ -134,6 +146,26 @@ class MessageProcessor implements Processor {
   private MessageResponse processFollowingsList() {
     ProcessorContext context = createContext();
     return new RepoBuilder().buildProfileRepo(context).listFollowings();
+  }
+  
+  private MessageResponse processCollectionSearch() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildCollectionRepo(context).searchCollections();
+  }
+
+  private MessageResponse processAssessmentSearch() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildAssessmentRepo(context).searchAssessments();
+  }
+
+  private MessageResponse processResourceSearch() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildResourceRepo(context).searchResources();
+  }
+
+  private MessageResponse processQuestionSearch() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildQuestionRepo(context).searchQuestions();
   }
 
   private ProcessorContext createContext() {

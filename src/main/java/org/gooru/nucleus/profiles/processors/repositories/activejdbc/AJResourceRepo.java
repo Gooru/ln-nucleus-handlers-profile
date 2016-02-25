@@ -19,4 +19,9 @@ public class AJResourceRepo implements ResourceRepo {
     return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListResourcesHandler(context));
   }
 
+  @Override
+  public MessageResponse searchResources() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchResourcesHandler(context));
+  }
+
 }

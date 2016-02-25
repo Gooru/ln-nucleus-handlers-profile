@@ -1,5 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
@@ -62,18 +63,17 @@ public class ListCollectionsHandler implements DBHandler {
 
   @Override
   public boolean handlerReadOnly() {
-    return false;
+    return true;
   }
   
   private boolean checkPublic() {
-
-    JsonArray previewArray = context.request().getJsonArray("preview");
+    if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
+      return true;
+    } 
+    
+    JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
-      if (context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-        return false;
-      } else {
-        return true;
-      }
+      return false;
     }
 
     String preview = (String) previewArray.getValue(0);
@@ -82,13 +82,8 @@ public class ListCollectionsHandler implements DBHandler {
     if (Boolean.parseBoolean(preview)) {
       return true;
     } else {
-      if (context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-        return false;
-      } else {
-        return true;
-      }
+      return false;
     }
-
   }
 
 }

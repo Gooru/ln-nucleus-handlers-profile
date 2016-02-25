@@ -28,9 +28,10 @@ public class AJEntityCourse extends Model {
   public static final String IS_DELETED = "is_deleted";
   
   public static final String SELECT_COURSES_FOR_PUBLIC =
-    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM course WHERE owner_id = ?::uuid AND visible_on_profile = true AND is_deleted = false";
+    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM course WHERE owner_id = ?::uuid AND visible_on_profile = true AND"
+    + " is_deleted = false";
   public static final String SELECT_COURSES_FOR_OWNER =
     "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
   
-  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_DATE, THUMBNAIL, TAXONOMY, COLLABORATOR);
+  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_DATE, THUMBNAIL, COLLABORATOR);
 }

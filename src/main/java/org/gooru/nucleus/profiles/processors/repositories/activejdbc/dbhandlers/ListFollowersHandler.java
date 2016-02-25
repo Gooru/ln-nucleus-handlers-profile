@@ -1,5 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
@@ -54,7 +55,7 @@ public class ListFollowersHandler implements DBHandler {
                 new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(demographics.get(0))));
       }
     }
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(new JsonObject().put("followers", userDemographics)),
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(new JsonObject().put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, userDemographics)),
             ExecutionStatus.SUCCESSFUL);
   }
 

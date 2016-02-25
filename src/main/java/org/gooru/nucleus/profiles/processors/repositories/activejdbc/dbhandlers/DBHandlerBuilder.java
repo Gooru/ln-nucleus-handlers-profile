@@ -44,4 +44,20 @@ public class DBHandlerBuilder {
     return new ListFollowingsHandler(context);
   }
 
+  public DBHandler buildSearchCollectionsHandler(ProcessorContext context) {
+    return new SearchCollectionHandler(context);
+  }
+  
+  public DBHandler buildSearchAssessmentsHandler(ProcessorContext context) {
+    return new SearchAssessmentHandler(context);
+  }
+
+  public DBHandler buildSearchResourcesHandler(ProcessorContext context) {
+    return new SearchResourceHandler(context);
+  }
+
+  public DBHandler buildSearchQuestionsHandler(ProcessorContext context) {
+    return new SearchQuestionHandler(context);
+  }
+
 }

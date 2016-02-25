@@ -19,4 +19,9 @@ public class AJQuestionRepo implements QuestionRepo {
     return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListQuestionsHandler(context));
   }
 
+  @Override
+  public MessageResponse searchQuestions() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchQuestionsHandler(context));
+  }
+
 }
