@@ -85,7 +85,7 @@ class SimpleJsonFormatter implements JsonFormatter {
     sb.append(']');
     return sb.toString();
   }
-
+  
   private <T extends Model> void modelToJson(T model, StringBuilder sb, String indent) {
     if (pretty) {
       sb.append(indent);

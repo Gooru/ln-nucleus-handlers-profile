@@ -20,8 +20,8 @@ public class AJResourceRepo implements ResourceRepo {
   }
 
   @Override
-  public MessageResponse searchResources() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchResourcesHandler(context));
+  public MessageResponse fetchTaxonomyForResources() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForResourcesHandler(context));
   }
 
 }

@@ -1,5 +1,8 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
@@ -17,15 +20,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class ListQuestionsHandler implements DBHandler {
-  
+
   private final ProcessorContext context;
-  private boolean isPublic = false;
   private static final Logger LOGGER = LoggerFactory.getLogger(ListQuestionsHandler.class);
+  private boolean isPublic;
+  private String searchText;
+  private String taxonomyCode;
 
   public ListQuestionsHandler(ProcessorContext context) {
     this.context = context;
   }
-  
+
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
@@ -33,10 +38,30 @@ public class ListQuestionsHandler implements DBHandler {
       return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
-    // identify whether the request is for public or owner
     isPublic = checkPublic();
-    LOGGER.debug("isPublic:{}", isPublic);
-    LOGGER.debug("checkSanity() OK");
+    searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
+
+    // If standard is available in request we do not care about subject/level
+    // for filter. Similarly if we find subject in request we will not care
+    // about level
+    String standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
+    if (standard != null) {
+      taxonomyCode = standard;
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
+    String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+    if (subject != null) {
+      taxonomyCode = subject;
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
+    String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
+    if (level != null) {
+      taxonomyCode = level;
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
 
@@ -47,17 +72,36 @@ public class ListQuestionsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    LazyList<AJEntityContent> questionList;
-    if(isPublic) {
-      LOGGER.debug("getting list of questions for public view");  
-      questionList = AJEntityContent.findBySQL(AJEntityContent.SELECT_QUESTIONS_FOR_PUBLIC, context.userIdFromURL());
+    StringBuffer query = null;
+    List<Object> params = new ArrayList<>();
+
+    // Parameters to be added in list should be in same way as below
+    params.add(context.userIdFromURL());
+
+    if (taxonomyCode != null) {
+      query = new StringBuffer(AJEntityContent.SELECT_QUESTIONS_BY_TAXONOMY);
+      params.add(taxonomyCode + HelperConstants.PERCENTAGE);
     } else {
-      LOGGER.debug("getting list of questions for owner view"); 
-      questionList = AJEntityContent.findBySQL(AJEntityContent.SELECT_QUESTIONS_FOR_OWNER, context.userIdFromURL());
+      query = new StringBuffer(AJEntityContent.SELECT_QUESTIONS);
     }
-    
+
+    if (searchText != null) {
+      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_TITLE);
+      // Purposefully adding same search text twice to fulfill the criteria of
+      // title and description search
+      params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
+      params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
+    }
+
+    if (isPublic) {
+      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_PUBLIC);
+    }
+
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), taxonomyCode, searchText);
+    LazyList<AJEntityContent> questionList = AJEntityContent.findBySQL(query.toString(), params.toArray());
     JsonObject responseBody = new JsonObject();
-    responseBody.put("questions", new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(questionList)));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS,
+            new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(questionList)));
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
@@ -65,12 +109,22 @@ public class ListQuestionsHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
+  private String readRequestParam(String param) {
+    JsonArray requestParams = context.request().getJsonArray(param);
+    if (requestParams == null || requestParams.isEmpty()) {
+      return null;
+    }
+
+    String value = requestParams.getString(0);
+    return (value != null && !value.isEmpty()) ? value : null;
+  }
+
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;

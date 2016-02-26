@@ -20,8 +20,8 @@ public class AJQuestionRepo implements QuestionRepo {
   }
 
   @Override
-  public MessageResponse searchQuestions() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchQuestionsHandler(context));
+  public MessageResponse fetchTaxonomyForQuestions() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForQuestionsHandler(context));
   }
 
 }

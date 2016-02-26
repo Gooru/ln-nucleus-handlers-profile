@@ -19,4 +19,9 @@ public class AJCourseRepo implements CourseRepo {
     return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListCoursesHandler(context));
   }
 
+  @Override
+  public MessageResponse fetchTaxonomyCountForCourses() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyCountForCoursesHandler(context));
+  }
+
 }

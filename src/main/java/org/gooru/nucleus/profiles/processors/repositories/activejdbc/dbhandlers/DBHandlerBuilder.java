@@ -44,20 +44,24 @@ public class DBHandlerBuilder {
     return new ListFollowingsHandler(context);
   }
 
-  public DBHandler buildSearchCollectionsHandler(ProcessorContext context) {
-    return new SearchCollectionHandler(context);
-  }
-  
-  public DBHandler buildSearchAssessmentsHandler(ProcessorContext context) {
-    return new SearchAssessmentHandler(context);
+  public DBHandler buildFetchTaxonomyForResourcesHandler(ProcessorContext context) {
+    return new FetchTaxonomyForResourcesHandler(context);
   }
 
-  public DBHandler buildSearchResourcesHandler(ProcessorContext context) {
-    return new SearchResourceHandler(context);
+  public DBHandler buildFetchTaxonomyForQuestionsHandler(ProcessorContext context) {
+    return new FetchTaxonomyForQuestionsHandler(context);
   }
 
-  public DBHandler buildSearchQuestionsHandler(ProcessorContext context) {
-    return new SearchQuestionHandler(context);
+  public DBHandler buildFetchTaxonomyCountForCoursesHandler(ProcessorContext context) {
+    return new FetchTaxonomyCountForCoursesHandler(context);
+  }
+
+  public DBHandler buildFetchTaxonomyForCollectionsHandler(ProcessorContext context) {
+    return new FetchTaxonomyForCollectionsHandler(context);
+  }
+
+  public DBHandler buildFetchTaxonomyForAssessmentsHandler(ProcessorContext context) {
+    return new FetchTaxonomyForAssessmentsHandler(context);
   }
 
 }

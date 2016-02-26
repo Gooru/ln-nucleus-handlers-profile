@@ -6,4 +6,6 @@ public interface CourseRepo {
 
   MessageResponse listCourses();
 
+  MessageResponse fetchTaxonomyCountForCourses();
+
 }

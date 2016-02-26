@@ -6,6 +6,6 @@ public interface CollectionRepo {
 
   MessageResponse listCollections();
 
-  MessageResponse searchCollections();
+  MessageResponse fetchTaxonomyForCollections();
 
 }

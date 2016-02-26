@@ -20,8 +20,8 @@ public class AJCollectionRepo implements CollectionRepo {
   }
 
   @Override
-  public MessageResponse searchCollections() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchCollectionsHandler(context));
+  public MessageResponse fetchTaxonomyForCollections() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForCollectionsHandler(context));
   }
 
 }

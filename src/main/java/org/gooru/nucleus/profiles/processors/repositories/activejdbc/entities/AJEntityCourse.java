@@ -27,11 +27,18 @@ public class AJEntityCourse extends Model {
   public static final String VISIBLE_ON_PROFILE = "visible_on_profile";
   public static final String IS_DELETED = "is_deleted";
   
-  public static final String SELECT_COURSES_FOR_PUBLIC =
-    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM course WHERE owner_id = ?::uuid AND visible_on_profile = true AND"
-    + " is_deleted = false";
-  public static final String SELECT_COURSES_FOR_OWNER =
-    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
+  public static final String SELECT_COURSES =
+    "SELECT id, title, publish_date, thumbnail, collaborator FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
   
+  public static final String SELECT_COURSES_BY_TAXONOMY =
+    "SELECT distinct(id), title, publish_date, thumbnail, collaborator FROM course c, jsonb_array_elements_text(c.taxonomy) as tx WHERE"
+    + " owner_id = ?::uuid AND is_deleted = false AND tx like ?";
+  
+  public static final String SELECT_COURSES_FOR_TXCOUNT = "SELECT taxonomy FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
+  
+  public static final String OP_AND = " AND ";
+  public static final String CRITERIA_TITLE = "title ilike ?";
+  public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
+
   public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_DATE, THUMBNAIL, COLLABORATOR);
 }

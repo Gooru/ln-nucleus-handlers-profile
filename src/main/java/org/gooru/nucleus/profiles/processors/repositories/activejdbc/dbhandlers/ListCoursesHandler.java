@@ -1,17 +1,12 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJTaxonomySubject;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -27,10 +22,11 @@ import io.vertx.core.json.JsonObject;
 public class ListCoursesHandler implements DBHandler {
 
   private final ProcessorContext context;
-  private boolean isPublic = false;
-  private String standardFramework;
   private static final Logger LOGGER = LoggerFactory.getLogger(ListCoursesHandler.class);
-
+  private boolean isPublic;
+  private String searchText;
+  private String taxonomyCode;
+  
   public ListCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -42,14 +38,23 @@ public class ListCoursesHandler implements DBHandler {
       return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
-    // TODO: Not sure how to handle the use case when standard framework is null
-    // or not exists in prefs. May need to revisit later
-    standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
-
-    // identify whether the request is for public or owner
     isPublic = checkPublic();
-    
-    LOGGER.debug("checkSanity() OK");
+    searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
+
+    // If we find subject in request we will not care
+    // about level
+    String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+    if (subject != null) {
+      taxonomyCode = subject;
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
+    String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
+    if (level != null) {
+      taxonomyCode = level;
+      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
+
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
 
@@ -61,52 +66,50 @@ public class ListCoursesHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
     
-    LazyList<AJEntityCourse> courseList;
-    if(isPublic) {
-      LOGGER.debug("getting list of courses for public view");  
-      courseList = AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSES_FOR_PUBLIC, context.userIdFromURL());
+    StringBuffer query = null;
+    List<Object> params = new ArrayList<>();
+
+    // Parameters to be added in list should be in same way as below
+    params.add(context.userIdFromURL());
+    
+    if (taxonomyCode != null) {
+      query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_TAXONOMY);
+      params.add(taxonomyCode + HelperConstants.PERCENTAGE);
     } else {
-      LOGGER.debug("getting list of courses for owner view"); 
-      courseList = AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSES_FOR_OWNER, context.userIdFromURL());
+      query = new StringBuffer(AJEntityCourse.SELECT_COURSES);
     }
     
-    Map<String, List<AJEntityCourse>> bucketedCourses = new HashMap<>();
-    for (AJEntityCourse ajEntityCourse : courseList) {
-      JsonArray taxonomy = new JsonArray(ajEntityCourse.getString(AJEntityCourse.TAXONOMY));
-      if(!taxonomy.isEmpty()) {
-        for (int i = 0; i < taxonomy.size(); i++) {
-          String taxonomyCode = taxonomy.getString(i);
-          StringTokenizer tokenizer = new StringTokenizer(taxonomyCode, HelperConstants.TAXONOMY_SEPARATOR);
-          String subjectId = tokenizer.nextToken();
-          AJTaxonomySubject ajTaxonomySubject = AJTaxonomySubject.first(AJTaxonomySubject.SELECT_TX_SUBJECT, subjectId, standardFramework);
-          if (ajTaxonomySubject != null) {
-            String code = ajTaxonomySubject.getString(AJTaxonomySubject.CODE);
-            
-            if (bucketedCourses.containsKey(code)) {
-              bucketedCourses.get(code).add(ajEntityCourse);
-            } else {
-              List<AJEntityCourse> tempList = new ArrayList<>();
-              tempList.add(ajEntityCourse);
-              bucketedCourses.put(code, tempList);
-            }
-          }
-        }
-      }
+    if (searchText != null) {
+      query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_TITLE);
+      params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
     }
     
+    if (isPublic) {
+      query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
+    }
+
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), taxonomyCode, searchText);
+    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
     JsonObject responseBody = new JsonObject();
-    Set<String> keys = bucketedCourses.keySet();
-    for (String key : keys) {
-      responseBody.put(key, new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(bucketedCourses.get(key))));
-    }
+    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES,
+            new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(courseList)));
     
-    //responseBody.put("courses", new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(courseList)));
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
   @Override
   public boolean handlerReadOnly() {
     return true;
+  }
+  
+  private String readRequestParam(String param) {
+    JsonArray requestParams = context.request().getJsonArray(param);
+    if (requestParams == null || requestParams.isEmpty()) {
+      return null;
+    }
+
+    String value = requestParams.getString(0);
+    return (value != null && !value.isEmpty()) ? value : null;
   }
 
   private boolean checkPublic() {

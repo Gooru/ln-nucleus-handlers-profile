@@ -69,17 +69,20 @@ class MessageProcessor implements Processor {
         case MessageConstants.MSG_OP_PROFILE_FOLLOWINGS_LIST:
           result = processFollowingsList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_COLLECTION_SEARCH:
-          result = processCollectionSearch();
+        case MessageConstants.MSG_OP_PROFILE_COURSE_TAXONOMYCOUNT:
+          result = processFetchCourseTaxonomyCount();
           break;
-        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_SEARCH:
-          result = processAssessmentSearch();
+        case MessageConstants.MSG_OP_PROFILE_COLLECTION_TAXONOMY:
+          result = processFetchCollectionTaxonomy();
           break;
-        case MessageConstants.MSG_OP_PROFILE_RESOURCE_SEARCH:
-          result = processResourceSearch();
+        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_TAXONOMY:
+          result = processFetchAssessmentTaxonomy();
           break;
-        case MessageConstants.MSG_OP_PROFILE_QUESTION_SEARCH:
-          result = processQuestionSearch();
+        case MessageConstants.MSG_OP_PROFILE_RESOURCE_TAXONOMY:
+          result = processFetchResourceTaxonomy();
+          break;
+        case MessageConstants.MSG_OP_PROFILE_QUESTION_TAXONOMY:
+          result = processFetchQuestionTaxonomy();
           break;
         default:
           LOGGER.error("Invalid operation type passed in, not able to handle");
@@ -148,24 +151,29 @@ class MessageProcessor implements Processor {
     return new RepoBuilder().buildProfileRepo(context).listFollowings();
   }
   
-  private MessageResponse processCollectionSearch() {
+  private MessageResponse processFetchCourseTaxonomyCount() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildCollectionRepo(context).searchCollections();
+    return new RepoBuilder().buildCourseRepo(context).fetchTaxonomyCountForCourses();
   }
 
-  private MessageResponse processAssessmentSearch() {
+  private MessageResponse processFetchCollectionTaxonomy() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildAssessmentRepo(context).searchAssessments();
+    return new RepoBuilder().buildCollectionRepo(context).fetchTaxonomyForCollections();
   }
 
-  private MessageResponse processResourceSearch() {
+  private MessageResponse processFetchAssessmentTaxonomy() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildResourceRepo(context).searchResources();
+    return new RepoBuilder().buildAssessmentRepo(context).fetchTaxonomyForAssessments();
   }
 
-  private MessageResponse processQuestionSearch() {
+  private MessageResponse processFetchResourceTaxonomy() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildQuestionRepo(context).searchQuestions();
+    return new RepoBuilder().buildResourceRepo(context).fetchTaxonomyForResources();
+  }
+
+  private MessageResponse processFetchQuestionTaxonomy() {
+    ProcessorContext context = createContext();
+    return new RepoBuilder().buildQuestionRepo(context).fetchTaxonomyForQuestions();
   }
 
   private ProcessorContext createContext() {

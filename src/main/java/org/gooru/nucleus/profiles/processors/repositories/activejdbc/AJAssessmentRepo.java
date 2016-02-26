@@ -20,8 +20,8 @@ public class AJAssessmentRepo implements AssessmentRepo {
   }
 
   @Override
-  public MessageResponse searchAssessments() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildSearchAssessmentsHandler(context));
+  public MessageResponse fetchTaxonomyForAssessments() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForAssessmentsHandler(context));
   }
 
 }
