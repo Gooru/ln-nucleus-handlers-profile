@@ -17,7 +17,7 @@ public class AJEntityContent extends Model {
   public static final String TAXONOMY = "taxonomy";
   
   public static final String SELECT_RESOURCES = 
-    "SELECT id, title, publish_date, thumbnail FROM content WHERE creator_id = ?::uuid AND original_content_id IS NULL AND"
+    "SELECT id, title, publish_date, thumbnail, taxonomy FROM content WHERE creator_id = ?::uuid AND original_content_id IS NULL AND"
     +" content_format = 'resource'::content_format_type AND is_deleted = false";
   
   public static final String SELECT_RESOURCES_BY_TAXONOMY = 
@@ -25,7 +25,7 @@ public class AJEntityContent extends Model {
     + " creator_id = ?::uuid AND original_content_id IS NULL AND content_format = 'resource'::content_format_type AND is_deleted = false AND tx like ?";
   
   public static final String SELECT_QUESTIONS = 
-    "SELECT id, title, publish_date, thumbnail FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
+    "SELECT id, title, publish_date, thumbnail, taxonomy FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
     + " AND is_deleted = false";
   
   public static final String SELECT_QUESTIONS_BY_TAXONOMY = 

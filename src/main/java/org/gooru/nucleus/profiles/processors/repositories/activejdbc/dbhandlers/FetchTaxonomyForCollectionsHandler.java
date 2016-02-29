@@ -80,6 +80,8 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
           } else if (tokenizer.countTokens() == 4){
             taxonomyList.get(HelperConstants.KEY_STANDARDS).add(taxonomyCode);
           }
+          
+          //TODO: identify taxonomy tag classification and add in levels
         }
       } else {
         taxonomyList.get(HelperConstants.KEY_SUBJECTS).add(HelperConstants.SUBJECT_OTHER);
@@ -93,7 +95,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
       taxonomyList.get(key).forEach(value -> tempArray.add(value));
       responseBody.put(key, tempArray);
     }
-
+    // TODO: Transform the taxonomy before reply
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 

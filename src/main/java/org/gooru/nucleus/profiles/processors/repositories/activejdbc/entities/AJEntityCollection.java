@@ -18,7 +18,7 @@ public class AJEntityCollection extends Model {
   public static final String COLLABORATOR = "collaborator";
   
   public static final String SELECT_COLLECTIONS = 
-    "SELECT id, title, publish_date, thumbnail, collaborator FROM collection WHERE owner_id = ?::uuid AND format ="
+    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM collection WHERE owner_id = ?::uuid AND format ="
     + " 'collection'::content_container_type AND is_deleted = false";
   
   public static final String SELECT_COLLECTIONS_BY_TAXONOMY = 
@@ -26,7 +26,7 @@ public class AJEntityCollection extends Model {
     + " owner_id = ?::uuid AND format = 'collection'::content_container_type AND is_deleted = false AND tx like ?";
   
   public static final String SELECT_ASSESSMENTS =
-    "SELECT id, title, publish_date, thumbnail, collaborator FROM collection WHERE owner_id = ?::uuid AND format = "
+    "SELECT id, title, publish_date, thumbnail, taxonomy, collaborator FROM collection WHERE owner_id = ?::uuid AND format = "
     + "'assessment'::content_container_type AND is_deleted = false";
   
   public static final String SELECT_ASSESSMENTS_BY_TAXONOMY = 
