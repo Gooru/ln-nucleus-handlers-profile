@@ -133,11 +133,7 @@ public class ListResourcesHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
 
 }

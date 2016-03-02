@@ -26,7 +26,7 @@ public class ListCoursesHandler implements DBHandler {
   private boolean isPublic;
   private String searchText;
   private String subjectCode;
-  
+
   public ListCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -65,25 +65,25 @@ public class ListCoursesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    
+
     StringBuffer query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
-    
+
     if (subjectCode != null) {
       query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
       params.add(subjectCode + HelperConstants.PERCENTAGE);
     } else {
       query = new StringBuffer(AJEntityCourse.SELECT_COURSES);
     }
-    
+
     if (searchText != null) {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_TITLE);
       params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
     }
-    
+
     if (isPublic) {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
     }
@@ -94,7 +94,7 @@ public class ListCoursesHandler implements DBHandler {
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES,
             new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(courseList)));
-    
+
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
@@ -102,7 +102,7 @@ public class ListCoursesHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
   private String readRequestParam(String param) {
     JsonArray requestParams = context.request().getJsonArray(param);
     if (requestParams == null || requestParams.isEmpty()) {
@@ -116,8 +116,8 @@ public class ListCoursesHandler implements DBHandler {
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;
@@ -126,10 +126,6 @@ public class ListCoursesHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
 }
