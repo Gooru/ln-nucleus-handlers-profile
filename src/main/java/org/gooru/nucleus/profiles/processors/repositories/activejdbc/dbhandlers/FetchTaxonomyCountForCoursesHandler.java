@@ -23,8 +23,7 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(FetchTaxonomyCountForCoursesHandler.class);
   private boolean isPublic = false;
-  private String standardFramework;
-  
+
   public FetchTaxonomyCountForCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -38,8 +37,8 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
 
     // identify whether the request is for public or owner
     isPublic = checkPublic();
-    standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
-    
+    String standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
+
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -52,14 +51,14 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
     StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_COURSES_COUNTBY_SUBJECT);
-    
+
     if(isPublic) {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
     }
-    
+
     query.append(AJEntityCourse.GROUPBY_SUBJECT);
     List<Map> bucketedCourse = Base.findAll(query.toString(), context.userIdFromURL());
-    
+
     JsonObject responseBody = new JsonObject();
     for (Map courseMap : bucketedCourse) {
       String key = courseMap.get(AJEntityCourse.SUBJECT_BUCKET) != null ? courseMap.get(AJEntityCourse.SUBJECT_BUCKET).toString() : null;
@@ -73,12 +72,12 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;

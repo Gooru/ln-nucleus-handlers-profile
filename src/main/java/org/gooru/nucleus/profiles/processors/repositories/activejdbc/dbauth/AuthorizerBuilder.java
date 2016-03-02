@@ -5,10 +5,10 @@ import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJ
 
 public final class AuthorizerBuilder {
 
-  public AuthorizerBuilder() {
+  private AuthorizerBuilder() {
     throw new AssertionError();
   }
-  
+
   public static Authorizer<AJEntityUserIdentity> buildUserAuthorizer(ProcessorContext context) {
     return new UserAuthorizer(context);
   }

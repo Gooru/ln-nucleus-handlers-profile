@@ -1,6 +1,6 @@
 package org.gooru.nucleus.profiles.constants;
 
-public class MessageConstants {
+public final class MessageConstants {
 
   public static final String MSG_HEADER_OP = "mb.operation";
   public static final String MSG_HEADER_TOKEN = "session.token";
@@ -36,11 +36,14 @@ public class MessageConstants {
   public static final String MSG_OP_PROFILE_ASSESSMENT_TAXONOMY = "profile.assessment.taxonomy";
   public static final String MSG_OP_PROFILE_RESOURCE_TAXONOMY = "profile.resource.taxonomy";
   public static final String MSG_OP_PROFILE_QUESTION_TAXONOMY = "profile.question.taxonomy";
-  
+
   // Containers for different responses
   public static final String RESP_CONTAINER_MBUS = "mb.container";
   public static final String RESP_CONTAINER_EVENT = "mb.event";
   public static final String USER_ID_FROM_URL = "userId";
-  
 
+
+  private MessageConstants() {
+    throw new AssertionError();
+  }
 }
