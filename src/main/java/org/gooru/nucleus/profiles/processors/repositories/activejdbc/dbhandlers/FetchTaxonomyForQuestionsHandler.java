@@ -87,10 +87,10 @@ public class FetchTaxonomyForQuestionsHandler implements DBHandler {
 
     JsonObject responseBody = new JsonObject();
     Set<String> keySet = taxonomyList.keySet();
-    for (String key : keySet) {
+    for (Map.Entry<String, Set<String>> stringSetEntry : taxonomyList.entrySet()) {
       JsonArray tempArray = new JsonArray();
-      taxonomyList.get(key).forEach(tempArray::add);
-      responseBody.put(key, tempArray);
+      stringSetEntry.getValue().forEach(tempArray::add);
+      responseBody.put(stringSetEntry.getKey(), tempArray);
     }
 
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
