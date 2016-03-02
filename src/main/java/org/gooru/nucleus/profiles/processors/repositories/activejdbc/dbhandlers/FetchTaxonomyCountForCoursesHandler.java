@@ -50,7 +50,7 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_COURSES_COUNTBY_SUBJECT);
+    StringBuilder query = new StringBuilder(AJEntityCourse.SELECT_COURSES_COUNTBY_SUBJECT);
 
     if(isPublic) {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);

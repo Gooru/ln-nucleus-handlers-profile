@@ -52,7 +52,7 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = new StringBuffer(AJEntityContent.SELECT_RESOURCES);
+    StringBuilder query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
 
     if(isPublic) {
       query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_PUBLIC);
@@ -90,7 +90,7 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
     Set<String> keySet = taxonomyList.keySet();
     for (String key : keySet) {
       JsonArray tempArray = new JsonArray();
-      taxonomyList.get(key).forEach(value -> tempArray.add(value));
+      taxonomyList.get(key).forEach(tempArray::add);
       responseBody.put(key, tempArray);
     }
 

@@ -53,7 +53,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
 
-    StringBuffer query = new StringBuffer(AJEntityCollection.SELECT_COLLECTIONS);
+    StringBuilder query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
     if(isPublic) {
       query.append(AJEntityCollection.OP_AND).append(AJEntityCollection.CRITERIA_PUBLIC);
     }
@@ -92,7 +92,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
     Set<String> keySet = taxonomyList.keySet();
     for (String key : keySet) {
       JsonArray tempArray = new JsonArray();
-      taxonomyList.get(key).forEach(value -> tempArray.add(value));
+      taxonomyList.get(key).forEach(tempArray::add);
       responseBody.put(key, tempArray);
     }
     // TODO: Transform the taxonomy before reply
