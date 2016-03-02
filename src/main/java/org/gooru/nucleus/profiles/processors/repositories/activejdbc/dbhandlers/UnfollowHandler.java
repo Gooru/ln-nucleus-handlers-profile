@@ -18,13 +18,13 @@ public class UnfollowHandler implements DBHandler {
   public UnfollowHandler(ProcessorContext context) {
     this.context = context;
   }
-  
+
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
-    
+
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     LOGGER.debug("checkSanity() OK");
@@ -43,7 +43,7 @@ public class UnfollowHandler implements DBHandler {
       LOGGER.error("error in unfollow user");
       return new ExecutionResult<>(MessageResponseFactory.createInternalErrorResponse("error in unfollow user"), ExecutionStatus.FAILED);
     }
-    
+
     LOGGER.info("user {} is removed from followers of {}", context.userIdFromURL(), context.userId());
     return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(), ExecutionStatus.SUCCESSFUL);
   }
