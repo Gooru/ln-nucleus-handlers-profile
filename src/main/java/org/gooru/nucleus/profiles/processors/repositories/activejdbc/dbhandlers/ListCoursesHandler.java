@@ -25,7 +25,7 @@ public class ListCoursesHandler implements DBHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(ListCoursesHandler.class);
   private boolean isPublic;
   private String searchText;
-  private String taxonomyCode;
+  private String subjectCode;
   
   public ListCoursesHandler(ProcessorContext context) {
     this.context = context;
@@ -45,13 +45,13 @@ public class ListCoursesHandler implements DBHandler {
     // about level
     String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
     if (subject != null) {
-      taxonomyCode = subject;
+      subjectCode = subject;
       return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
     if (level != null) {
-      taxonomyCode = level;
+      subjectCode = level;
       return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
@@ -72,9 +72,9 @@ public class ListCoursesHandler implements DBHandler {
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
     
-    if (taxonomyCode != null) {
-      query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_TAXONOMY);
-      params.add(taxonomyCode + HelperConstants.PERCENTAGE);
+    if (subjectCode != null) {
+      query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
+      params.add(subjectCode + HelperConstants.PERCENTAGE);
     } else {
       query = new StringBuffer(AJEntityCourse.SELECT_COURSES);
     }
@@ -88,7 +88,8 @@ public class ListCoursesHandler implements DBHandler {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
     }
 
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), taxonomyCode, searchText);
+    query.append(AJEntityCourse.ORDERBY_SEQUENCE);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), subjectCode, searchText);
     LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES,

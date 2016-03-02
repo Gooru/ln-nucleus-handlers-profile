@@ -20,7 +20,6 @@ public class HelperConstants {
   public static final String RESP_JSON_KEY_FOLLOWINGS = "followings";
   
   public static final String PERCENTAGE = "%";
-  public static final String KEY_OTHER = "other";
   public static final String KEY_LEVELS = "levels";
   public static final String KEY_SUBJECTS = "subjects";
   public static final String KEY_STANDARDS = "standards";
