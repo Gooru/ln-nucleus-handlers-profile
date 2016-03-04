@@ -52,7 +52,10 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
     StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
 
     if (isPublic) {
-      query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityCourse.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityCourse.CRITERIA_PUBLIC);
     }
 
     List subjectBuckets = Base.firstColumn(query.toString(), context.userIdFromURL());

@@ -82,34 +82,46 @@ public class ListCoursesHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
 
-    StringBuffer query = null;
+    StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
     if (subjectCode != null) {
-      query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
+      query = new StringBuilder(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
       params.add(subjectCode);
     } else {
-      query = new StringBuffer(AJEntityCourse.SELECT_COURSES);
+      query = new StringBuilder(AJEntityCourse.SELECT_COURSES);
     }
 
     if (searchText != null) {
-      query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE).append(AJEntityCourse.CRITERIA_TITLE);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityCourse.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityCourse.CRITERIA_TITLE);
       params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
     }
 
     if (isPublic) {
-      query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE).append(AJEntityCourse.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityCourse.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityCourse.CRITERIA_PUBLIC);
     }
-    query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY).append(HelperConstants.SPACE).append(sortOn).append(HelperConstants.SPACE).append(order);
-    query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
+    query.append(HelperConstants.SPACE)
+         .append(AJEntityCourse.CLAUSE_ORDERBY)
+         .append(HelperConstants.SPACE)
+         .append(sortOn)
+         .append(HelperConstants.SPACE)
+         .append(order)
+         .append(HelperConstants.SPACE)
+         .append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
     params.add(limit);
     params.add(offset);
     
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query, params.size(), subjectCode, searchText, 
-      sortOn, order, limit, offset);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query, params.size(), 
+      subjectCode, searchText, sortOn, order, limit, offset);
     LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
     
     JsonArray courseArray = new JsonArray();

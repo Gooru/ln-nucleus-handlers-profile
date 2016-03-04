@@ -55,7 +55,10 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
     StringBuilder query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
 
     if(isPublic) {
-      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityContent.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityContent.CRITERIA_PUBLIC);
     }
 
     LazyList<AJEntityContent> resourcesList = AJEntityContent.findBySQL(query.toString(), context.userIdFromURL());

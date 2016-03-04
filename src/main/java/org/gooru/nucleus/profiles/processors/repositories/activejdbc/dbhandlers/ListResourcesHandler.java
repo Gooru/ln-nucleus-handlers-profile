@@ -97,17 +97,17 @@ public class ListResourcesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = null;
+    StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
     if (taxonomyCode != null) {
-      query = new StringBuffer(AJEntityContent.SELECT_RESOURCES_BY_TAXONOMY);
+      query = new StringBuilder(AJEntityContent.SELECT_RESOURCES_BY_TAXONOMY);
       params.add(taxonomyCode + HelperConstants.PERCENTAGE);
     } else {
-      query = new StringBuffer(AJEntityContent.SELECT_RESOURCES);
+      query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
     }
 
     if (searchText != null) {
@@ -128,9 +128,14 @@ public class ListResourcesHandler implements DBHandler {
            .append(AJEntityContent.CRITERIA_PUBLIC);
     }
 
-    query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_ORDERBY).append(HelperConstants.SPACE).append(sortOn)
-            .append(HelperConstants.SPACE).append(order);
-    query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_LIMIT_OFFSET);
+    query.append(HelperConstants.SPACE)
+         .append(AJEntityContent.CLAUSE_ORDERBY)
+         .append(HelperConstants.SPACE)
+         .append(sortOn)
+         .append(HelperConstants.SPACE)
+         .append(order)
+         .append(HelperConstants.SPACE)
+         .append(AJEntityContent.CLAUSE_LIMIT_OFFSET);
     params.add(limit);
     params.add(offset);
 

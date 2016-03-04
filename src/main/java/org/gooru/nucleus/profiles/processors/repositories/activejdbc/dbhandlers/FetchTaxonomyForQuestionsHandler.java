@@ -54,7 +54,10 @@ public class FetchTaxonomyForQuestionsHandler implements DBHandler {
   public ExecutionResult<MessageResponse> executeRequest() {
     StringBuilder query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS);
     if(isPublic) {
-      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityContent.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityContent.CRITERIA_PUBLIC);
     }
 
     LazyList<AJEntityContent> questionsList = AJEntityContent.findBySQL(query.toString(), context.userIdFromURL());

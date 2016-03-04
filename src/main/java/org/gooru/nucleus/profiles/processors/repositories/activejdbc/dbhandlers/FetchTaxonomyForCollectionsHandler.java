@@ -55,7 +55,10 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
 
     StringBuilder query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
     if(isPublic) {
-      query.append(AJEntityCollection.OP_AND).append(AJEntityCollection.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityCollection.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityCollection.CRITERIA_PUBLIC);
     }
 
     LazyList<AJEntityCollection> collectionList = AJEntityCollection.findBySQL(query.toString(), context.userIdFromURL());

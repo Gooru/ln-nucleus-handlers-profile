@@ -104,17 +104,17 @@ public class ListCollectionsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = null;
+    StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
     if (taxonomyCode != null) {
-      query = new StringBuffer(AJEntityCollection.SELECT_COLLECTIONS_BY_TAXONOMY);
+      query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS_BY_TAXONOMY);
       params.add(taxonomyCode + HelperConstants.PERCENTAGE);
     } else {
-      query = new StringBuffer(AJEntityCollection.SELECT_COLLECTIONS);
+      query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
     }
 
     if (searchText != null) {
@@ -146,9 +146,14 @@ public class ListCollectionsHandler implements DBHandler {
       }
     }
 
-    query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE).append(sortOn)
-            .append(HelperConstants.SPACE).append(order);
-    query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_LIMIT_OFFSET);
+    query.append(HelperConstants.SPACE)
+         .append(AJEntityCollection.CLAUSE_ORDERBY)
+         .append(HelperConstants.SPACE)
+         .append(sortOn)
+         .append(HelperConstants.SPACE)
+         .append(order)
+         .append(HelperConstants.SPACE)
+         .append(AJEntityCollection.CLAUSE_LIMIT_OFFSET);
     params.add(limit);
     params.add(offset);
 

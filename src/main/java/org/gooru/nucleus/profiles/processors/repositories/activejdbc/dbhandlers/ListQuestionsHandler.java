@@ -26,7 +26,11 @@ public class ListQuestionsHandler implements DBHandler {
   private boolean isPublic;
   private String searchText;
   private String taxonomyCode;
-
+  private String sortOn;
+  private String order;
+  private int limit;
+  private int offset;
+  
   public ListQuestionsHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -41,6 +45,27 @@ public class ListQuestionsHandler implements DBHandler {
     isPublic = checkPublic();
     searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
 
+    String sortOnFromRequest = readRequestParam(HelperConstants.REQ_PARAM_SORTON);
+    sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityContent.DEFAULT_SORTON;
+    if (!AJEntityContent.VALID_SORTON_FIELDS.contains(sortOn)) {
+      LOGGER.warn("Invalid value provided for sort");
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for sort"), ExecutionStatus.FAILED);
+    }
+
+    String orderFromRequest = readRequestParam(HelperConstants.REQ_PARAM_ORDER);
+    order = orderFromRequest != null ? orderFromRequest : AJEntityContent.DEFAULT_ORDER;
+    if (!AJEntityContent.VALID_ORDER_FIELDS.contains(order)) {
+      LOGGER.warn("Invalid value provided for order");
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for order"), ExecutionStatus.FAILED);
+    }
+
+    String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
+    int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityContent.DEFAULT_LIMIT;
+    limit = limitFromRequest > AJEntityContent.DEFAULT_LIMIT ? AJEntityContent.DEFAULT_LIMIT : limitFromRequest;
+
+    String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
+    offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityContent.DEFAULT_OFFSET;
+    
     // If standard is available in request we do not care about subject/level
     // for filter. Similarly if we find subject in request we will not care
     // about level
@@ -72,21 +97,24 @@ public class ListQuestionsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = null;
+    StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
     if (taxonomyCode != null) {
-      query = new StringBuffer(AJEntityContent.SELECT_QUESTIONS_BY_TAXONOMY);
+      query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS_BY_TAXONOMY);
       params.add(taxonomyCode + HelperConstants.PERCENTAGE);
     } else {
-      query = new StringBuffer(AJEntityContent.SELECT_QUESTIONS);
+      query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS);
     }
 
     if (searchText != null) {
-      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_TITLE);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityContent.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityContent.CRITERIA_TITLE);
       // Purposefully adding same search text twice to fulfill the criteria of
       // title and description search
       params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
@@ -94,10 +122,25 @@ public class ListQuestionsHandler implements DBHandler {
     }
 
     if (isPublic) {
-      query.append(AJEntityContent.OP_AND).append(AJEntityContent.CRITERIA_PUBLIC);
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityContent.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityContent.CRITERIA_PUBLIC);
     }
+    
+    query.append(HelperConstants.SPACE)
+         .append(AJEntityContent.CLAUSE_ORDERBY)
+         .append(HelperConstants.SPACE)
+         .append(sortOn)
+         .append(HelperConstants.SPACE)
+         .append(order)
+         .append(HelperConstants.SPACE)
+         .append(AJEntityContent.CLAUSE_LIMIT_OFFSET);
+    params.add(limit);
+    params.add(offset);
 
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), taxonomyCode, searchText);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
+            params.size(), taxonomyCode, searchText, sortOn, order, limit, offset);
     LazyList<AJEntityContent> questionList = AJEntityContent.findBySQL(query.toString(), params.toArray());
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS,
