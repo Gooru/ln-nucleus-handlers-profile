@@ -1,7 +1,10 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
@@ -12,6 +15,7 @@ import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
+import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +30,11 @@ public class ListCoursesHandler implements DBHandler {
   private boolean isPublic;
   private String searchText;
   private String subjectCode;
-  
+  private String sortOn;
+  private String order;
+  private int limit;
+  private int offset;
+
   public ListCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -35,25 +43,33 @@ public class ListCoursesHandler implements DBHandler {
   public ExecutionResult<MessageResponse> checkSanity() {
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     isPublic = checkPublic();
     searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
-
-    // If we find subject in request we will not care
-    // about level
-    String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
-    if (subject != null) {
-      subjectCode = subject;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    subjectCode = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+    
+    String sortOnFromRequest = readRequestParam(HelperConstants.REQ_PARAM_SORTON);
+    sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityCourse.DEFAULT_SORTON;
+    if (!AJEntityCourse.VALID_SORTON_FIELDS.contains(sortOn)) {
+      LOGGER.warn("Invalid value provided for sort");
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for sort"), ExecutionStatus.FAILED);
     }
-
-    String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
-    if (level != null) {
-      subjectCode = level;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    
+    String orderFromRequest = readRequestParam(HelperConstants.REQ_PARAM_ORDER);
+    order = orderFromRequest != null ? orderFromRequest : AJEntityCourse.DEFAULT_ORDER;
+    if (!AJEntityCourse.VALID_ORDER_FIELDS.contains(order)) {
+      LOGGER.warn("Invalid value provided for order");
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for order"), ExecutionStatus.FAILED);
     }
+    
+    String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
+    int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT; 
+    limit = limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
+    
+    String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
+    offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET;
 
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -65,36 +81,56 @@ public class ListCoursesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    
+
     StringBuffer query = null;
     List<Object> params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
-    
+
     if (subjectCode != null) {
       query = new StringBuffer(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
-      params.add(subjectCode + HelperConstants.PERCENTAGE);
+      params.add(subjectCode);
     } else {
       query = new StringBuffer(AJEntityCourse.SELECT_COURSES);
     }
-    
+
     if (searchText != null) {
-      query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_TITLE);
+      query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE).append(AJEntityCourse.CRITERIA_TITLE);
       params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
     }
-    
-    if (isPublic) {
-      query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
-    }
 
-    query.append(AJEntityCourse.ORDERBY_SEQUENCE);
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}", query, params.size(), subjectCode, searchText);
-    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES,
-            new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(courseList)));
+    if (isPublic) {
+      query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE).append(AJEntityCourse.CRITERIA_PUBLIC);
+    }
+    query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY).append(HelperConstants.SPACE).append(sortOn).append(HelperConstants.SPACE).append(order);
+    query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
+    params.add(limit);
+    params.add(offset);
     
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query, params.size(), subjectCode, searchText, 
+      sortOn, order, limit, offset);
+    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
+    
+    JsonArray courseArray = new JsonArray();
+    if (!courseList.isEmpty()) {
+      List<String> courseIdList = new ArrayList<>();
+      courseList.stream().forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
+  
+      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES, listToPostgresArrayString(courseIdList));
+      Map<String, Integer> unitCountByCourse = new HashMap<>();
+      unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
+              Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
+  
+      courseList.stream()
+              .forEach(course -> courseArray
+                      .add(new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
+                              .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))));
+    }
+    
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
@@ -102,7 +138,7 @@ public class ListCoursesHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
   private String readRequestParam(String param) {
     JsonArray requestParams = context.request().getJsonArray(param);
     if (requestParams == null || requestParams.isEmpty()) {
@@ -116,8 +152,8 @@ public class ListCoursesHandler implements DBHandler {
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;
@@ -131,5 +167,31 @@ public class ListCoursesHandler implements DBHandler {
     } else {
       return false;
     }
+  }
+
+  private String listToPostgresArrayString(List<String> input) {
+    int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
+                                                // chars
+    Iterator<String> it = input.iterator();
+    if (!it.hasNext()) {
+      return "{}";
+    }
+
+    StringBuilder sb = new StringBuilder(approxSize);
+    sb.append('{');
+    for (;;) {
+      String s = it.next();
+      sb.append('"').append(s).append('"');
+      if (!it.hasNext()) {
+        return sb.append('}').toString();
+      }
+      sb.append(',');
+    }
+  }
+  
+  private JsonObject getFiltersJson() {
+    JsonObject filters = new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT , subjectCode).put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
+            .put(HelperConstants.RESP_JSON_KEY_ORDER, order).put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
+    return filters;
   }
 }

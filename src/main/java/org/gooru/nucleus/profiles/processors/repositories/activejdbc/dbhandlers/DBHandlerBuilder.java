@@ -52,8 +52,8 @@ public class DBHandlerBuilder {
     return new FetchTaxonomyForQuestionsHandler(context);
   }
 
-  public DBHandler buildFetchTaxonomyCountForCoursesHandler(ProcessorContext context) {
-    return new FetchTaxonomyCountForCoursesHandler(context);
+  public DBHandler buildFetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
+    return new FetchSubjectBucketsForCoursesHandler(context);
   }
 
   public DBHandler buildFetchTaxonomyForCollectionsHandler(ProcessorContext context) {

@@ -20,8 +20,8 @@ public class AJCourseRepo implements CourseRepo {
   }
 
   @Override
-  public MessageResponse fetchTaxonomyCountForCourses() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyCountForCoursesHandler(context));
+  public MessageResponse fetchSubjectBucketsForCourses() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchSubjectBucketsForCoursesHandler(context));
   }
 
 }

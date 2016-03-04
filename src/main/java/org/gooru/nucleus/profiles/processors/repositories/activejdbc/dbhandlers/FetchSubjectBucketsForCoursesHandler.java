@@ -12,20 +12,21 @@ import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.Execution
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
 import org.javalite.activejdbc.Base;
+import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
+public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
 
   private final ProcessorContext context;
-  private static final Logger LOGGER = LoggerFactory.getLogger(FetchTaxonomyCountForCoursesHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FetchSubjectBucketsForCoursesHandler.class);
   private boolean isPublic = false;
   private String standardFramework;
-  
-  public FetchTaxonomyCountForCoursesHandler(ProcessorContext context) {
+
+  public FetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
 
@@ -39,7 +40,7 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
     // identify whether the request is for public or owner
     isPublic = checkPublic();
     standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
-    
+
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -51,34 +52,38 @@ public class FetchTaxonomyCountForCoursesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_COURSES_COUNTBY_SUBJECT);
-    
-    if(isPublic) {
+    StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
+
+    if (isPublic) {
       query.append(AJEntityCourse.OP_AND).append(AJEntityCourse.CRITERIA_PUBLIC);
     }
-    
-    query.append(AJEntityCourse.GROUPBY_SUBJECT);
-    List<Map> bucketedCourse = Base.findAll(query.toString(), context.userIdFromURL());
-    
-    JsonObject responseBody = new JsonObject();
-    for (Map courseMap : bucketedCourse) {
-      String key = courseMap.get(AJEntityCourse.SUBJECT_BUCKET) != null ? courseMap.get(AJEntityCourse.SUBJECT_BUCKET).toString() : null;
-      responseBody.put(key != null && !key.isEmpty() ? key : HelperConstants.SUBJECT_OTHER, courseMap.get(AJEntityCourse.KEY_COURSE_COUNT));
+
+    List subjectBuckets = Base.firstColumn(query.toString(), context.userIdFromURL());
+
+    JsonArray responseArray = new JsonArray();
+    for (Object bucket : subjectBuckets) {
+      if (bucket != null && !bucket.toString().isEmpty()) {
+        responseArray.add(bucket.toString());
+      } else {
+        responseArray.add(HelperConstants.SUBJECT_OTHER);
+      }
     }
 
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
+    return new ExecutionResult<>(
+            MessageResponseFactory.createGetResponse(new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECTBUCKETS, responseArray)),
+            ExecutionStatus.SUCCESSFUL);
   }
 
   @Override
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;

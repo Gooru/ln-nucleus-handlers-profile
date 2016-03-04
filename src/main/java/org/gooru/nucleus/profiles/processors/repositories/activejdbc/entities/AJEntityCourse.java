@@ -30,24 +30,37 @@ public class AJEntityCourse extends Model {
   public static final String SEQUENCE_ID = "sequence_id";
   public static final String SUBJECT_BUCKET = "subject_bucket";
   
+  public static final String COURSE_ID = "course_id";
+  public static final String UNIT_COUNT = "unit_count";
+  
   public static final String SELECT_COURSES =
-    "SELECT id, title, publish_status, thumbnail, collaborator, sequence_id FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
-  
-  public static final String SELECT_COURSES_BY_SUBJECT =
-    "SELECT id, title, publish_status, thumbnail, collaborator, sequence_id FROM course WHERE owner_id = ?::uuid AND is_deleted = false"
-    + " AND subject_bucket like ?";
-  
-  //public static final String SELECT_COURSES_FOR_TXCOUNT = "SELECT taxonomy FROM course WHERE owner_id = ?::uuid AND is_deleted = false";
-  public static final String SELECT_COURSES_COUNTBY_SUBJECT = "SELECT count(id) AS course_count, subject_bucket FROM course WHERE owner_id = ?::uuid"
+    "SELECT id, title, publish_status, thumbnail, collaborator, taxonomy, sequence_id, visible_on_profile FROM course WHERE owner_id = ?::uuid"
     + " AND is_deleted = false";
+  public static final String SELECT_COURSES_BY_SUBJECT =
+    "SELECT id, title, publish_status, thumbnail, collaborator, taxonomy, sequence_id, visible_on_profile FROM course WHERE owner_id = ?::uuid"
+    + " AND is_deleted = false AND subject_bucket = ?";
+  public static final String SELECT_SUBJECT_BUCKETS = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE owner_id = ?::uuid"
+    + " AND is_deleted = false";
+  public static final String SELECT_UNIT_COUNT_FOR_COURSES = "SELECT count(unit_id) as unit_count, course_id FROM unit WHERE course_id = ANY"
+    + " (?::uuid[]) AND is_deleted = false GROUP BY course_id";
   
-  public static final String OP_AND = " AND ";
+  public static final String OP_AND = "AND";
   public static final String CRITERIA_TITLE = "title ilike ?";
   public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
-  public static final String ORDERBY_SEQUENCE = " ORDER BY sequence_id";
-  public static final String GROUPBY_SUBJECT = " GROUP BY subject_bucket";
-
-  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, COLLABORATOR, SEQUENCE_ID);
+  public static final String CLAUSE_ORDERBY = "ORDER BY";
+  public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
   
-  public static final String KEY_COURSE_COUNT = "course_count";
+  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, COLLABORATOR, TAXONOMY, SEQUENCE_ID,
+    VISIBLE_ON_PROFILE);
+  
+  public static final String ORDER_DESC = "desc";
+  public static final String ORDER_ASC = "asc";
+  
+  public static final int DEFAULT_LIMIT = 20;
+  public static final int DEFAULT_OFFSET = 0;
+  public static final String DEFAULT_SORTON = TITLE;
+  public static final String DEFAULT_ORDER = ORDER_ASC;
+  
+  public static final List<String> VALID_SORTON_FIELDS = Arrays.asList(TITLE);
+  public static final List<String> VALID_ORDER_FIELDS = Arrays.asList(ORDER_DESC, ORDER_ASC);
 }

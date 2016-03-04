@@ -69,19 +69,19 @@ class MessageProcessor implements Processor {
         case MessageConstants.MSG_OP_PROFILE_FOLLOWINGS_LIST:
           result = processFollowingsList();
           break;
-        case MessageConstants.MSG_OP_PROFILE_COURSE_TAXONOMYCOUNT:
-          result = processFetchCourseTaxonomyCount();
+        case MessageConstants.MSG_OP_PROFILE_COURSE_SUBJECTBUCKETS_GET:
+          result = processFetchCourseSubjectBuckets();
           break;
-        case MessageConstants.MSG_OP_PROFILE_COLLECTION_TAXONOMY:
+        case MessageConstants.MSG_OP_PROFILE_COLLECTION_TAXONOMY_GET:
           result = processFetchCollectionTaxonomy();
           break;
-        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_TAXONOMY:
+        case MessageConstants.MSG_OP_PROFILE_ASSESSMENT_TAXONOMY_GET:
           result = processFetchAssessmentTaxonomy();
           break;
-        case MessageConstants.MSG_OP_PROFILE_RESOURCE_TAXONOMY:
+        case MessageConstants.MSG_OP_PROFILE_RESOURCE_TAXONOMY_GET:
           result = processFetchResourceTaxonomy();
           break;
-        case MessageConstants.MSG_OP_PROFILE_QUESTION_TAXONOMY:
+        case MessageConstants.MSG_OP_PROFILE_QUESTION_TAXONOMY_GET:
           result = processFetchQuestionTaxonomy();
           break;
         default:
@@ -151,9 +151,9 @@ class MessageProcessor implements Processor {
     return new RepoBuilder().buildProfileRepo(context).listFollowings();
   }
   
-  private MessageResponse processFetchCourseTaxonomyCount() {
+  private MessageResponse processFetchCourseSubjectBuckets() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildCourseRepo(context).fetchTaxonomyCountForCourses();
+    return new RepoBuilder().buildCourseRepo(context).fetchSubjectBucketsForCourses();
   }
 
   private MessageResponse processFetchCollectionTaxonomy() {
