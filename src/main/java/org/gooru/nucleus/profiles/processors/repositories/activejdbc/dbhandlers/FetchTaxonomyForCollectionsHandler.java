@@ -26,7 +26,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(FetchTaxonomyForCollectionsHandler.class);
   private boolean isPublic = false;
-  
+
   public FetchTaxonomyForCollectionsHandler(ProcessorContext context) {
     this.context = context;
   }
@@ -35,7 +35,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
   public ExecutionResult<MessageResponse> checkSanity() {
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     // identify whether the request is for public or owner
@@ -53,18 +53,18 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
 
-    StringBuffer query = new StringBuffer(AJEntityCollection.SELECT_COLLECTIONS);
+    StringBuilder query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
     if(isPublic) {
       query.append(AJEntityCollection.OP_AND).append(AJEntityCollection.CRITERIA_PUBLIC);
-    } 
-    
+    }
+
     LazyList<AJEntityCollection> collectionList = AJEntityCollection.findBySQL(query.toString(), context.userIdFromURL());
-    
+
     Map<String, Set<String>> taxonomyList = new HashMap<>();
     taxonomyList.put(HelperConstants.KEY_LEVELS, new HashSet<>());
     taxonomyList.put(HelperConstants.KEY_SUBJECTS, new HashSet<>());
     taxonomyList.put(HelperConstants.KEY_STANDARDS, new HashSet<>());
-    
+
     for (AJEntityCollection ajEntityCollection : collectionList) {
       String taxonomy = ajEntityCollection.getString(AJEntityCollection.TAXONOMY);
       if (taxonomy != null && !taxonomy.isEmpty()) {
@@ -72,7 +72,7 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
         for (int i = 0; i < taxonomyArray.size(); i++) {
           String taxonomyCode = taxonomyArray.getString(i);
           StringTokenizer tokenizer = new StringTokenizer(taxonomyCode, HelperConstants.TAXONOMY_SEPARATOR);
-          
+
           // Replying on number of token in taxonomy tag
           // 1 for subject and 4 for standard
           if (tokenizer.countTokens() == 1) {
@@ -80,20 +80,20 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
           } else if (tokenizer.countTokens() == 4){
             taxonomyList.get(HelperConstants.KEY_STANDARDS).add(taxonomyCode);
           }
-          
+
           //TODO: identify taxonomy tag classification and add in levels
         }
       } else {
         taxonomyList.get(HelperConstants.KEY_SUBJECTS).add(HelperConstants.SUBJECT_OTHER);
       }
     }
-    
+
     JsonObject responseBody = new JsonObject();
     Set<String> keySet = taxonomyList.keySet();
-    for (String key : keySet) {
+    for (Map.Entry<String, Set<String>> stringSetEntry : taxonomyList.entrySet()) {
       JsonArray tempArray = new JsonArray();
-      taxonomyList.get(key).forEach(value -> tempArray.add(value));
-      responseBody.put(key, tempArray);
+      stringSetEntry.getValue().forEach(tempArray::add);
+      responseBody.put(stringSetEntry.getKey(), tempArray);
     }
     // TODO: Transform the taxonomy before reply
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
@@ -103,12 +103,12 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return true;
   }
-  
+
   private boolean checkPublic() {
     if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
       return true;
-    } 
-    
+    }
+
     JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
     if (previewArray == null || previewArray.isEmpty()) {
       return false;
@@ -117,12 +117,8 @@ public class FetchTaxonomyForCollectionsHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
-  
+
 
 }

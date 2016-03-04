@@ -1,7 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.List;
-import java.util.Map;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
@@ -12,7 +11,6 @@ import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.Execution
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
 import org.javalite.activejdbc.Base;
-import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +22,6 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(FetchSubjectBucketsForCoursesHandler.class);
   private boolean isPublic = false;
-  private String standardFramework;
 
   public FetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
     this.context = context;
@@ -34,12 +31,12 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
   public ExecutionResult<MessageResponse> checkSanity() {
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     // identify whether the request is for public or owner
     isPublic = checkPublic();
-    standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
+    String standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
 
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -92,11 +89,7 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
 
 }

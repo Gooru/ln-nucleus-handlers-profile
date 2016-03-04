@@ -35,7 +35,7 @@ public class ListQuestionsHandler implements DBHandler {
   public ExecutionResult<MessageResponse> checkSanity() {
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     isPublic = checkPublic();
@@ -133,11 +133,7 @@ public class ListQuestionsHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
 
 }

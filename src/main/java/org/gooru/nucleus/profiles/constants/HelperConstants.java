@@ -1,6 +1,6 @@
 package org.gooru.nucleus.profiles.constants;
 
-public class HelperConstants {
+public final class HelperConstants {
 
   public static final String REQ_PARAM_PREVIEW = "preview";
   public static final String REQ_PARAM_SEARCH_TEXT = "searchText";
@@ -15,7 +15,7 @@ public class HelperConstants {
   
   public static final String TAXONOMY_SEPARATOR = "-";
   public static final String PREFS_SFCODE = "standard_framework_code";
-  
+
   public static final String RESP_JSON_KEY_COURSES = "courses";
   public static final String RESP_JSON_KEY_COLLECTIONS = "collections";
   public static final String RESP_JSON_KEY_ASSESSMENTS = "assessments";
@@ -39,9 +39,13 @@ public class HelperConstants {
   public static final String KEY_LEVELS = "levels";
   public static final String KEY_SUBJECTS = "subjects";
   public static final String KEY_STANDARDS = "standards";
-  
+
   public static final String SUBJECT_OTHER = "Other";
   
   public static final String FILTERBY_INCOURSE = "inCourse";
   public static final String FILTERBY_NOT_INCOURSE = "notInCourse";
+
+  private HelperConstants() {
+    throw new AssertionError();
+  }
 }

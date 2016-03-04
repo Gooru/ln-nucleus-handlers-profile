@@ -4,7 +4,11 @@ import io.vertx.core.json.JsonObject;
 import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.events.EventBuilder;
 
-public class MessageResponseFactory {
+public final class MessageResponseFactory {
+  private MessageResponseFactory() {
+    throw new AssertionError();
+  }
+
   public static MessageResponse createInvalidRequestResponse() {
     return new MessageResponse.Builder().failed().setStatusBadRequest().build();
   }

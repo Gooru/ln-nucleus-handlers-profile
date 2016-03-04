@@ -25,13 +25,13 @@ public class ListFollowersHandler implements DBHandler {
   public ListFollowersHandler(ProcessorContext context) {
     this.context = context;
   }
-  
+
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
-    
+
     if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
       LOGGER.warn("Invalid user id");
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
     }
 
     LOGGER.debug("checkSanity() OK");

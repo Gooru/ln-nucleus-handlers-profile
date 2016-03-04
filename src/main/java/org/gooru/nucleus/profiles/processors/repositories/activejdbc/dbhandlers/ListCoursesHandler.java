@@ -131,6 +131,7 @@ public class ListCoursesHandler implements DBHandler {
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
@@ -162,11 +163,7 @@ public class ListCoursesHandler implements DBHandler {
     String preview = (String) previewArray.getValue(0);
     // Assuming that preview parameter only exists when user want to view his
     // profile as public
-    if (Boolean.parseBoolean(preview)) {
-      return true;
-    } else {
-      return false;
-    }
+    return Boolean.parseBoolean(preview);
   }
 
   private String listToPostgresArrayString(List<String> input) {

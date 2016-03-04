@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 
-public class MessageResponse {
+public final class MessageResponse {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageResponse.class);
   private final DeliveryOptions deliveryOptions;

@@ -20,10 +20,10 @@ public class FollowHandler implements DBHandler {
   public FollowHandler(ProcessorContext context) {
     this.context = context;
   }
-  
+
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
-    
+
     JsonObject validateErrors = validatePayload();
     if (validateErrors != null && !validateErrors.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(validateErrors), ExecutionResult.ExecutionStatus.FAILED);
@@ -33,7 +33,7 @@ public class FollowHandler implements DBHandler {
     if (notNullErrors != null && !notNullErrors.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(notNullErrors), ExecutionResult.ExecutionStatus.FAILED);
     }
-    
+
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -50,15 +50,15 @@ public class FollowHandler implements DBHandler {
     userNetwork.setUserId(context.userId());
     String followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
     userNetwork.setFollowOnUserId(followOnUserId);
-    
+
     if (userNetwork.hasErrors()) {
       LOGGER.warn("adding follower has errors");
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()), ExecutionStatus.FAILED);
     }
-    
+
     if (userNetwork.insert()) {
       LOGGER.info("user {} is now following {}", context.userId(), followOnUserId);
-      return new ExecutionResult<MessageResponse>(MessageResponseFactory.createPostResponse(), ExecutionStatus.SUCCESSFUL);
+      return new ExecutionResult<>(MessageResponseFactory.createPostResponse(), ExecutionStatus.SUCCESSFUL);
     } else {
       LOGGER.error("error while adding follower");
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()), ExecutionStatus.FAILED);
@@ -69,15 +69,15 @@ public class FollowHandler implements DBHandler {
   public boolean handlerReadOnly() {
     return false;
   }
-  
+
   private JsonObject validatePayload() {
     JsonObject input = context.request();
     JsonObject output = new JsonObject();
-    
+
     input.fieldNames().stream().filter(key -> !AJEntityUserNetwork.REQUIRED_FIELDS.contains(key)).forEach(key -> output.put(key, "Field not allowed"));
     return output.isEmpty() ? null : output;
   }
-  
+
   private JsonObject validateNullFields() {
     JsonObject input = context.request();
     JsonObject output = new JsonObject();
@@ -86,7 +86,7 @@ public class FollowHandler implements DBHandler {
                                  .forEach(notNullField -> output.put(notNullField, "Field should not be empty or null"));
     return output.isEmpty() ? null : output;
   }
-  
+
   private JsonObject getModelErrors() {
     JsonObject errors = new JsonObject();
     this.userNetwork.errors().entrySet().forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
