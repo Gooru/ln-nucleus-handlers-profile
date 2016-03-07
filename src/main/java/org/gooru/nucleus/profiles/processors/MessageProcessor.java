@@ -63,11 +63,8 @@ class MessageProcessor implements Processor {
         case MessageConstants.MSG_OP_PROFILE_UNFOLLOW:
           result = processUnfollow();
           break;
-        case MessageConstants.MSG_OP_PROFILE_FOLLOWERS_LIST:
-          result = processFollowersList();
-          break;
-        case MessageConstants.MSG_OP_PROFILE_FOLLOWINGS_LIST:
-          result = processFollowingsList();
+        case MessageConstants.MSG_OP_PROFILE_NETWORK_GET:
+          result = processNetworkGet();
           break;
         case MessageConstants.MSG_OP_PROFILE_COURSE_SUBJECTBUCKETS_GET:
           result = processFetchCourseSubjectBuckets();
@@ -141,14 +138,9 @@ class MessageProcessor implements Processor {
     return new RepoBuilder().buildProfileRepo(context).unfollow();
   }
 
-  private MessageResponse processFollowersList() {
+  private MessageResponse processNetworkGet() {
     ProcessorContext context = createContext();
-    return new RepoBuilder().buildProfileRepo(context).listFollowers();
-  }
-
-  private MessageResponse processFollowingsList() {
-    ProcessorContext context = createContext();
-    return new RepoBuilder().buildProfileRepo(context).listFollowings();
+    return new RepoBuilder().buildProfileRepo(context).getNetwork();
   }
   
   private MessageResponse processFetchCourseSubjectBuckets() {

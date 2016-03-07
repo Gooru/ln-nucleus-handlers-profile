@@ -58,8 +58,8 @@ public class AJEntityCourse extends Model {
   
   public static final int DEFAULT_LIMIT = 20;
   public static final int DEFAULT_OFFSET = 0;
-  public static final String DEFAULT_SORTON = TITLE;
-  public static final String DEFAULT_ORDER = ORDER_ASC;
+  public static final String DEFAULT_SORTON = UPDATED_AT;
+  public static final String DEFAULT_ORDER = ORDER_DESC;
   
   public static final List<String> VALID_SORTON_FIELDS = Arrays.asList(TITLE);
   public static final List<String> VALID_ORDER_FIELDS = Arrays.asList(ORDER_DESC, ORDER_ASC);

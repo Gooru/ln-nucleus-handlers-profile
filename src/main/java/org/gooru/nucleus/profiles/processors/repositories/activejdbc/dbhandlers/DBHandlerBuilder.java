@@ -36,12 +36,8 @@ public class DBHandlerBuilder {
     return new UnfollowHandler(context);
   }
 
-  public DBHandler buildListFollowersHandler(ProcessorContext context) {
-    return new ListFollowersHandler(context);
-  }
-
-  public DBHandler buildListFollowingsHandler(ProcessorContext context) {
-    return new ListFollowingsHandler(context);
+  public DBHandler buildGetNetworkHandler(ProcessorContext context) {
+    return new GetNetworkHandler(context);
   }
 
   public DBHandler buildFetchTaxonomyForResourcesHandler(ProcessorContext context) {

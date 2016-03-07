@@ -12,6 +12,10 @@ public final class HelperConstants {
   public static final String REQ_PARAM_LIMIT = "limit";
   public static final String REQ_PARAM_OFFSET = "offset";
   public static final String REQ_PARAM_FILTERBY = "filterBy";
+  public static final String REQ_PARAM_DETAILS = "details";
+  
+  public static final String REQ_PARAM_DETAILS_FOLLOWERS = "followers";
+  public static final String REQ_PARAM_DETAILS_FOLLOWINGS = "followings";
   
   public static final String TAXONOMY_SEPARATOR = "-";
   public static final String PREFS_SFCODE = "standard_framework_code";

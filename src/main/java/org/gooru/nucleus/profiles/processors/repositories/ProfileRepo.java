@@ -10,8 +10,6 @@ public interface ProfileRepo {
 
   MessageResponse unfollow();
 
-  MessageResponse listFollowers();
-
-  MessageResponse listFollowings();
+  MessageResponse getNetwork();
 
 }

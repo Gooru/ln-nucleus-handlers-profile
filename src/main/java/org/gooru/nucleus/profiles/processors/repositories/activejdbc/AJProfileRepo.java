@@ -30,13 +30,8 @@ public class AJProfileRepo implements ProfileRepo {
   }
 
   @Override
-  public MessageResponse listFollowers() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListFollowersHandler(context));
-  }
-
-  @Override
-  public MessageResponse listFollowings() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListFollowingsHandler(context));
+  public MessageResponse getNetwork() {
+    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildGetNetworkHandler(context));
   }
 
 }

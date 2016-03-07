@@ -15,6 +15,8 @@ public class AJEntityUserDemographic extends Model {
   public static final String TEMPLATE_PATH = "thumbnail_path";
   
   public static final String SELECT_DEMOGRAPHICS = "SELECT id, firstname, lastname, thumbnail_path FROM user_demographic WHERE id = ?::uuid";
+  public static final String SELECT_DEMOGRAPHICS_MULTIPLE = "SELECT id, firstname, lastname, thumbnail_path FROM user_demographic WHERE id ="
+    + " ANY (?::uuid[])";
   
   public static final List<String> DEMOGRAPHIC_FIELDS = Arrays.asList(ID, FIRSTNAME, LASTNAME, TEMPLATE_PATH);
 
