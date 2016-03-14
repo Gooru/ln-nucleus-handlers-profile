@@ -12,7 +12,8 @@ GET
 
 http://{host}/api/nucleus/{version}/profiles/{user-id}/courses?subject={subject-bucket}&limit={limit}&offset={offset}
 
-Sample: http://nucleus.gooru.org/api/nucleus/v1/profiles/852f9814-0eb4-461d-bd3b-aca9c2500595/courses?subject=K12 Science
+Sample: 
+http://nucleus.gooru.org/api/nucleus/v1/profiles/852f9814-0eb4-461d-bd3b-aca9c2500595/courses?subject=K12 Science
 
 ###Parameters
 
@@ -29,7 +30,7 @@ Sample: http://nucleus.gooru.org/api/nucleus/v1/profiles/852f9814-0eb4-461d-bd3b
 |-------|-------|
 | Authorization | Token [TOKEN] |
 
-* Replace [TOKEN] with actual value of access token.
+* Replace [TOKEN] with actual value of access token obtained from authentication call.
 
 ###Response Body
 
