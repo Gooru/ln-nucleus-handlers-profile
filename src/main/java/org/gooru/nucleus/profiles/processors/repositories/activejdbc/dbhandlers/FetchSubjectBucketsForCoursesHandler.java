@@ -36,7 +36,6 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
 
     // identify whether the request is for public or owner
     isPublic = checkPublic();
-    String standardFramework = context.prefs().getString(HelperConstants.PREFS_SFCODE);
 
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -58,7 +57,7 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
            .append(AJEntityCourse.CRITERIA_PUBLIC);
     }
 
-    List subjectBuckets = Base.firstColumn(query.toString(), context.userIdFromURL());
+    List subjectBuckets = Base.firstColumn(query.toString(), context.userIdFromURL(), context.userIdFromURL());
 
     JsonArray responseArray = new JsonArray();
     for (Object bucket : subjectBuckets) {

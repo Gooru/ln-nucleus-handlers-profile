@@ -1,12 +1,17 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -25,7 +30,7 @@ public class ListResourcesHandler implements DBHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(ListResourcesHandler.class);
   private boolean isPublic;
   private String searchText;
-  private String taxonomyCode;
+  private String standard;
   private String sortOn;
   private String order;
   private int limit;
@@ -59,33 +64,10 @@ public class ListResourcesHandler implements DBHandler {
       return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for order"), ExecutionStatus.FAILED);
     }
 
-    String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-    int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityContent.DEFAULT_LIMIT;
-    limit = limitFromRequest > AJEntityContent.DEFAULT_LIMIT ? AJEntityContent.DEFAULT_LIMIT : limitFromRequest;
-
-    String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
-    offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityContent.DEFAULT_OFFSET;
+    limit = getLimit();
+    offset = getOffset();
     
-    // If standard is available in request we do not care about subject/level
-    // for filter. Similarly if we find subject in request we will not care
-    // about level
-    String standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
-    if (standard != null) {
-      taxonomyCode = standard;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
-
-    String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
-    if (subject != null) {
-      taxonomyCode = subject;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
-
-    String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
-    if (level != null) {
-      taxonomyCode = level;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
+    standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
 
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -103,9 +85,9 @@ public class ListResourcesHandler implements DBHandler {
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
-    if (taxonomyCode != null) {
+    if (standard != null) {
       query = new StringBuilder(AJEntityContent.SELECT_RESOURCES_BY_TAXONOMY);
-      params.add(taxonomyCode + HelperConstants.PERCENTAGE);
+      params.add(standard + HelperConstants.PERCENTAGE);
     } else {
       query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
     }
@@ -139,13 +121,28 @@ public class ListResourcesHandler implements DBHandler {
     params.add(limit);
     params.add(offset);
 
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
-            params.size(), taxonomyCode, searchText, sortOn, order, limit, offset);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
+            params.size(), standard, searchText, sortOn, order, limit, offset);
 
     LazyList<AJEntityContent> resourceList = AJEntityContent.findBySQL(query.toString(), params.toArray());
+    JsonArray resourceArray = new JsonArray();
+    if (!resourceList.isEmpty()) {
+      List<String> creatorIdList = new ArrayList<>();
+      resourceList.stream().forEach(resource -> creatorIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
+      
+      LazyList<AJEntityUserDemographic> userDemographics =
+              AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(creatorIdList));
+      Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
+      userDemographics.forEach(user -> userDemographicsMap.put(user.getId().toString(), user));
+      
+      resourceList.stream().forEach(resource -> resourceArray
+              .add(new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))
+                      .put(AJEntityContent.OWNER_INFO, new JsonObject(new JsonFormatterBuilder()
+                                                      .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+                                                      .toJson(userDemographicsMap.get(resource.getString(AJEntityContent.CREATOR_ID)))))));
+    }
     JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES,
-            new JsonArray(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resourceList)));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
@@ -183,12 +180,52 @@ public class ListResourcesHandler implements DBHandler {
   
   private JsonObject getFiltersJson() {
     JsonObject filters = new JsonObject()
-      .put(HelperConstants.RESP_JSON_KEY_TAXONOMY, taxonomyCode)
+      .put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
       .put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
       .put(HelperConstants.RESP_JSON_KEY_ORDER, order)
       .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit)
       .put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     return filters;
   }
+  
+  private String listToPostgresArrayString(List<String> input) {
+    int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
+                                                // chars
+    Iterator<String> it = input.iterator();
+    if (!it.hasNext()) {
+      return "{}";
+    }
+
+    StringBuilder sb = new StringBuilder(approxSize);
+    sb.append('{');
+    for (;;) {
+      String s = it.next();
+      sb.append('"').append(s).append('"');
+      if (!it.hasNext()) {
+        return sb.append('}').toString();
+      }
+      sb.append(',');
+    }
+  }
+  
+  private int getLimit() {
+    try {
+      String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
+      int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT; 
+      return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
+    } catch (NumberFormatException nfe) {
+      return AJEntityCourse.DEFAULT_LIMIT;
+    }
+  }
+  
+  private int getOffset() {
+    try {
+      String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
+      return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET; 
+    } catch (NumberFormatException nfe) {
+      return AJEntityCourse.DEFAULT_OFFSET;
+    }
+  }
+
 
 }

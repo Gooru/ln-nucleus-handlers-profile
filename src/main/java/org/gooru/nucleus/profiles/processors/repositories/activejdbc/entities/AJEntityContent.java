@@ -19,22 +19,26 @@ public class AJEntityContent extends Model {
   public static final String THUMBNAIL = "thumbnail";
   public static final String TAXONOMY = "taxonomy";
   public static final String UPDATED_AT = "updated_at";
+  public static final String CREATOR_ID = "creator_id";
+  public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
 
+  public static final String OWNER_INFO = "owner_info";
+  
   public static final String SELECT_RESOURCES =
-          "SELECT id, title, description, publish_status, content_format, content_subformat, taxonomy FROM content WHERE"
+          "SELECT id, title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id FROM content WHERE"
           + " creator_id = ?::uuid AND original_content_id IS NULL AND content_format = 'resource'::content_format_type AND is_deleted = false";
 
   public static final String SELECT_RESOURCES_BY_TAXONOMY =
-          "SELECT distinct(id), title, description, publish_status, content_format, content_subformat, taxonomy FROM content con,"
+          "SELECT distinct(id), title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id FROM content con,"
           + " jsonb_array_elements_text(con.taxonomy) as tx WHERE creator_id = ?::uuid AND original_content_id IS NULL AND content_format ="
           + " 'resource'::content_format_type AND is_deleted = false AND tx like ?";
 
   public static final String SELECT_QUESTIONS =
-          "SELECT id, title, description, publish_status, content_format, content_subformat, thumbnail, taxonomy FROM content WHERE creator_id ="
+          "SELECT id, title, description, publish_status, content_format, content_subformat, thumbnail, taxonomy, creator_id, original_creator_id FROM content WHERE creator_id ="
           + " ?::uuid AND content_format = 'question'::content_format_type AND is_deleted = false";
 
   public static final String SELECT_QUESTIONS_BY_TAXONOMY =
-          "SELECT distinct(id), title, description, publish_status, content_format, content_subformat, taxonomy FROM content con, "
+          "SELECT distinct(id), title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id FROM content con, "
           + "jsonb_array_elements_text(con.taxonomy) as tx WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type AND"
           + " is_deleted = false AND tx like ?";
 
@@ -44,8 +48,8 @@ public class AJEntityContent extends Model {
   public static final String CLAUSE_ORDERBY = "ORDER BY";
   public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 
-  public static final List<String> RESOURCE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, CONTENT_FORMAT, CONTENT_SUBFORMAT);
-  public static final List<String> QUESTION_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, CONTENT_FORMAT, CONTENT_SUBFORMAT);
+  public static final List<String> RESOURCE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID);
+  public static final List<String> QUESTION_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID);
 
   public static final String ORDER_DESC = "desc";
   public static final String ORDER_ASC = "asc";

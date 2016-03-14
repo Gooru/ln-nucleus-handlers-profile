@@ -32,35 +32,29 @@ public class AJEntityCourse extends Model {
   
   public static final String COURSE_ID = "course_id";
   public static final String UNIT_COUNT = "unit_count";
+  public static final String OWNER_INFO = "owner_info";
   
   public static final String SELECT_COURSES =
-    "SELECT id, title, publish_status, thumbnail, collaborator, taxonomy, sequence_id, visible_on_profile FROM course WHERE owner_id = ?::uuid"
-    + " AND is_deleted = false";
+    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, collaborator, taxonomy, sequence_id, visible_on_profile FROM course"
+    + " WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
   public static final String SELECT_COURSES_BY_SUBJECT =
-    "SELECT id, title, publish_status, thumbnail, collaborator, taxonomy, sequence_id, visible_on_profile FROM course WHERE owner_id = ?::uuid"
-    + " AND is_deleted = false AND subject_bucket = ?";
-  public static final String SELECT_SUBJECT_BUCKETS = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE owner_id = ?::uuid"
-    + " AND is_deleted = false";
+    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, collaborator, taxonomy, sequence_id, visible_on_profile FROM course"
+    + " WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false AND subject_bucket = ?";
+  public static final String SELECT_SUBJECT_BUCKETS = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE"
+    + " (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
   public static final String SELECT_UNIT_COUNT_FOR_COURSES = "SELECT count(unit_id) as unit_count, course_id FROM unit WHERE course_id = ANY"
     + " (?::uuid[]) AND is_deleted = false GROUP BY course_id";
   
   public static final String OP_AND = "AND";
   public static final String CRITERIA_TITLE = "title ilike ?";
   public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
-  public static final String CLAUSE_ORDERBY = "ORDER BY";
+  public static final String CLAUSE_ORDERBY_SEQUENCE_ID = "ORDER BY sequence_id asc";
   public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
   
-  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, COLLABORATOR, TAXONOMY, SEQUENCE_ID,
-    VISIBLE_ON_PROFILE);
-  
-  public static final String ORDER_DESC = "desc";
-  public static final String ORDER_ASC = "asc";
+  public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, OWNER_ID, ORIGINAL_CREATOR_ID, COLLABORATOR, 
+    TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE);
   
   public static final int DEFAULT_LIMIT = 20;
   public static final int DEFAULT_OFFSET = 0;
-  public static final String DEFAULT_SORTON = UPDATED_AT;
-  public static final String DEFAULT_ORDER = ORDER_DESC;
-  
-  public static final List<String> VALID_SORTON_FIELDS = Arrays.asList(TITLE);
-  public static final List<String> VALID_ORDER_FIELDS = Arrays.asList(ORDER_DESC, ORDER_ASC);
+
 }

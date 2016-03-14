@@ -10,6 +10,7 @@ import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -29,7 +30,7 @@ public class ListCollectionsHandler implements DBHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(ListCollectionsHandler.class);
   private boolean isPublic = false;
   private String searchText;
-  private String taxonomyCode;
+  private String standard;
   private String sortOn;
   private String order;
   private int limit;
@@ -64,35 +65,11 @@ public class ListCollectionsHandler implements DBHandler {
       return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for order"), ExecutionStatus.FAILED);
     }
 
-    String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-    int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCollection.DEFAULT_LIMIT;
-    limit = limitFromRequest > AJEntityCollection.DEFAULT_LIMIT ? AJEntityCollection.DEFAULT_LIMIT : limitFromRequest;
-
-    String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
-    offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCollection.DEFAULT_OFFSET;
-
+    limit = getLimit();
+    offset = getOffset();
+    
     filterBy = readRequestParam(HelperConstants.REQ_PARAM_FILTERBY);
-     
-    // If standard is available in request we do not care about subject/level
-    // for filter. Similarly if we find subject in request we will not care
-    // about level
-    String standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
-    if (standard != null) {
-      taxonomyCode = standard;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
-
-    String subject = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
-    if (subject != null) {
-      taxonomyCode = subject;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
-
-    String level = readRequestParam(HelperConstants.REQ_PARAM_LEVEL);
-    if (level != null) {
-      taxonomyCode = level;
-      return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-    }
+    standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
 
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
@@ -110,9 +87,9 @@ public class ListCollectionsHandler implements DBHandler {
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
 
-    if (taxonomyCode != null) {
+    if (standard != null) {
       query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS_BY_TAXONOMY);
-      params.add(taxonomyCode + HelperConstants.PERCENTAGE);
+      params.add(standard + HelperConstants.PERCENTAGE);
     } else {
       query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
     }
@@ -157,8 +134,8 @@ public class ListCollectionsHandler implements DBHandler {
     params.add(limit);
     params.add(offset);
 
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, searchText:{}, filterBy:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
-            params.size(), taxonomyCode, searchText, filterBy, sortOn, order, limit, offset);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, filterBy:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
+            params.size(), standard, searchText, filterBy, sortOn, order, limit, offset);
 
     LazyList<AJEntityCollection> collectionList = AJEntityCollection.findBySQL(query.toString(), params.toArray());
     JsonArray collectionArray = new JsonArray();
@@ -176,12 +153,29 @@ public class ListCollectionsHandler implements DBHandler {
       questionCounts.stream().forEach(map -> questionCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
               Integer.valueOf(map.get(AJEntityCollection.QUESTION_COUNT).toString())));
 
+      List<String> courseIdList = new ArrayList<>();
       collectionList.stream()
-              .forEach(collection -> collectionArray.add(new JsonObject(
-                      new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCollection.COLLECTION_LIST).toJson(collection))
-                              .put(AJEntityCollection.RESOURCE_COUNT, resourceCountByCollection.get(collection.getString(AJEntityCollection.ID)))
-                              .put(AJEntityCollection.QUESTION_COUNT, questionCountByCollection.get(collection.getString(AJEntityCollection.ID)))));
+              .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
+                      && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
+              .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
+      LazyList<AJEntityCourse> courseList =
+              AJEntityCourse.findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION, listToPostgresArrayString(courseIdList));
+      Map<String, AJEntityCourse> courseMap = new HashMap<>();
+      courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
+      for (AJEntityCollection collection : collectionList) {
+        JsonObject result =
+                new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCollection.COLLECTION_LIST).toJson(collection));
+        String courseId = collection.getString(AJEntityCollection.COURSE_ID);
+        String courseTitle = null;
+        if (courseId != null && !courseId.isEmpty()) {
+          courseTitle = courseMap.get(courseId).get(AJEntityCourse.TITLE).toString();
+        }
+        result.put(AJEntityCollection.COURSE_TITLE, courseTitle);
+        result.put(AJEntityCollection.RESOURCE_COUNT, resourceCountByCollection.get(collection.getString(AJEntityCollection.ID)));
+        result.put(AJEntityCollection.QUESTION_COUNT, questionCountByCollection.get(collection.getString(AJEntityCollection.ID)));
+        collectionArray.add(result);
+      }
     }
 
     JsonObject responseBody = new JsonObject();
@@ -243,7 +237,7 @@ public class ListCollectionsHandler implements DBHandler {
 
   private JsonObject getFiltersJson() {
     JsonObject filters = new JsonObject()
-      .put(HelperConstants.RESP_JSON_KEY_TAXONOMY, taxonomyCode)
+      .put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
       .put(HelperConstants.RESP_JSON_KEY_FILTERBY, filterBy)
       .put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
       .put(HelperConstants.RESP_JSON_KEY_ORDER, order)
@@ -252,4 +246,22 @@ public class ListCollectionsHandler implements DBHandler {
     return filters;
   }
 
+  private int getLimit() {
+    try {
+      String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
+      int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT; 
+      return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
+    } catch (NumberFormatException nfe) {
+      return AJEntityCourse.DEFAULT_LIMIT;
+    }
+  }
+  
+  private int getOffset() {
+    try {
+      String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
+      return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET; 
+    } catch (NumberFormatException nfe) {
+      return AJEntityCourse.DEFAULT_OFFSET;
+    }
+  }
 }
