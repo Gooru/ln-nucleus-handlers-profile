@@ -4,20 +4,17 @@ List Courses for Profile
 This API will return list of courses based on the subject passed in request. If current logged in user id matches to the user id in URI, it will list courses for owner.
 If logged in user id do NOT match with user id in URI, it will list courses for public (user viewing profile of other user).
 
-Method
-------
+###Method
 
 GET
 
-End Point
----------
+###End Point
 
 http://{host}/api/nucleus/{version}/profiles/{user-id}/courses?subject={subject-bucket}&limit={limit}&offset={offset}
 
 Sample: http://nucleus.gooru.org/api/nucleus/v1/profiles/852f9814-0eb4-461d-bd3b-aca9c2500595/courses?subject=K12 Science
 
-Parameters
-----------
+###Parameters
 
 |  Name  | Type | Required  | Default | Description  |
 |--------|------|-----------|---------|--------------|
@@ -26,21 +23,15 @@ Parameters
 | offset  | int | | 0 | Start index of record to be displayed on the page |
 
 
-Headers
--------
+###Headers
 
 | Name  | Value |
 |-------|-------|
-| Authorization | Token <TOKEN> |
+| Authorization | Token [TOKEN] |
 
-* Replace <TOKEN> with actual value of access token.
+* Replace [TOKEN] with actual value of access token.
 
-Request Body
-------------
-NONE
-
-Response Body
--------------
+###Response Body
 
 ```json
 {
@@ -125,3 +116,8 @@ Response Body
     "offset": 0
   }
 }
+```
+
+###Response Codes
+
+Refer to [document](https://docs.google.com/document/d/1GCYBjZsc-_lyNcUW3yEKfjQtIMSFggWc0n9Vwgsi85Y/edit#heading=h.eb0v4yfpkh96) for HTTP Response Codes.
