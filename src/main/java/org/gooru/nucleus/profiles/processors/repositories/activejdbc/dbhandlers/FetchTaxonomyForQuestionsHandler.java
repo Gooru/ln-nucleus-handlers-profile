@@ -63,8 +63,6 @@ public class FetchTaxonomyForQuestionsHandler implements DBHandler {
     LazyList<AJEntityContent> questionsList = AJEntityContent.findBySQL(query.toString(), context.userIdFromURL());
 
     Map<String, Set<String>> taxonomyList = new HashMap<>();
-    taxonomyList.put(HelperConstants.KEY_LEVELS, new HashSet<>());
-    taxonomyList.put(HelperConstants.KEY_SUBJECTS, new HashSet<>());
     taxonomyList.put(HelperConstants.KEY_STANDARDS, new HashSet<>());
 
     for (AJEntityContent ajEntityContent : questionsList) {
@@ -76,10 +74,8 @@ public class FetchTaxonomyForQuestionsHandler implements DBHandler {
           StringTokenizer tokenizer = new StringTokenizer(taxonomyCode, HelperConstants.TAXONOMY_SEPARATOR);
 
           // Replying on number of token in taxonomy tag
-          // 1 for subject and 4 for standard
-          if (tokenizer.countTokens() == 1) {
-            taxonomyList.get(HelperConstants.KEY_SUBJECTS).add(taxonomyCode);
-          } else if (tokenizer.countTokens() == 4){
+          // 4 for standard
+          if (tokenizer.countTokens() == 4){
             taxonomyList.get(HelperConstants.KEY_STANDARDS).add(taxonomyCode);
           }
         }

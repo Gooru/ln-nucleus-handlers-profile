@@ -173,7 +173,7 @@ public class ListAssessmentsHandler implements DBHandler {
     }
 
     JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_COLLECTIONS, collectionArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_ASSESSMENTS, collectionArray);
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
 
