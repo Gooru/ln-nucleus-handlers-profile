@@ -29,6 +29,7 @@ public class AJEntityUserNetwork extends Model {
     + " ANY (?::uuid[]) GROUP BY user_id";
   public static final String SELECT_FOLLOWINGS_COUNT_MULTIPLE = "SELECT count(user_id) as followings_count, follow_on_user_id FROM user_network WHERE follow_on_user_id"
     + " = ANY (?::uuid[]) GROUP BY follow_on_user_id";
+  public static final String CHECK_IF_FOLLOWER = "user_id = ?::uuid AND follow_on_user_id = ?::uuid";
   public static final List<String> REQUIRED_FIELDS = Arrays.asList(USER_ID);
   
   public static final String FOLLOWERS_COUNT = "followers_count";

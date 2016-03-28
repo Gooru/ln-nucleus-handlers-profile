@@ -37,6 +37,7 @@ public final class HelperConstants {
   public static final String RESP_JSON_KEY_LIMIT = "limit";
   public static final String RESP_JSON_KEY_OFFSET = "offset";
   public static final String RESP_JSON_KEY_FILTERBY = "filterBy";
+  public static final String RESP_JSON_KEY_ISFOLLOWING = "isFollowing";
   
   public static final String PERCENTAGE = "%";
   public static final String SPACE = " ";

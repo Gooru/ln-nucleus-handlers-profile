@@ -35,11 +35,11 @@ public class AJEntityCourse extends Model {
   public static final String OWNER_INFO = "owner_info";
   
   public static final String SELECT_COURSES =
-    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, collaborator, taxonomy, sequence_id, visible_on_profile FROM course"
-    + " WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
+    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
+    + " visible_on_profile FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
   public static final String SELECT_COURSES_BY_SUBJECT =
-    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, collaborator, taxonomy, sequence_id, visible_on_profile FROM course"
-    + " WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false AND subject_bucket = ?";
+    "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
+    + " visible_on_profile FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false AND subject_bucket = ?";
   public static final String SELECT_SUBJECT_BUCKETS = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE"
     + " (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
   public static final String SELECT_UNIT_COUNT_FOR_COURSES = "SELECT count(unit_id) as unit_count, course_id FROM unit WHERE course_id = ANY"
@@ -52,7 +52,7 @@ public class AJEntityCourse extends Model {
   public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
   
   public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, OWNER_ID, ORIGINAL_CREATOR_ID, COLLABORATOR, 
-    TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE);
+    ORIGINAL_COURSE_ID, TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE);
   
   public static final int DEFAULT_LIMIT = 20;
   public static final int DEFAULT_OFFSET = 0;

@@ -46,7 +46,7 @@ public class GetDemographicsHandler implements DBHandler {
   public ExecutionResult<MessageResponse> executeRequest() {
     LOGGER.debug("request to get demographics");
     LazyList<AJEntityUserDemographic> demographics = AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS, context.userIdFromURL());
-    JsonObject responseBody = new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(demographics.get(0)));
+    JsonObject responseBody = new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.ALL_FIELDS).toJson(demographics.get(0)));
 
     Long followers = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, context.userIdFromURL());
     Long followings = Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT , context.userIdFromURL());
@@ -54,6 +54,12 @@ public class GetDemographicsHandler implements DBHandler {
     responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, followers);
     responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWINGS, followings);
 
+    boolean isFollowing = false;
+    LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), context.userIdFromURL());
+    if (!userNetwork.isEmpty()) {
+      isFollowing = true;
+    }
+    responseBody.put(HelperConstants.RESP_JSON_KEY_ISFOLLOWING, isFollowing);
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
