@@ -4,6 +4,7 @@ import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
@@ -54,12 +55,23 @@ public class GetDemographicsHandler implements DBHandler {
     responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, followers);
     responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWINGS, followings);
 
+    //Check whether user is following other user
+    //In case own profile it should be false
     boolean isFollowing = false;
     LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), context.userIdFromURL());
     if (!userNetwork.isEmpty()) {
       isFollowing = true;
     }
     responseBody.put(HelperConstants.RESP_JSON_KEY_ISFOLLOWING, isFollowing);
+    
+    //Get username from user_identity as not all user have first and last name
+    String username = null;
+    LazyList<AJEntityUserIdentity> userIdentities = AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USERNAME, context.userIdFromURL());
+    if (!userIdentities.isEmpty()) {
+      username = userIdentities.get(0).getString(AJEntityUserIdentity.USERNAME);
+    }
+    responseBody.put(AJEntityUserIdentity.USERNAME, username);
+    
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
 
