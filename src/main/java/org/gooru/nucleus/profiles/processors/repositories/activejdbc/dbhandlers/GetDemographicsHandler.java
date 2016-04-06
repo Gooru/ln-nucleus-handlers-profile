@@ -1,6 +1,7 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
+import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
@@ -58,9 +59,11 @@ public class GetDemographicsHandler implements DBHandler {
     //Check whether user is following other user
     //In case own profile it should be false
     boolean isFollowing = false;
-    LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), context.userIdFromURL());
-    if (!userNetwork.isEmpty()) {
-      isFollowing = true;
+    if (!context.userId().equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+      LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), context.userIdFromURL());
+      if (!userNetwork.isEmpty()) {
+        isFollowing = true;
+      }
     }
     responseBody.put(HelperConstants.RESP_JSON_KEY_ISFOLLOWING, isFollowing);
     

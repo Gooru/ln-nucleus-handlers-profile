@@ -1,5 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
@@ -50,7 +51,13 @@ public class FollowHandler implements DBHandler {
     userNetwork.setUserId(context.userId());
     String followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
     userNetwork.setFollowOnUserId(followOnUserId);
-
+    
+    if (context.userId().equalsIgnoreCase(followOnUserId)) {
+      LOGGER.error("user trying to follow him self");
+      return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(
+              new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")), ExecutionStatus.FAILED);
+    }
+    
     if (userNetwork.hasErrors()) {
       LOGGER.warn("adding follower has errors");
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()), ExecutionStatus.FAILED);
