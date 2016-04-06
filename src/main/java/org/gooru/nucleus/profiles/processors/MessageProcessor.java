@@ -200,6 +200,8 @@ class MessageProcessor implements Processor {
 
     String userIdFromURL = message.headers().get(MessageConstants.USER_ID_FROM_URL);
     if ( userIdFromURL != null && !userIdFromURL.isEmpty() && validateUUID(userIdFromURL)) {
+      LOGGER.debug("valid user id received in request URL");
+    } else {
       LOGGER.error("Invalid user id passed in the request URL '{}'", userIdFromURL);
       return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id passed in request URL"), ExecutionResult.ExecutionStatus.FAILED); 
     }
