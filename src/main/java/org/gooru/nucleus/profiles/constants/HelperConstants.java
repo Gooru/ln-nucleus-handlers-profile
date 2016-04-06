@@ -23,7 +23,7 @@ public final class HelperConstants {
   public static final String RESP_JSON_KEY_COURSES = "courses";
   public static final String RESP_JSON_KEY_COLLECTIONS = "collections";
   public static final String RESP_JSON_KEY_ASSESSMENTS = "assessments";
-  public static final String RESP_JSON_KEY_RESOURCES = "resourcess";
+  public static final String RESP_JSON_KEY_RESOURCES = "resources";
   public static final String RESP_JSON_KEY_QUESTIONS = "questions";
   public static final String RESP_JSON_KEY_FOLLOWERS = "followers";
   public static final String RESP_JSON_KEY_FOLLOWINGS = "followings";
@@ -38,6 +38,7 @@ public final class HelperConstants {
   public static final String RESP_JSON_KEY_OFFSET = "offset";
   public static final String RESP_JSON_KEY_FILTERBY = "filterBy";
   public static final String RESP_JSON_KEY_ISFOLLOWING = "isFollowing";
+  public static final String RESP_JSON_KEY_OWNER_DETAILS = "owner_details";
   
   public static final String PERCENTAGE = "%";
   public static final String SPACE = " ";

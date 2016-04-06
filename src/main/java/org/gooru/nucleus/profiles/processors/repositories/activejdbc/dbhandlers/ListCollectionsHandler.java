@@ -1,16 +1,20 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -143,12 +147,12 @@ public class ListCollectionsHandler implements DBHandler {
       List<String> collectionIdList = new ArrayList<>();
       collectionList.stream().forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
 
-      List<Map> resourceCounts = Base.findAll(AJEntityCollection.SELECT_RESOURCES_COUNT_FOR_COLLECTION, listToPostgresArrayString(collectionIdList));
+      List<Map> resourceCounts = Base.findAll(AJEntityCollection.SELECT_RESOURCES_COUNT_FOR_COLLECTION, toPostgresArrayString(collectionIdList));
       Map<String, Integer> resourceCountByCollection = new HashMap<>();
       resourceCounts.stream().forEach(map -> resourceCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
               Integer.valueOf(map.get(AJEntityCollection.RESOURCE_COUNT).toString())));
 
-      List<Map> questionCounts = Base.findAll(AJEntityCollection.SELECT_QUESTIONS_COUNT_FOR_COLLECTION, listToPostgresArrayString(collectionIdList));
+      List<Map> questionCounts = Base.findAll(AJEntityCollection.SELECT_QUESTIONS_COUNT_FOR_COLLECTION, toPostgresArrayString(collectionIdList));
       Map<String, Integer> questionCountByCollection = new HashMap<>();
       questionCounts.stream().forEach(map -> questionCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
               Integer.valueOf(map.get(AJEntityCollection.QUESTION_COUNT).toString())));
@@ -159,7 +163,7 @@ public class ListCollectionsHandler implements DBHandler {
                       && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
               .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
       LazyList<AJEntityCourse> courseList =
-              AJEntityCourse.findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION, listToPostgresArrayString(courseIdList));
+              AJEntityCourse.findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION, toPostgresArrayString(courseIdList));
       Map<String, AJEntityCourse> courseMap = new HashMap<>();
       courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
@@ -180,6 +184,7 @@ public class ListCollectionsHandler implements DBHandler {
 
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_COLLECTIONS, collectionArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(collectionList));
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
@@ -214,8 +219,8 @@ public class ListCollectionsHandler implements DBHandler {
     // profile as public
     return Boolean.parseBoolean(preview);
   }
-
-  private String listToPostgresArrayString(List<String> input) {
+  
+  private String toPostgresArrayString(Collection<String> input) {
     int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
                                                 // chars
     Iterator<String> it = input.iterator();
@@ -263,5 +268,22 @@ public class ListCollectionsHandler implements DBHandler {
     } catch (NumberFormatException nfe) {
       return AJEntityCourse.DEFAULT_OFFSET;
     }
+  }
+  
+  private JsonArray getOwnerDetails(LazyList<AJEntityCollection> collectionList) {
+    Set<String> ownerIdList = new HashSet<>();
+    collectionList.stream().forEach(collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
+
+    LazyList<AJEntityUserDemographic> userDemographics =
+            AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
+    
+    JsonArray userDetailsArray = new JsonArray();
+    if (!userDemographics.isEmpty()) {
+      userDemographics.forEach(user -> userDetailsArray.add(new JsonObject(new JsonFormatterBuilder()
+              .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+              .toJson(user))));
+    }
+    
+    return userDetailsArray;
   }
 }

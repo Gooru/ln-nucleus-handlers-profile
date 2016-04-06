@@ -1,10 +1,11 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
@@ -130,19 +131,13 @@ public class ListResourcesHandler implements DBHandler {
       List<String> creatorIdList = new ArrayList<>();
       resourceList.stream().forEach(resource -> creatorIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
       
-      LazyList<AJEntityUserDemographic> userDemographics =
-              AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(creatorIdList));
-      Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
-      userDemographics.forEach(user -> userDemographicsMap.put(user.getId().toString(), user));
-      
       resourceList.stream().forEach(resource -> resourceArray
-              .add(new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))
-                      .put(AJEntityContent.OWNER_INFO, new JsonObject(new JsonFormatterBuilder()
-                                                      .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
-                                                      .toJson(userDemographicsMap.get(resource.getString(AJEntityContent.CREATOR_ID)))))));
+              .add(new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))));
     }
+    
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(resourceList));
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
   }
@@ -188,7 +183,7 @@ public class ListResourcesHandler implements DBHandler {
     return filters;
   }
   
-  private String listToPostgresArrayString(List<String> input) {
+  private String toPostgresArrayString(Collection<String> input) {
     int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
                                                 // chars
     Iterator<String> it = input.iterator();
@@ -225,6 +220,23 @@ public class ListResourcesHandler implements DBHandler {
     } catch (NumberFormatException nfe) {
       return AJEntityCourse.DEFAULT_OFFSET;
     }
+  }
+  
+  private JsonArray getOwnerDetails(LazyList<AJEntityContent> resourceList) {
+    Set<String> ownerIdList = new HashSet<>();
+    resourceList.stream().forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
+
+    LazyList<AJEntityUserDemographic> userDemographics =
+            AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
+    
+    JsonArray userDetailsArray = new JsonArray();
+    if (!userDemographics.isEmpty()) {
+      userDemographics.forEach(user -> userDetailsArray.add(new JsonObject(new JsonFormatterBuilder()
+              .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+              .toJson(user))));
+    }
+    
+    return userDetailsArray;
   }
 
 

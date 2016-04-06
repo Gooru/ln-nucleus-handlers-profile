@@ -1,10 +1,13 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
@@ -97,32 +100,21 @@ public class ListCoursesHandler implements DBHandler {
       List<String> courseIdList = new ArrayList<>();
       courseList.stream().forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
   
-      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES, listToPostgresArrayString(courseIdList));
+      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES, toPostgresArrayString(courseIdList));
       Map<String, Integer> unitCountByCourse = new HashMap<>();
       unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
               Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
-      
-      List<String> ownerIdList = new ArrayList<>();
-      courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
-  
-      LazyList<AJEntityUserDemographic> userDemographics =
-              AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(ownerIdList));
-      Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
-      userDemographics.forEach(user -> userDemographicsMap.put(user.getId().toString(), user));
       
       courseList.stream()
               .forEach(
                       course -> courseArray.add(
                               new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
-                                      .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))
-                                      .put(AJEntityCourse.OWNER_INFO,
-                                              new JsonObject(new JsonFormatterBuilder()
-                                                      .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
-                                                      .toJson(userDemographicsMap.get(course.getString(AJEntityCourse.OWNER_ID)))))));
+                                      .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))));
     }
     
     JsonObject responseBody = new JsonObject();
     responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(courseList));
     responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
 
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
@@ -158,8 +150,8 @@ public class ListCoursesHandler implements DBHandler {
     // profile as public
     return Boolean.parseBoolean(preview);
   }
-
-  private String listToPostgresArrayString(List<String> input) {
+  
+  private String toPostgresArrayString(Collection<String> input) {
     int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
                                                 // chars
     Iterator<String> it = input.iterator();
@@ -202,5 +194,22 @@ public class ListCoursesHandler implements DBHandler {
     } catch (NumberFormatException nfe) {
       return AJEntityCourse.DEFAULT_OFFSET;
     }
+  }
+  
+  private JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
+    Set<String> ownerIdList = new HashSet<>();
+    courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse .OWNER_ID)));
+
+    LazyList<AJEntityUserDemographic> userDemographics =
+            AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
+    
+    JsonArray userDetailsArray = new JsonArray();
+    if (!userDemographics.isEmpty()) {
+      userDemographics.forEach(user -> userDetailsArray.add(new JsonObject(new JsonFormatterBuilder()
+              .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+              .toJson(user))));
+    }
+    
+    return userDetailsArray;
   }
 }
