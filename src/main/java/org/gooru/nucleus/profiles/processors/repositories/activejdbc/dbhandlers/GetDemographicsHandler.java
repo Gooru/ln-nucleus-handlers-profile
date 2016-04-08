@@ -59,7 +59,9 @@ public class GetDemographicsHandler implements DBHandler {
     //Check whether user is following other user
     //In case own profile it should be false
     boolean isFollowing = false;
+    LOGGER.debug("current logged in user: " + context.userId());
     if (!context.userId().equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+      LOGGER.debug("inside if anonymous user");
       LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), context.userIdFromURL());
       if (!userNetwork.isEmpty()) {
         isFollowing = true;
