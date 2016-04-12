@@ -15,6 +15,7 @@ import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.Auth
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -276,12 +277,19 @@ public class ListCollectionsHandler implements DBHandler {
 
     LazyList<AJEntityUserDemographic> userDemographics =
             AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
+    List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
+    Map<String, String> usernamesById = new HashMap<>();
+    usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
+            username.get(AJEntityUserIdentity.USERNAME).toString()));
     
     JsonArray userDetailsArray = new JsonArray();
     if (!userDemographics.isEmpty()) {
-      userDemographics.forEach(user -> userDetailsArray.add(new JsonObject(new JsonFormatterBuilder()
-              .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
-              .toJson(user))));
+      userDemographics.forEach(user -> {
+        JsonObject userDemographic =
+                new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
+        userDemographic.put(AJEntityUserIdentity.USERNAME, usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
+        userDetailsArray.add(userDemographic);
+      });
     }
     
     return userDetailsArray;
