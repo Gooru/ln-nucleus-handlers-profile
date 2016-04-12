@@ -68,24 +68,22 @@ public class ListCoursesHandler implements DBHandler {
     StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
-    // Parameters to be added in list should be in same way as below
-    // Purposefully adding twice - for owner and collaborator check
-    params.add(context.userIdFromURL());
-    params.add(context.userIdFromURL());
-
-    if (subjectCode != null) {
-      query = new StringBuilder(AJEntityCourse.SELECT_COURSES_BY_SUBJECT);
-      params.add(subjectCode);
+    if (isPublic) {
+      query = new StringBuilder(AJEntityCourse.SELECT_COURSES_PUBLIC);
+      params.add(context.userIdFromURL());
     } else {
       query = new StringBuilder(AJEntityCourse.SELECT_COURSES);
+      params.add(context.userIdFromURL());
+      params.add(context.userIdFromURL());
     }
-
-    if (isPublic) {
+    
+    if (subjectCode != null) {
       query.append(HelperConstants.SPACE)
            .append(AJEntityCourse.OP_AND)
-           .append(HelperConstants.SPACE)
-           .append(AJEntityCourse.CRITERIA_PUBLIC);
-    }
+           .append(AJEntityCourse.CRITERIA_SUBJECTBUCKET);
+      params.add(subjectCode);
+    } 
+
     query.append(HelperConstants.SPACE)
          .append(AJEntityCourse.CLAUSE_ORDERBY_SEQUENCE_ID)
          .append(HelperConstants.SPACE)

@@ -37,17 +37,23 @@ public class AJEntityCourse extends Model {
   public static final String SELECT_COURSES =
     "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
     + " visible_on_profile FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
-  public static final String SELECT_COURSES_BY_SUBJECT =
+  
+  public static final String SELECT_COURSES_PUBLIC =
     "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
-    + " visible_on_profile FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false AND subject_bucket = ?";
+    + " visible_on_profile FROM course WHERE owner_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
+  
   public static final String SELECT_SUBJECT_BUCKETS = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE"
     + " (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
+  
+  public static final String SELECT_SUBJECT_BUCKETS_PUBLIC = "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE"
+    + " owner_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
+  
   public static final String SELECT_UNIT_COUNT_FOR_COURSES = "SELECT count(unit_id) as unit_count, course_id FROM unit WHERE course_id = ANY"
     + " (?::uuid[]) AND is_deleted = false GROUP BY course_id";
   
   public static final String OP_AND = "AND";
+  public static final String CRITERIA_SUBJECTBUCKET = "subject_bucket = ?";
   public static final String CRITERIA_TITLE = "title ilike ?";
-  public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
   public static final String CLAUSE_ORDERBY_SEQUENCE_ID = "ORDER BY sequence_id asc";
   public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
   

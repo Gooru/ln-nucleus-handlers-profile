@@ -89,9 +89,6 @@ public class ListAssessmentsHandler implements DBHandler {
     StringBuilder query = null;
     List<Object> params = new ArrayList<>();
 
-    // Parameters to be added in list should be in same way as below
-    params.add(context.userIdFromURL());
-
     if (standard != null) {
       query = new StringBuilder(AJEntityCollection.SELECT_ASSESSMENTS_BY_TAXONOMY);
       params.add(standard + HelperConstants.PERCENTAGE);
@@ -112,6 +109,14 @@ public class ListAssessmentsHandler implements DBHandler {
            .append(AJEntityCollection.OP_AND)
            .append(HelperConstants.SPACE)
            .append(AJEntityCollection.CRITERIA_PUBLIC);
+      params.add(context.userIdFromURL());
+    } else {
+      query.append(HelperConstants.SPACE)
+           .append(AJEntityCollection.OP_AND)
+           .append(HelperConstants.SPACE)
+           .append(AJEntityCollection.CRITERIA_MYPROFILE);
+      params.add(context.userIdFromURL()); //for owner
+      params.add(context.userIdFromURL()); //for collaborator
     }
 
     if (filterBy != null) {

@@ -1,5 +1,6 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.gooru.nucleus.profiles.constants.HelperConstants;
@@ -48,16 +49,18 @@ public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuffer query = new StringBuffer(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
-
+    List<Object> params = new ArrayList<>();
+    StringBuilder query;
     if (isPublic) {
-      query.append(HelperConstants.SPACE)
-           .append(AJEntityCourse.OP_AND)
-           .append(HelperConstants.SPACE)
-           .append(AJEntityCourse.CRITERIA_PUBLIC);
+      query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS_PUBLIC);
+      params.add(context.userIdFromURL());
+    } else {
+      query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
+      params.add(context.userIdFromURL());
+      params.add(context.userIdFromURL());
     }
 
-    List subjectBuckets = Base.firstColumn(query.toString(), context.userIdFromURL(), context.userIdFromURL());
+    List subjectBuckets = Base.firstColumn(query.toString(), params.toArray());
 
     JsonArray responseArray = new JsonArray();
     for (Object bucket : subjectBuckets) {

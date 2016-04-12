@@ -30,20 +30,22 @@ public class AJEntityCollection extends Model {
   public static final String COURSE_TITLE = "course_title";
   
   public static final String SELECT_COLLECTIONS = 
-    "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id, original_creator_id FROM collection WHERE owner_id = ?::uuid AND format ="
-    + " 'collection'::content_container_type AND is_deleted = false";
+    "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+    + " original_creator_id FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false";
   
   public static final String SELECT_COLLECTIONS_BY_TAXONOMY = 
-    "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id, original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE"
-    + " owner_id = ?::uuid AND format = 'collection'::content_container_type AND is_deleted = false AND tx like ?";
+    "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+    + " original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE format ="
+    + " 'collection'::content_container_type AND is_deleted = false AND tx like ?";
   
   public static final String SELECT_ASSESSMENTS =
-    "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id, original_creator_id FROM collection WHERE owner_id = ?::uuid AND format = "
-    + "'assessment'::content_container_type AND is_deleted = false";
+    "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+    + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false";
   
   public static final String SELECT_ASSESSMENTS_BY_TAXONOMY = 
-    "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id, original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE"
-    + " owner_id = ?::uuid AND format = 'assessment'::content_container_type AND is_deleted = false AND tx like ?";
+    "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+    + " original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE format = "
+    + "'assessment'::content_container_type AND is_deleted = false AND tx like ?";
   
   public static final String SELECT_RESOURCES_COUNT_FOR_COLLECTION = "SELECT count(id) as resource_count, collection_id FROM content WHERE"
     + " collection_id = ANY (?::uuid[]) AND is_deleted = false AND content_format = 'resource'::content_format_type GROUP BY collection_id";
@@ -55,7 +57,8 @@ public class AJEntityCollection extends Model {
   
   public static final String OP_AND = "AND";
   public static final String CRITERIA_TITLE = "title ilike ?";
-  public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
+  public static final String CRITERIA_MYPROFILE = "(owner_id = ?::uuid OR collaborator ?? ?)";
+  public static final String CRITERIA_PUBLIC = "owner_id = ?::uuid AND visible_on_profile = true";
   public static final String CRITERIA_INCOURSE = "course_id IS NOT NULL";
   public static final String CRITERIA_NOT_INCOURSE = "course_id IS NULL";
   public static final String CLAUSE_ORDERBY = "ORDER BY";
