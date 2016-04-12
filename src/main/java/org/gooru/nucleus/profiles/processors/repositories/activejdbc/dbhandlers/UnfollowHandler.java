@@ -1,6 +1,7 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
+import org.gooru.nucleus.profiles.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
@@ -45,7 +46,8 @@ public class UnfollowHandler implements DBHandler {
     }
 
     LOGGER.info("user {} is removed from followers of {}", context.userIdFromURL(), context.userId());
-    return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(), ExecutionStatus.SUCCESSFUL);
+    return new ExecutionResult<>(MessageResponseFactory.createNoContentResponse(
+            EventBuilderFactory.getUnfollowProfileEventBuilder(context.userId(), context.userIdFromURL())), ExecutionStatus.SUCCESSFUL);
   }
 
   @Override

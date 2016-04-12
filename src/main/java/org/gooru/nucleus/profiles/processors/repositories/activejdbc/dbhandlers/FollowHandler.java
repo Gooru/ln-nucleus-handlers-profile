@@ -2,6 +2,7 @@ package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers
 
 import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
+import org.gooru.nucleus.profiles.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -65,7 +66,9 @@ public class FollowHandler implements DBHandler {
 
     if (userNetwork.insert()) {
       LOGGER.info("user {} is now following {}", context.userId(), followOnUserId);
-      return new ExecutionResult<>(MessageResponseFactory.createPostResponse(), ExecutionStatus.SUCCESSFUL);
+      return new ExecutionResult<>(
+              MessageResponseFactory.createPostResponse(EventBuilderFactory.getFollowProfileEventBuilder(context.userId(), followOnUserId)),
+              ExecutionStatus.SUCCESSFUL);
     } else {
       LOGGER.error("error while adding follower");
       return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()), ExecutionStatus.FAILED);
