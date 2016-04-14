@@ -12,22 +12,23 @@ import org.slf4j.LoggerFactory;
 
 public class UserAuthorizer implements Authorizer<AJEntityUserIdentity> {
 
-  private final ProcessorContext context;
-  private static final Logger LOGGER = LoggerFactory.getLogger(UserAuthorizer.class);
-  
-  public UserAuthorizer(ProcessorContext context) {
-    this.context = context;
-  }
+    private final ProcessorContext context;
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserAuthorizer.class);
 
-  @Override
-  public ExecutionResult<MessageResponse> authorize(AJEntityUserIdentity model) {
-    LazyList<AJEntityUserIdentity> user = AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USER_TO_VALIDATE, context.userIdFromURL());
-    if (user.isEmpty()) {
-      LOGGER.warn("user not found in database");
-      return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(), ExecutionStatus.FAILED);
+    public UserAuthorizer(ProcessorContext context) {
+        this.context = context;
     }
-    
-    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-  }
+
+    @Override
+    public ExecutionResult<MessageResponse> authorize(AJEntityUserIdentity model) {
+        LazyList<AJEntityUserIdentity> user =
+            AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USER_TO_VALIDATE, context.userIdFromURL());
+        if (user.isEmpty()) {
+            LOGGER.warn("user not found in database");
+            return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(), ExecutionStatus.FAILED);
+        }
+
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+    }
 
 }

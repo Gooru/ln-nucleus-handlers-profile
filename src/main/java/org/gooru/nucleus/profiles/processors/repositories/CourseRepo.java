@@ -4,8 +4,8 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public interface CourseRepo {
 
-  MessageResponse listCourses();
+    MessageResponse listCourses();
 
-  MessageResponse fetchSubjectBucketsForCourses();
+    MessageResponse fetchSubjectBucketsForCourses();
 
 }

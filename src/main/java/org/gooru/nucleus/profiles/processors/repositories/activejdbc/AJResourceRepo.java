@@ -8,20 +8,21 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public class AJResourceRepo implements ResourceRepo {
 
-  private final ProcessorContext context;
+    private final ProcessorContext context;
 
-  public AJResourceRepo(ProcessorContext context) {
-    this.context = context;
-  }
+    public AJResourceRepo(ProcessorContext context) {
+        this.context = context;
+    }
 
-  @Override
-  public MessageResponse listResources() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListResourcesHandler(context));
-  }
+    @Override
+    public MessageResponse listResources() {
+        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListResourcesHandler(context));
+    }
 
-  @Override
-  public MessageResponse fetchTaxonomyForResources() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForResourcesHandler(context));
-  }
+    @Override
+    public MessageResponse fetchTaxonomyForResources() {
+        return new TransactionExecutor()
+            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForResourcesHandler(context));
+    }
 
 }

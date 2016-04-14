@@ -4,8 +4,8 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public interface CollectionRepo {
 
-  MessageResponse listCollections();
+    MessageResponse listCollections();
 
-  MessageResponse fetchTaxonomyForCollections();
+    MessageResponse fetchTaxonomyForCollections();
 
 }

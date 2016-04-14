@@ -30,192 +30,196 @@ import io.vertx.core.json.JsonObject;
 
 public class ListCoursesHandler implements DBHandler {
 
-  private final ProcessorContext context;
-  private static final Logger LOGGER = LoggerFactory.getLogger(ListCoursesHandler.class);
-  private boolean isPublic;
-  private String subjectCode;
-  private int limit;
-  private int offset;
+    private final ProcessorContext context;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ListCoursesHandler.class);
+    private boolean isPublic;
+    private String subjectCode;
+    private int limit;
+    private int offset;
 
-  public ListCoursesHandler(ProcessorContext context) {
-    this.context = context;
-  }
-
-  @Override
-  public ExecutionResult<MessageResponse> checkSanity() {
-    if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
-      LOGGER.warn("Invalid user id");
-      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+    public ListCoursesHandler(ProcessorContext context) {
+        this.context = context;
     }
 
-    isPublic = checkPublic();
-    subjectCode = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+    @Override
+    public ExecutionResult<MessageResponse> checkSanity() {
+        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
+            LOGGER.warn("Invalid user id");
+            return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
+                ExecutionStatus.FAILED);
+        }
 
-    limit = getLimit();
-    offset = getOffset();
+        isPublic = checkPublic();
+        subjectCode = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
 
-    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-  }
+        limit = getLimit();
+        offset = getOffset();
 
-  @Override
-  public ExecutionResult<MessageResponse> validateRequest() {
-    return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
-  }
-
-  @Override
-  public ExecutionResult<MessageResponse> executeRequest() {
-
-    StringBuilder query = null;
-    List<Object> params = new ArrayList<>();
-
-    if (isPublic) {
-      query = new StringBuilder(AJEntityCourse.SELECT_COURSES_PUBLIC);
-      params.add(context.userIdFromURL());
-    } else {
-      query = new StringBuilder(AJEntityCourse.SELECT_COURSES);
-      params.add(context.userIdFromURL());
-      params.add(context.userIdFromURL());
-    }
-    
-    if (subjectCode != null) {
-      query.append(HelperConstants.SPACE)
-           .append(AJEntityCourse.OP_AND)
-           .append(AJEntityCourse.CRITERIA_SUBJECTBUCKET);
-      params.add(subjectCode);
-    } 
-
-    query.append(HelperConstants.SPACE)
-         .append(AJEntityCourse.CLAUSE_ORDERBY_SEQUENCE_ID)
-         .append(HelperConstants.SPACE)
-         .append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
-    params.add(limit);
-    params.add(offset);
-    
-    LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, limit:{}, offset:{}", query, params.size(), subjectCode, limit, offset);
-    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
-    
-    JsonArray courseArray = new JsonArray();
-    if (!courseList.isEmpty()) {
-      List<String> courseIdList = new ArrayList<>();
-      courseList.stream().forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
-  
-      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES, toPostgresArrayString(courseIdList));
-      Map<String, Integer> unitCountByCourse = new HashMap<>();
-      unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
-              Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
-      
-      courseList.stream()
-              .forEach(
-                      course -> courseArray.add(
-                              new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
-                                      .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))));
-    }
-    
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(courseList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody), ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
-  }
-
-  private String readRequestParam(String param) {
-    JsonArray requestParams = context.request().getJsonArray(param);
-    if (requestParams == null || requestParams.isEmpty()) {
-      return null;
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
-    String value = requestParams.getString(0);
-    return (value != null && !value.isEmpty()) ? value : null;
-  }
-
-  private boolean checkPublic() {
-    if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-      return true;
+    @Override
+    public ExecutionResult<MessageResponse> validateRequest() {
+        return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
-    JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
-    if (previewArray == null || previewArray.isEmpty()) {
-      return false;
+    @Override
+    public ExecutionResult<MessageResponse> executeRequest() {
+
+        StringBuilder query = null;
+        List<Object> params = new ArrayList<>();
+
+        if (isPublic) {
+            query = new StringBuilder(AJEntityCourse.SELECT_COURSES_PUBLIC);
+            params.add(context.userIdFromURL());
+        } else {
+            query = new StringBuilder(AJEntityCourse.SELECT_COURSES);
+            params.add(context.userIdFromURL());
+            params.add(context.userIdFromURL());
+        }
+
+        if (subjectCode != null) {
+            query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND)
+                .append(AJEntityCourse.CRITERIA_SUBJECTBUCKET);
+            params.add(subjectCode);
+        }
+
+        query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY_SEQUENCE_ID)
+            .append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
+        params.add(limit);
+        params.add(offset);
+
+        LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, limit:{}, offset:{}", query, params.size(), subjectCode,
+            limit, offset);
+        LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
+
+        JsonArray courseArray = new JsonArray();
+        if (!courseList.isEmpty()) {
+            List<String> courseIdList = new ArrayList<>();
+            courseList.stream().forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
+
+            List<Map> unitCounts =
+                Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES, toPostgresArrayString(courseIdList));
+            Map<String, Integer> unitCountByCourse = new HashMap<>();
+            unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
+                Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
+
+            courseList.stream()
+                .forEach(course -> courseArray.add(new JsonObject(new JsonFormatterBuilder()
+                    .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
+                        .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))));
+        }
+
+        JsonObject responseBody = new JsonObject();
+        responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(courseList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+
+        return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+            ExecutionStatus.SUCCESSFUL);
     }
 
-    String preview = (String) previewArray.getValue(0);
-    // Assuming that preview parameter only exists when user want to view his
-    // profile as public
-    return Boolean.parseBoolean(preview);
-  }
-  
-  private String toPostgresArrayString(Collection<String> input) {
-    int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36
-                                                // chars
-    Iterator<String> it = input.iterator();
-    if (!it.hasNext()) {
-      return "{}";
+    @Override
+    public boolean handlerReadOnly() {
+        return true;
     }
 
-    StringBuilder sb = new StringBuilder(approxSize);
-    sb.append('{');
-    for (;;) {
-      String s = it.next();
-      sb.append('"').append(s).append('"');
-      if (!it.hasNext()) {
-        return sb.append('}').toString();
-      }
-      sb.append(',');
+    private String readRequestParam(String param) {
+        JsonArray requestParams = context.request().getJsonArray(param);
+        if (requestParams == null || requestParams.isEmpty()) {
+            return null;
+        }
+
+        String value = requestParams.getString(0);
+        return (value != null && !value.isEmpty()) ? value : null;
     }
-  }
-  
-  private JsonObject getFiltersJson() {
-    JsonObject filters = new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT , subjectCode)
+
+    private boolean checkPublic() {
+        if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
+            return true;
+        }
+
+        JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
+        if (previewArray == null || previewArray.isEmpty()) {
+            return false;
+        }
+
+        String preview = (String) previewArray.getValue(0);
+        // Assuming that preview parameter only exists when user want to view
+        // his
+        // profile as public
+        return Boolean.parseBoolean(preview);
+    }
+
+    private String toPostgresArrayString(Collection<String> input) {
+        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
+                                                    // 36
+                                                    // chars
+        Iterator<String> it = input.iterator();
+        if (!it.hasNext()) {
+            return "{}";
+        }
+
+        StringBuilder sb = new StringBuilder(approxSize);
+        sb.append('{');
+        for (;;) {
+            String s = it.next();
+            sb.append('"').append(s).append('"');
+            if (!it.hasNext()) {
+                return sb.append('}').toString();
+            }
+            sb.append(',');
+        }
+    }
+
+    private JsonObject getFiltersJson() {
+        JsonObject filters = new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT, subjectCode)
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
-    return filters;
-  }
-  
-  private int getLimit() {
-    try {
-      String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-      int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT; 
-      return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
-    } catch (NumberFormatException nfe) {
-      return AJEntityCourse.DEFAULT_LIMIT;
+        return filters;
     }
-  }
-  
-  private int getOffset() {
-    try {
-      String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
-      return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET; 
-    } catch (NumberFormatException nfe) {
-      return AJEntityCourse.DEFAULT_OFFSET;
-    }
-  }
-  
-  private JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
-    Set<String> ownerIdList = new HashSet<>();
-    courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
 
-    LazyList<AJEntityUserDemographic> userDemographics =
-            AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
-    List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
-    Map<String, String> usernamesById = new HashMap<>();
-    usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
+    private int getLimit() {
+        try {
+            String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
+            int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
+            return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
+        } catch (NumberFormatException nfe) {
+            return AJEntityCourse.DEFAULT_LIMIT;
+        }
+    }
+
+    private int getOffset() {
+        try {
+            String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
+            return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET;
+        } catch (NumberFormatException nfe) {
+            return AJEntityCourse.DEFAULT_OFFSET;
+        }
+    }
+
+    private JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
+        Set<String> ownerIdList = new HashSet<>();
+        courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
+
+        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
+            .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
+        List<Map> usernames =
+            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
+        Map<String, String> usernamesById = new HashMap<>();
+        usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
             username.get(AJEntityUserIdentity.USERNAME).toString()));
 
-    JsonArray userDetailsArray = new JsonArray();
-    if (!userDemographics.isEmpty()) {
-      userDemographics.forEach(user -> {
-        JsonObject userDemographic =
-                new JsonObject(new JsonFormatterBuilder().buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
-        userDemographic.put(AJEntityUserIdentity.USERNAME, usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
-        userDetailsArray.add(userDemographic);
-      });
-    }
+        JsonArray userDetailsArray = new JsonArray();
+        if (!userDemographics.isEmpty()) {
+            userDemographics.forEach(user -> {
+                JsonObject userDemographic = new JsonObject(new JsonFormatterBuilder()
+                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
+                userDemographic.put(AJEntityUserIdentity.USERNAME,
+                    usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
+                userDetailsArray.add(userDemographic);
+            });
+        }
 
-    return userDetailsArray;
-  }
+        return userDetailsArray;
+    }
 }

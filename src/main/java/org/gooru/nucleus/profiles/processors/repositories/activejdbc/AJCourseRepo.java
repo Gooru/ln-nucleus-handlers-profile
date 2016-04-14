@@ -8,20 +8,21 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public class AJCourseRepo implements CourseRepo {
 
-  private final ProcessorContext context;
+    private final ProcessorContext context;
 
-  public AJCourseRepo(ProcessorContext context) {
-    this.context = context;
-  }
+    public AJCourseRepo(ProcessorContext context) {
+        this.context = context;
+    }
 
-  @Override
-  public MessageResponse listCourses() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListCoursesHandler(context));
-  }
+    @Override
+    public MessageResponse listCourses() {
+        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListCoursesHandler(context));
+    }
 
-  @Override
-  public MessageResponse fetchSubjectBucketsForCourses() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchSubjectBucketsForCoursesHandler(context));
-  }
+    @Override
+    public MessageResponse fetchSubjectBucketsForCourses() {
+        return new TransactionExecutor()
+            .executeTransaction(new DBHandlerBuilder().buildFetchSubjectBucketsForCoursesHandler(context));
+    }
 
 }

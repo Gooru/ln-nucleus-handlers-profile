@@ -4,8 +4,8 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public interface ResourceRepo {
 
-  MessageResponse listResources();
+    MessageResponse listResources();
 
-  MessageResponse fetchTaxonomyForResources();
+    MessageResponse fetchTaxonomyForResources();
 
 }

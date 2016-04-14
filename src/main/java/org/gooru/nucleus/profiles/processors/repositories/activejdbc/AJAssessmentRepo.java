@@ -8,20 +8,22 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public class AJAssessmentRepo implements AssessmentRepo {
 
-  private final ProcessorContext context;
+    private final ProcessorContext context;
 
-  public AJAssessmentRepo(ProcessorContext context) {
-    this.context = context;
-  }
+    public AJAssessmentRepo(ProcessorContext context) {
+        this.context = context;
+    }
 
-  @Override
-  public MessageResponse listAssessments() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListAssessmentsHandler(context));
-  }
+    @Override
+    public MessageResponse listAssessments() {
+        return new TransactionExecutor()
+            .executeTransaction(new DBHandlerBuilder().buildListAssessmentsHandler(context));
+    }
 
-  @Override
-  public MessageResponse fetchTaxonomyForAssessments() {
-    return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForAssessmentsHandler(context));
-  }
+    @Override
+    public MessageResponse fetchTaxonomyForAssessments() {
+        return new TransactionExecutor()
+            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForAssessmentsHandler(context));
+    }
 
 }

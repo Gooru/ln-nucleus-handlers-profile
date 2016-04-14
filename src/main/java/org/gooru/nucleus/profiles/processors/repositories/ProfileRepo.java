@@ -4,12 +4,12 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public interface ProfileRepo {
 
-  MessageResponse listDemographics();
+    MessageResponse listDemographics();
 
-  MessageResponse follow();
+    MessageResponse follow();
 
-  MessageResponse unfollow();
+    MessageResponse unfollow();
 
-  MessageResponse getNetwork();
+    MessageResponse getNetwork();
 
 }

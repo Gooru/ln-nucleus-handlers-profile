@@ -4,8 +4,8 @@ import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 
 public interface QuestionRepo {
 
-  MessageResponse listQuestions();
+    MessageResponse listQuestions();
 
-  MessageResponse fetchTaxonomyForQuestions();
+    MessageResponse fetchTaxonomyForQuestions();
 
 }

@@ -20,81 +20,84 @@ import io.vertx.core.json.JsonObject;
 
 public class FetchSubjectBucketsForCoursesHandler implements DBHandler {
 
-  private final ProcessorContext context;
-  private static final Logger LOGGER = LoggerFactory.getLogger(FetchSubjectBucketsForCoursesHandler.class);
-  private boolean isPublic = false;
+    private final ProcessorContext context;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FetchSubjectBucketsForCoursesHandler.class);
+    private boolean isPublic = false;
 
-  public FetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
-    this.context = context;
-  }
-
-  @Override
-  public ExecutionResult<MessageResponse> checkSanity() {
-    if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
-      LOGGER.warn("Invalid user id");
-      return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"), ExecutionStatus.FAILED);
+    public FetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
+        this.context = context;
     }
 
-    // identify whether the request is for public or owner
-    isPublic = checkPublic();
+    @Override
+    public ExecutionResult<MessageResponse> checkSanity() {
+        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
+            LOGGER.warn("Invalid user id");
+            return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
+                ExecutionStatus.FAILED);
+        }
 
-    LOGGER.debug("checkSanity() OK");
-    return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-  }
+        // identify whether the request is for public or owner
+        isPublic = checkPublic();
 
-  @Override
-  public ExecutionResult<MessageResponse> validateRequest() {
-    return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
-  }
-
-  @Override
-  public ExecutionResult<MessageResponse> executeRequest() {
-    List<Object> params = new ArrayList<>();
-    StringBuilder query;
-    if (isPublic) {
-      query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS_PUBLIC);
-      params.add(context.userIdFromURL());
-    } else {
-      query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
-      params.add(context.userIdFromURL());
-      params.add(context.userIdFromURL());
+        LOGGER.debug("checkSanity() OK");
+        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
-    List subjectBuckets = Base.firstColumn(query.toString(), params.toArray());
-
-    JsonArray responseArray = new JsonArray();
-    for (Object bucket : subjectBuckets) {
-      if (bucket != null && !bucket.toString().isEmpty()) {
-        responseArray.add(bucket.toString());
-      } else {
-        responseArray.add(HelperConstants.SUBJECT_OTHER);
-      }
+    @Override
+    public ExecutionResult<MessageResponse> validateRequest() {
+        return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
-    return new ExecutionResult<>(
-            MessageResponseFactory.createGetResponse(new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECTBUCKETS, responseArray)),
+    @Override
+    public ExecutionResult<MessageResponse> executeRequest() {
+        List<Object> params = new ArrayList<>();
+        StringBuilder query;
+        if (isPublic) {
+            query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS_PUBLIC);
+            params.add(context.userIdFromURL());
+        } else {
+            query = new StringBuilder(AJEntityCourse.SELECT_SUBJECT_BUCKETS);
+            params.add(context.userIdFromURL());
+            params.add(context.userIdFromURL());
+        }
+
+        List subjectBuckets = Base.firstColumn(query.toString(), params.toArray());
+
+        JsonArray responseArray = new JsonArray();
+        for (Object bucket : subjectBuckets) {
+            if (bucket != null && !bucket.toString().isEmpty()) {
+                responseArray.add(bucket.toString());
+            } else {
+                responseArray.add(HelperConstants.SUBJECT_OTHER);
+            }
+        }
+
+        return new ExecutionResult<>(
+            MessageResponseFactory
+                .createGetResponse(new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECTBUCKETS, responseArray)),
             ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
-  }
-
-  private boolean checkPublic() {
-    if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-      return true;
     }
 
-    JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
-    if (previewArray == null || previewArray.isEmpty()) {
-      return false;
+    @Override
+    public boolean handlerReadOnly() {
+        return true;
     }
 
-    String preview = (String) previewArray.getValue(0);
-    // Assuming that preview parameter only exists when user want to view his
-    // profile as public
-    return Boolean.parseBoolean(preview);
-  }
+    private boolean checkPublic() {
+        if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
+            return true;
+        }
+
+        JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
+        if (previewArray == null || previewArray.isEmpty()) {
+            return false;
+        }
+
+        String preview = (String) previewArray.getValue(0);
+        // Assuming that preview parameter only exists when user want to view
+        // his
+        // profile as public
+        return Boolean.parseBoolean(preview);
+    }
 
 }
