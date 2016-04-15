@@ -8,17 +8,16 @@ import java.util.Map;
 import org.gooru.nucleus.profiles.constants.HelperConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
-import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
-import org.javalite.activejdbc.Base;
-import org.javalite.activejdbc.LazyList;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
+import org.javalite.activejdbc.Base;
+import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,8 @@ public class GetNetworkHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
 
-        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
+        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()
+            || !(HelperUtility.validateUUID(context.userIdFromURL()))) {
             LOGGER.warn("Invalid user id");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
                 ExecutionStatus.FAILED);

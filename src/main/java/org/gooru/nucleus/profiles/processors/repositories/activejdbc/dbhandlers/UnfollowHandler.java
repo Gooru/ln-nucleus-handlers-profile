@@ -6,6 +6,7 @@ import org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbauth.Auth
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
+import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
@@ -23,7 +24,8 @@ public class UnfollowHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
 
-        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
+        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()
+            || !(HelperUtility.validateUUID(context.userIdFromURL()))) {
             LOGGER.warn("Invalid user id");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
                 ExecutionStatus.FAILED);

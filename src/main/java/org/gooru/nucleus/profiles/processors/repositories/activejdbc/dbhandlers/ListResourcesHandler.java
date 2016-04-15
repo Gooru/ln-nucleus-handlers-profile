@@ -21,6 +21,7 @@ import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
@@ -47,7 +48,8 @@ public class ListResourcesHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()) {
+        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()
+            || !(HelperUtility.validateUUID(context.userIdFromURL()))) {
             LOGGER.warn("Invalid user id");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
                 ExecutionStatus.FAILED);
@@ -185,8 +187,8 @@ public class ListResourcesHandler implements DBHandler {
 
     private String toPostgresArrayString(Collection<String> input) {
         int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
-                                                    // 36
-                                                    // chars
+ // 36
+ // chars
         Iterator<String> it = input.iterator();
         if (!it.hasNext()) {
             return "{}";

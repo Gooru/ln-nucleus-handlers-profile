@@ -8,6 +8,7 @@ import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,8 @@ public class FollowHandler implements DBHandler {
     private final ProcessorContext context;
     private AJEntityUserNetwork userNetwork;
     private static final Logger LOGGER = LoggerFactory.getLogger(FollowHandler.class);
-
+    String followOnUserId;
+    
     public FollowHandler(ProcessorContext context) {
         this.context = context;
     }
@@ -37,7 +39,15 @@ public class FollowHandler implements DBHandler {
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(notNullErrors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
-
+        
+        followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
+        if (!(HelperUtility.validateUUID(followOnUserId))) {
+            LOGGER.error("Invalid user id passed in request json");
+            return new ExecutionResult<>(
+                MessageResponseFactory.createValidationErrorResponse(
+                    new JsonObject().put(MessageConstants.MSG_MESSAGE, "Invalid user id passed in request JSON")),
+                ExecutionResult.ExecutionStatus.FAILED);
+        }
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -52,7 +62,6 @@ public class FollowHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         userNetwork = new AJEntityUserNetwork();
         userNetwork.setUserId(context.userId());
-        String followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
         userNetwork.setFollowOnUserId(followOnUserId);
 
         if (context.userId().equalsIgnoreCase(followOnUserId)) {

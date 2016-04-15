@@ -1,7 +1,5 @@
 package org.gooru.nucleus.profiles.processors;
 
-import java.util.UUID;
-
 import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.exceptions.InvalidRequestException;
 import org.gooru.nucleus.profiles.processors.exceptions.InvalidUserException;
@@ -9,6 +7,7 @@ import org.gooru.nucleus.profiles.processors.repositories.RepoBuilder;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,16 +201,6 @@ class MessageProcessor implements Processor {
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
-        String userIdFromURL = message.headers().get(MessageConstants.USER_ID_FROM_URL);
-        if (userIdFromURL != null && !userIdFromURL.isEmpty() && validateUUID(userIdFromURL)) {
-            LOGGER.debug("valid user id received in request URL");
-        } else {
-            LOGGER.error("Invalid user id passed in the request URL '{}'", userIdFromURL);
-            return new ExecutionResult<>(
-                MessageResponseFactory.createInvalidRequestResponse("Invalid user id passed in request URL"),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-
         // All is well, continue processing
         return new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -222,18 +211,7 @@ class MessageProcessor implements Processor {
         } else if (userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
             return true;
         } else {
-            return validateUUID(userId);
-        }
-    }
-
-    private boolean validateUUID(String id) {
-        try {
-            UUID.fromString(id);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        } catch (Exception e) {
-            return false;
+            return HelperUtility.validateUUID(userId);
         }
     }
 }
