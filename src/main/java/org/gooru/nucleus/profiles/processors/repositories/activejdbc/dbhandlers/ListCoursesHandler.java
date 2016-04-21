@@ -81,7 +81,7 @@ public class ListCoursesHandler implements DBHandler {
         }
 
         if (subjectCode != null) {
-            query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND)
+            query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityCourse.CRITERIA_SUBJECTBUCKET);
             params.add(subjectCode);
         }

@@ -82,7 +82,7 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
                     }
                 }
             } else {
-                taxonomyList.get(HelperConstants.KEY_SUBJECTS).add(HelperConstants.SUBJECT_OTHER);
+                taxonomyList.get(HelperConstants.KEY_STANDARDS).add(HelperConstants.SUBJECT_OTHER);
             }
         }
 
