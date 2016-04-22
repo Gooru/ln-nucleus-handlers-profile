@@ -3,12 +3,14 @@ package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers
 import org.gooru.nucleus.profiles.constants.MessageConstants;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.events.EventBuilderFactory;
+import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.profiles.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.profiles.processors.utils.HelperUtility;
+import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +50,37 @@ public class FollowHandler implements DBHandler {
                     new JsonObject().put(MessageConstants.MSG_MESSAGE, "Invalid user id passed in request JSON")),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
+        
+        if (context.userId().equalsIgnoreCase(followOnUserId)) {
+            LOGGER.error("user trying to follow him self");
+            return new ExecutionResult<>(
+                MessageResponseFactory.createValidationErrorResponse(
+                    new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")),
+                ExecutionStatus.FAILED);
+        }
+        
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
+        LazyList<AJEntityUserIdentity> user =
+            AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USER_TO_VALIDATE, followOnUserId);
+        if (user.isEmpty()) {
+            LOGGER.warn("user not found in database to which you are trying to follow");
+            return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse("user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
+        }
+        
+        AJEntityUserNetwork usetNetworkExists =
+            AJEntityUserNetwork.findFirst(AJEntityUserNetwork.VERIFY_FOLLOW, context.userId(), followOnUserId);
+        if (usetNetworkExists != null) {
+            LOGGER.warn("user is already following the user in request payload");
+            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(new JsonObject()
+                .put(MessageConstants.MSG_MESSAGE, "user is already following the user in request payload")),
+                ExecutionStatus.FAILED);
+        }
+        
         LOGGER.debug("validateRequest() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -63,15 +90,7 @@ public class FollowHandler implements DBHandler {
         userNetwork = new AJEntityUserNetwork();
         userNetwork.setUserId(context.userId());
         userNetwork.setFollowOnUserId(followOnUserId);
-
-        if (context.userId().equalsIgnoreCase(followOnUserId)) {
-            LOGGER.error("user trying to follow him self");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createValidationErrorResponse(
-                    new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")),
-                ExecutionStatus.FAILED);
-        }
-
+        
         if (userNetwork.hasErrors()) {
             LOGGER.warn("adding follower has errors");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),

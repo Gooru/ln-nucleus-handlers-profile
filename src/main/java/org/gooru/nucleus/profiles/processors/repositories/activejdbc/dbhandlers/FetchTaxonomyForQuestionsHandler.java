@@ -1,7 +1,9 @@
 package org.gooru.nucleus.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -55,13 +57,16 @@ public class FetchTaxonomyForQuestionsHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
+        List<Object> params = new ArrayList<>();
         StringBuilder query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS);
+        params.add(context.userIdFromURL());
         if (isPublic) {
             query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityContent.CRITERIA_PUBLIC);
+            params.add(context.userIdFromURL());
         }
 
-        LazyList<AJEntityContent> questionsList = AJEntityContent.findBySQL(query.toString(), context.userIdFromURL());
+        LazyList<AJEntityContent> questionsList = AJEntityContent.findBySQL(query.toString(), params.toArray());
 
         Map<String, Set<String>> taxonomyList = new HashMap<>();
         taxonomyList.put(HelperConstants.KEY_STANDARDS, new HashSet<>());

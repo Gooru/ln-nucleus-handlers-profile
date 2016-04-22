@@ -20,6 +20,7 @@ public class AJEntityUserNetwork extends Model {
     public static final String USER_ID = "user_id";
     public static final String FOLLOW_ON_USER_ID = "follow_on_user_id";
 
+    public static final String VERIFY_FOLLOW = "user_id = ?::uuid AND follow_on_user_id = ?::uuid";
     public static final String SELECT_FOLLOWERS = "SELECT follow_on_user_id FROM user_network WHERE user_id = ?::uuid";
     public static final String SELECT_FOLLOWINGS = "SELECT user_id FROM user_network WHERE follow_on_user_id = ?::uuid";
     public static final String SELECT_FOLLOWERS_COUNT = "follow_on_user_id = ?::uuid";
