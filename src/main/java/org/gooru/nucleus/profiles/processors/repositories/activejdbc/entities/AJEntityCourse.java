@@ -21,7 +21,6 @@ public class AJEntityCourse extends Model {
     public static final String PUBLISH_DATE = "publish_date";
     public static final String PUBLISH_STATUS = "publish_status";
     public static final String THUMBNAIL = "thumbnail";
-    public static final String AUDIENCE = "audience";
     public static final String METADATA = "metadata";
     public static final String TAXONOMY = "taxonomy";
     public static final String COLLABORATOR = "collaborator";
