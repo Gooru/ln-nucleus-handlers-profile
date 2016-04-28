@@ -225,6 +225,7 @@ public class ListQuestionsHandler implements DBHandler {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private JsonArray getOwnerDetails(LazyList<AJEntityContent> questionList) {
         Set<String> ownerIdList = new HashSet<>();
         questionList.stream().forEach(question -> ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID)));

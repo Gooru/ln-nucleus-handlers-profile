@@ -225,6 +225,7 @@ public class ListResourcesHandler implements DBHandler {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private JsonArray getOwnerDetails(LazyList<AJEntityContent> resourceList) {
         Set<String> ownerIdList = new HashSet<>();
         resourceList.stream().forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));

@@ -65,6 +65,7 @@ public class ListCoursesHandler implements DBHandler {
         return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
 
@@ -107,9 +108,12 @@ public class ListCoursesHandler implements DBHandler {
                 Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
 
             courseList.stream()
-                .forEach(course -> courseArray.add(new JsonObject(new JsonFormatterBuilder()
+                .forEach(course -> {
+                    Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
+                    courseArray.add(new JsonObject(new JsonFormatterBuilder()
                     .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
-                        .put(AJEntityCourse.UNIT_COUNT, unitCountByCourse.get(course.getString(AJEntityCourse.ID)))));
+                        .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
+                });
         }
 
         JsonObject responseBody = new JsonObject();
@@ -199,6 +203,7 @@ public class ListCoursesHandler implements DBHandler {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
         Set<String> ownerIdList = new HashSet<>();
         courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));

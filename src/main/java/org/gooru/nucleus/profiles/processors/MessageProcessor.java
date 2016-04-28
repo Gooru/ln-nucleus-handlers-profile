@@ -37,6 +37,7 @@ class MessageProcessor implements Processor {
             }
 
             final String msgOp = message.headers().get(MessageConstants.MSG_HEADER_OP);
+            LOGGER.debug("## Processing Request : {} ##", msgOp);
             switch (msgOp) {
             case MessageConstants.MSG_OP_PROFILE_COURSE_LIST:
                 result = processCoursesList();

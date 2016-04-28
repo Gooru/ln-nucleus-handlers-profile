@@ -89,6 +89,7 @@ public class ListAssessmentsHandler implements DBHandler {
         return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         StringBuilder query = null;
@@ -162,7 +163,8 @@ public class ListAssessmentsHandler implements DBHandler {
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
             courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
-            for (AJEntityCollection collection : collectionList) {
+            //for (AJEntityCollection collection : collectionList) {
+            collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(new JsonFormatterBuilder()
                     .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
                 String courseId = collection.getString(AJEntityCollection.COURSE_ID);
@@ -171,10 +173,10 @@ public class ListAssessmentsHandler implements DBHandler {
                     courseTitle = courseMap.get(courseId).get(AJEntityCourse.TITLE).toString();
                 }
                 result.put(AJEntityCollection.COURSE_TITLE, courseTitle);
-                result.put(AJEntityCollection.QUESTION_COUNT,
-                    questionCountByCollection.get(collection.getString(AJEntityCollection.ID)));
+                Integer questionCount = questionCountByCollection.get(collection.getString(AJEntityCollection.ID));
+                result.put(AJEntityCollection.QUESTION_COUNT, questionCount != null ? questionCount : 0);
                 collectionArray.add(result);
-            }
+            });
         }
 
         JsonObject responseBody = new JsonObject();
@@ -266,6 +268,7 @@ public class ListAssessmentsHandler implements DBHandler {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private JsonArray getOwnerDetails(LazyList<AJEntityCollection> collectionList) {
         Set<String> ownerIdList = new HashSet<>();
         collectionList.stream()

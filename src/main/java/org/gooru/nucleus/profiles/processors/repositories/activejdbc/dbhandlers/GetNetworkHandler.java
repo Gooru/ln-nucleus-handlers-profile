@@ -55,6 +55,7 @@ public class GetNetworkHandler implements DBHandler {
         return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         List followers = Base.firstColumn(AJEntityUserNetwork.SELECT_FOLLOWERS, context.userIdFromURL());
@@ -66,28 +67,38 @@ public class GetNetworkHandler implements DBHandler {
         followings.stream().forEach(value -> followingsArray.add(value.toString()));
 
         JsonArray detailsArray = new JsonArray();
-        if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWERS)) {
-            Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followers);
-            Map<String, Integer> followersCountMap = getFollowersCount(followers);
-            Map<String, Integer> followingsCountMap = getFollowingsCount(followers);
+        if (details != null) {
+            if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWERS)) {
+                Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followers);
+                Map<String, Integer> followersCountMap = getFollowersCount(followers);
+                Map<String, Integer> followingsCountMap = getFollowingsCount(followers);
 
-            followers.stream()
-                .forEach(follower -> detailsArray.add(new JsonObject(new JsonFormatterBuilder()
-                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
-                    .toJson(userDemographicsMap.get(follower.toString())))
-                        .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCountMap.get(follower.toString()))
-                        .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCountMap.get(follower.toString()))));
-        } else if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWINGS)) {
-            Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followings);
-            Map<String, Integer> followersCountMap = getFollowersCount(followings);
-            Map<String, Integer> followingsCountMap = getFollowingsCount(followings);
+                followers.stream().forEach(follower -> {
+                    String strFollower = follower.toString();
+                    Integer followersCount = followersCountMap.get(strFollower);
+                    Integer followingsCount = followingsCountMap.get(strFollower);
+                    detailsArray.add(new JsonObject(new JsonFormatterBuilder()
+                        .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+                        .toJson(userDemographicsMap.get(strFollower)))
+                            .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
+                });
+            } else if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWINGS)) {
+                Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followings);
+                Map<String, Integer> followersCountMap = getFollowersCount(followings);
+                Map<String, Integer> followingsCountMap = getFollowingsCount(followings);
 
-            followings.stream()
-                .forEach(follower -> detailsArray.add(new JsonObject(new JsonFormatterBuilder()
-                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
-                    .toJson(userDemographicsMap.get(follower.toString())))
-                        .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCountMap.get(follower.toString()))
-                        .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCountMap.get(follower.toString()))));
+                followings.stream().forEach(following -> {
+                    String strFollowing = following.toString();
+                    Integer followersCount = followersCountMap.get(strFollowing);
+                    Integer followingsCount = followingsCountMap.get(strFollowing);
+                    detailsArray.add(new JsonObject(new JsonFormatterBuilder()
+                        .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+                        .toJson(userDemographicsMap.get(strFollowing)))
+                            .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
+                });
+            }
         }
 
         JsonObject responseBody = new JsonObject();
@@ -103,6 +114,7 @@ public class GetNetworkHandler implements DBHandler {
         return true;
     }
 
+    @SuppressWarnings("rawtypes")
     private Map<String, AJEntityUserDemographic> getDemographics(List input) {
         LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
             .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(input));
@@ -111,6 +123,7 @@ public class GetNetworkHandler implements DBHandler {
         return userDemographicsMap;
     }
 
+    @SuppressWarnings("rawtypes")
     private Map<String, Integer> getFollowersCount(List input) {
         List<Map> followersCount =
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT_MULTIPLE, listToPostgresArrayString(input));
@@ -120,6 +133,7 @@ public class GetNetworkHandler implements DBHandler {
         return followersCountMap;
     }
 
+    @SuppressWarnings("rawtypes")
     private Map<String, Integer> getFollowingsCount(List input) {
         List<Map> followingsCount =
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT_MULTIPLE, listToPostgresArrayString(input));
@@ -140,6 +154,7 @@ public class GetNetworkHandler implements DBHandler {
         return (value != null && !value.isEmpty()) ? value : null;
     }
 
+    @SuppressWarnings("rawtypes")
     private String listToPostgresArrayString(List input) {
         int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
                                                     // 36
