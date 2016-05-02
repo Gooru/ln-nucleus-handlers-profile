@@ -92,7 +92,7 @@ public class ListCollectionsHandler implements DBHandler {
     @SuppressWarnings("rawtypes")
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        StringBuilder query = null;
+        StringBuilder query;
         List<Object> params = new ArrayList<>();
 
         if (standard != null) {
@@ -171,7 +171,7 @@ public class ListCollectionsHandler implements DBHandler {
             courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
             collectionList.forEach(collection -> {
-                JsonObject result = new JsonObject(new JsonFormatterBuilder()
+                JsonObject result = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCollection.COLLECTION_LIST).toJson(collection));
                 String courseId = collection.getString(AJEntityCollection.COURSE_ID);
                 String courseTitle = null;
@@ -228,7 +228,7 @@ public class ListCollectionsHandler implements DBHandler {
         return Boolean.parseBoolean(preview);
     }
 
-    private String toPostgresArrayString(Collection<String> input) {
+    private static String toPostgresArrayString(Collection<String> input) {
         int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
                                                     // 36
                                                     // chars
@@ -250,11 +250,10 @@ public class ListCollectionsHandler implements DBHandler {
     }
 
     private JsonObject getFiltersJson() {
-        JsonObject filters = new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
+        return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
             .put(HelperConstants.RESP_JSON_KEY_FILTERBY, filterBy).put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
             .put(HelperConstants.RESP_JSON_KEY_ORDER, order).put(HelperConstants.RESP_JSON_KEY_LIMIT, limit)
             .put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
-        return filters;
     }
 
     private int getLimit() {
@@ -277,7 +276,7 @@ public class ListCollectionsHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private JsonArray getOwnerDetails(LazyList<AJEntityCollection> collectionList) {
+    private static JsonArray getOwnerDetails(LazyList<AJEntityCollection> collectionList) {
         Set<String> ownerIdList = new HashSet<>();
         collectionList.stream()
             .forEach(collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
@@ -293,7 +292,7 @@ public class ListCollectionsHandler implements DBHandler {
         JsonArray userDetailsArray = new JsonArray();
         if (!userDemographics.isEmpty()) {
             userDemographics.forEach(user -> {
-                JsonObject userDemographic = new JsonObject(new JsonFormatterBuilder()
+                JsonObject userDemographic = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
                 userDemographic.put(AJEntityUserIdentity.USERNAME,
                     usernamesById.get(user.getString(AJEntityUserDemographic.ID)));

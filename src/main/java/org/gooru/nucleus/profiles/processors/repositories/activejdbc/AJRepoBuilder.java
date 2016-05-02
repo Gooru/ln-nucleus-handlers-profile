@@ -8,29 +8,33 @@ import org.gooru.nucleus.profiles.processors.repositories.ProfileRepo;
 import org.gooru.nucleus.profiles.processors.repositories.QuestionRepo;
 import org.gooru.nucleus.profiles.processors.repositories.ResourceRepo;
 
-public class AJRepoBuilder {
+public final class AJRepoBuilder {
 
-    public CourseRepo buildCourseRepo(ProcessorContext context) {
+    private AJRepoBuilder() {
+        throw new AssertionError();
+    }
+
+    public static CourseRepo buildCourseRepo(ProcessorContext context) {
         return new AJCourseRepo(context);
     }
 
-    public CollectionRepo buildCollectionRepo(ProcessorContext context) {
+    public static CollectionRepo buildCollectionRepo(ProcessorContext context) {
         return new AJCollectionRepo(context);
     }
 
-    public AssessmentRepo buildAssessmentRepo(ProcessorContext context) {
+    public static AssessmentRepo buildAssessmentRepo(ProcessorContext context) {
         return new AJAssessmentRepo(context);
     }
 
-    public ResourceRepo buildResourceRepo(ProcessorContext context) {
+    public static ResourceRepo buildResourceRepo(ProcessorContext context) {
         return new AJResourceRepo(context);
     }
 
-    public QuestionRepo buildQuestionRepo(ProcessorContext context) {
+    public static QuestionRepo buildQuestionRepo(ProcessorContext context) {
         return new AJQuestionRepo(context);
     }
 
-    public ProfileRepo buildProfileRepo(ProcessorContext context) {
+    public static ProfileRepo buildProfileRepo(ProcessorContext context) {
         return new AJProfileRepo(context);
     }
 }

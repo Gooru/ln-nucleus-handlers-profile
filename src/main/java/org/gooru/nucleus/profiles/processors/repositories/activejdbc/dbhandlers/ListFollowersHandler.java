@@ -56,7 +56,7 @@ public class ListFollowersHandler implements DBHandler {
                 AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS,
                     ajEntityUserNetwork.getString(AJEntityUserNetwork.FOLLOW_ON_USER_ID));
             if (!demographics.isEmpty()) {
-                userDemographics.add(new JsonObject(new JsonFormatterBuilder()
+                userDemographics.add(new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
                     .toJson(demographics.get(0))));
             }

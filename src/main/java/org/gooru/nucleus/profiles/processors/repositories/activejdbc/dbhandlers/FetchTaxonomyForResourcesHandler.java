@@ -90,7 +90,6 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
         }
 
         JsonObject responseBody = new JsonObject();
-        Set<String> keySet = taxonomyList.keySet();
         for (Map.Entry<String, Set<String>> stringSetEntry : taxonomyList.entrySet()) {
             JsonArray tempArray = new JsonArray();
             stringSetEntry.getValue().forEach(tempArray::add);

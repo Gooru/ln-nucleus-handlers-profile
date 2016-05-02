@@ -77,7 +77,7 @@ public class GetNetworkHandler implements DBHandler {
                     String strFollower = follower.toString();
                     Integer followersCount = followersCountMap.get(strFollower);
                     Integer followingsCount = followingsCountMap.get(strFollower);
-                    detailsArray.add(new JsonObject(new JsonFormatterBuilder()
+                    detailsArray.add(new JsonObject(JsonFormatterBuilder
                         .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
                         .toJson(userDemographicsMap.get(strFollower)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
@@ -92,7 +92,7 @@ public class GetNetworkHandler implements DBHandler {
                     String strFollowing = following.toString();
                     Integer followersCount = followersCountMap.get(strFollowing);
                     Integer followingsCount = followingsCountMap.get(strFollowing);
-                    detailsArray.add(new JsonObject(new JsonFormatterBuilder()
+                    detailsArray.add(new JsonObject(JsonFormatterBuilder
                         .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
                         .toJson(userDemographicsMap.get(strFollowing)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
@@ -115,7 +115,7 @@ public class GetNetworkHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private Map<String, AJEntityUserDemographic> getDemographics(List input) {
+    private static Map<String, AJEntityUserDemographic> getDemographics(List input) {
         LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
             .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(input));
         Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
@@ -124,7 +124,7 @@ public class GetNetworkHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private Map<String, Integer> getFollowersCount(List input) {
+    private static Map<String, Integer> getFollowersCount(List input) {
         List<Map> followersCount =
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT_MULTIPLE, listToPostgresArrayString(input));
         Map<String, Integer> followersCountMap = new HashMap<>();
@@ -134,7 +134,7 @@ public class GetNetworkHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private Map<String, Integer> getFollowingsCount(List input) {
+    private static Map<String, Integer> getFollowingsCount(List input) {
         List<Map> followingsCount =
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT_MULTIPLE, listToPostgresArrayString(input));
         Map<String, Integer> followingsCountMap = new HashMap<>();
@@ -155,7 +155,7 @@ public class GetNetworkHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private String listToPostgresArrayString(List input) {
+    private static String listToPostgresArrayString(List input) {
         int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
                                                     // 36
                                                     // chars

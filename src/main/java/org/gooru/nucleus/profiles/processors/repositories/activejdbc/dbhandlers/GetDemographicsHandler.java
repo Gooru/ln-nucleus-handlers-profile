@@ -52,7 +52,7 @@ public class GetDemographicsHandler implements DBHandler {
         LOGGER.debug("request to get demographics");
         LazyList<AJEntityUserDemographic> demographics =
             AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS, context.userIdFromURL());
-        JsonObject responseBody = new JsonObject(new JsonFormatterBuilder()
+        JsonObject responseBody = new JsonObject(JsonFormatterBuilder
             .buildSimpleJsonFormatter(false, AJEntityUserDemographic.ALL_FIELDS).toJson(demographics.get(0)));
 
         Long followers =

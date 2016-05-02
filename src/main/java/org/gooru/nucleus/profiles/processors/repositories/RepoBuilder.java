@@ -3,30 +3,34 @@ package org.gooru.nucleus.profiles.processors.repositories;
 import org.gooru.nucleus.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.profiles.processors.repositories.activejdbc.AJRepoBuilder;
 
-public class RepoBuilder {
+public final class RepoBuilder {
 
-    public CourseRepo buildCourseRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildCourseRepo(context);
+    private RepoBuilder() {
+        throw new AssertionError();
     }
 
-    public CollectionRepo buildCollectionRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildCollectionRepo(context);
+    public static CourseRepo buildCourseRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildCourseRepo(context);
     }
 
-    public AssessmentRepo buildAssessmentRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildAssessmentRepo(context);
+    public static CollectionRepo buildCollectionRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildCollectionRepo(context);
     }
 
-    public ResourceRepo buildResourceRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildResourceRepo(context);
+    public static AssessmentRepo buildAssessmentRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildAssessmentRepo(context);
     }
 
-    public QuestionRepo buildQuestionRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildQuestionRepo(context);
+    public static ResourceRepo buildResourceRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildResourceRepo(context);
     }
 
-    public ProfileRepo buildProfileRepo(ProcessorContext context) {
-        return new AJRepoBuilder().buildProfileRepo(context);
+    public static QuestionRepo buildQuestionRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildQuestionRepo(context);
+    }
+
+    public static ProfileRepo buildProfileRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildProfileRepo(context);
     }
 
 }

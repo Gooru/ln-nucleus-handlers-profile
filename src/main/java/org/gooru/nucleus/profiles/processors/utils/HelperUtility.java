@@ -2,7 +2,11 @@ package org.gooru.nucleus.profiles.processors.utils;
 
 import java.util.UUID;
 
-public class HelperUtility {
+public final class HelperUtility {
+
+    private HelperUtility() {
+        throw new AssertionError();
+    }
 
     public static boolean validateUUID(String id) {
         try {

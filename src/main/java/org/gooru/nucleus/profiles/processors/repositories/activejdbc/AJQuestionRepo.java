@@ -16,13 +16,13 @@ public class AJQuestionRepo implements QuestionRepo {
 
     @Override
     public MessageResponse listQuestions() {
-        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListQuestionsHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListQuestionsHandler(context));
     }
 
     @Override
     public MessageResponse fetchTaxonomyForQuestions() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForQuestionsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForQuestionsHandler(context));
     }
 
 }

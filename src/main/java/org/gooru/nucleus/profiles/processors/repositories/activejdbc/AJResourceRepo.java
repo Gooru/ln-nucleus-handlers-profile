@@ -16,13 +16,13 @@ public class AJResourceRepo implements ResourceRepo {
 
     @Override
     public MessageResponse listResources() {
-        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildListResourcesHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListResourcesHandler(context));
     }
 
     @Override
     public MessageResponse fetchTaxonomyForResources() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForResourcesHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForResourcesHandler(context));
     }
 
 }

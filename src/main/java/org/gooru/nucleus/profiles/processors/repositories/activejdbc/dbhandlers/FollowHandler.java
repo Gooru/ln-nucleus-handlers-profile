@@ -21,8 +21,8 @@ public class FollowHandler implements DBHandler {
     private final ProcessorContext context;
     private AJEntityUserNetwork userNetwork;
     private static final Logger LOGGER = LoggerFactory.getLogger(FollowHandler.class);
-    String followOnUserId;
-    
+    private String followOnUserId;
+
     public FollowHandler(ProcessorContext context) {
         this.context = context;
     }
@@ -41,7 +41,7 @@ public class FollowHandler implements DBHandler {
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(notNullErrors),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
-        
+
         followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
         if (!(HelperUtility.validateUUID(followOnUserId))) {
             LOGGER.error("Invalid user id passed in request json");
@@ -50,7 +50,7 @@ public class FollowHandler implements DBHandler {
                     new JsonObject().put(MessageConstants.MSG_MESSAGE, "Invalid user id passed in request JSON")),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
-        
+
         if (context.userId().equalsIgnoreCase(followOnUserId)) {
             LOGGER.error("user trying to follow him self");
             return new ExecutionResult<>(
@@ -58,7 +58,7 @@ public class FollowHandler implements DBHandler {
                     new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")),
                 ExecutionStatus.FAILED);
         }
-        
+
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -71,16 +71,16 @@ public class FollowHandler implements DBHandler {
             LOGGER.warn("user not found in database to which you are trying to follow");
             return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse("user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
         }
-        
-        AJEntityUserNetwork usetNetworkExists =
+
+        AJEntityUserNetwork userNetwork =
             AJEntityUserNetwork.findFirst(AJEntityUserNetwork.VERIFY_FOLLOW, context.userId(), followOnUserId);
-        if (usetNetworkExists != null) {
+        if (userNetwork != null) {
             LOGGER.warn("user is already following the user in request payload");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(new JsonObject()
                 .put(MessageConstants.MSG_MESSAGE, "user is already following the user in request payload")),
                 ExecutionStatus.FAILED);
         }
-        
+
         LOGGER.debug("validateRequest() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -90,7 +90,7 @@ public class FollowHandler implements DBHandler {
         userNetwork = new AJEntityUserNetwork();
         userNetwork.setUserId(context.userId());
         userNetwork.setFollowOnUserId(followOnUserId);
-        
+
         if (userNetwork.hasErrors()) {
             LOGGER.warn("adding follower has errors");
             return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(getModelErrors()),

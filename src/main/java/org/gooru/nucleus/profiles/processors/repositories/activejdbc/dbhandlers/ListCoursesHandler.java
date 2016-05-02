@@ -69,7 +69,7 @@ public class ListCoursesHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
 
-        StringBuilder query = null;
+        StringBuilder query;
         List<Object> params = new ArrayList<>();
 
         if (isPublic) {
@@ -110,7 +110,7 @@ public class ListCoursesHandler implements DBHandler {
             courseList.stream()
                 .forEach(course -> {
                     Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
-                    courseArray.add(new JsonObject(new JsonFormatterBuilder()
+                    courseArray.add(new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
                         .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
                 });
@@ -157,7 +157,7 @@ public class ListCoursesHandler implements DBHandler {
         return Boolean.parseBoolean(preview);
     }
 
-    private String toPostgresArrayString(Collection<String> input) {
+    private static String toPostgresArrayString(Collection<String> input) {
         int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
                                                     // 36
                                                     // chars
@@ -179,9 +179,8 @@ public class ListCoursesHandler implements DBHandler {
     }
 
     private JsonObject getFiltersJson() {
-        JsonObject filters = new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT, subjectCode)
+        return new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT, subjectCode)
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
-        return filters;
     }
 
     private int getLimit() {
@@ -204,7 +203,7 @@ public class ListCoursesHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
+    private static JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
         Set<String> ownerIdList = new HashSet<>();
         courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
 
@@ -219,7 +218,7 @@ public class ListCoursesHandler implements DBHandler {
         JsonArray userDetailsArray = new JsonArray();
         if (!userDemographics.isEmpty()) {
             userDemographics.forEach(user -> {
-                JsonObject userDemographic = new JsonObject(new JsonFormatterBuilder()
+                JsonObject userDemographic = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
                 userDemographic.put(AJEntityUserIdentity.USERNAME,
                     usernamesById.get(user.getString(AJEntityUserDemographic.ID)));

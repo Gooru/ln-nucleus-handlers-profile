@@ -100,72 +100,72 @@ class MessageProcessor implements Processor {
 
     private MessageResponse processCoursesList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildCourseRepo(context).listCourses();
+        return RepoBuilder.buildCourseRepo(context).listCourses();
     }
 
     private MessageResponse processCollectionsList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildCollectionRepo(context).listCollections();
+        return RepoBuilder.buildCollectionRepo(context).listCollections();
     }
 
     private MessageResponse processAssessmentsList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildAssessmentRepo(context).listAssessments();
+        return RepoBuilder.buildAssessmentRepo(context).listAssessments();
     }
 
     private MessageResponse processResourcesList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildResourceRepo(context).listResources();
+        return RepoBuilder.buildResourceRepo(context).listResources();
     }
 
     private MessageResponse processQuestionsList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildQuestionRepo(context).listQuestions();
+        return RepoBuilder.buildQuestionRepo(context).listQuestions();
     }
 
     private MessageResponse processDemographicsList() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildProfileRepo(context).listDemographics();
+        return RepoBuilder.buildProfileRepo(context).listDemographics();
     }
 
     private MessageResponse processFollow() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildProfileRepo(context).follow();
+        return RepoBuilder.buildProfileRepo(context).follow();
     }
 
     private MessageResponse processUnfollow() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildProfileRepo(context).unfollow();
+        return RepoBuilder.buildProfileRepo(context).unfollow();
     }
 
     private MessageResponse processNetworkGet() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildProfileRepo(context).getNetwork();
+        return RepoBuilder.buildProfileRepo(context).getNetwork();
     }
 
     private MessageResponse processFetchCourseSubjectBuckets() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildCourseRepo(context).fetchSubjectBucketsForCourses();
+        return RepoBuilder.buildCourseRepo(context).fetchSubjectBucketsForCourses();
     }
 
     private MessageResponse processFetchCollectionTaxonomy() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildCollectionRepo(context).fetchTaxonomyForCollections();
+        return RepoBuilder.buildCollectionRepo(context).fetchTaxonomyForCollections();
     }
 
     private MessageResponse processFetchAssessmentTaxonomy() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildAssessmentRepo(context).fetchTaxonomyForAssessments();
+        return RepoBuilder.buildAssessmentRepo(context).fetchTaxonomyForAssessments();
     }
 
     private MessageResponse processFetchResourceTaxonomy() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildResourceRepo(context).fetchTaxonomyForResources();
+        return RepoBuilder.buildResourceRepo(context).fetchTaxonomyForResources();
     }
 
     private MessageResponse processFetchQuestionTaxonomy() {
         ProcessorContext context = createContext();
-        return new RepoBuilder().buildQuestionRepo(context).fetchTaxonomyForQuestions();
+        return RepoBuilder.buildQuestionRepo(context).fetchTaxonomyForQuestions();
     }
 
     private ProcessorContext createContext() {
@@ -206,13 +206,8 @@ class MessageProcessor implements Processor {
         return new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
     }
 
-    private boolean validateUser(String userId) {
-        if (userId == null) {
-            return false;
-        } else if (userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
-            return true;
-        } else {
-            return HelperUtility.validateUUID(userId);
-        }
+    private static boolean validateUser(String userId) {
+        return userId != null && (userId.equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS) || HelperUtility
+            .validateUUID(userId));
     }
 }

@@ -17,13 +17,13 @@ public class AJAssessmentRepo implements AssessmentRepo {
     @Override
     public MessageResponse listAssessments() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildListAssessmentsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildListAssessmentsHandler(context));
     }
 
     @Override
     public MessageResponse fetchTaxonomyForAssessments() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForAssessmentsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForAssessmentsHandler(context));
     }
 
 }

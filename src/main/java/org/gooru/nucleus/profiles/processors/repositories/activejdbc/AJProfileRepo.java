@@ -17,22 +17,22 @@ public class AJProfileRepo implements ProfileRepo {
     @Override
     public MessageResponse listDemographics() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildListDemographicsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildListDemographicsHandler(context));
     }
 
     @Override
     public MessageResponse follow() {
-        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildFollowHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildFollowHandler(context));
     }
 
     @Override
     public MessageResponse unfollow() {
-        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildUnfollowHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildUnfollowHandler(context));
     }
 
     @Override
     public MessageResponse getNetwork() {
-        return new TransactionExecutor().executeTransaction(new DBHandlerBuilder().buildGetNetworkHandler(context));
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetNetworkHandler(context));
     }
 
 }

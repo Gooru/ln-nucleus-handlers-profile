@@ -17,13 +17,13 @@ public class AJCollectionRepo implements CollectionRepo {
     @Override
     public MessageResponse listCollections() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildListCollectionsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildListCollectionsHandler(context));
     }
 
     @Override
     public MessageResponse fetchTaxonomyForCollections() {
         return new TransactionExecutor()
-            .executeTransaction(new DBHandlerBuilder().buildFetchTaxonomyForCollectionsHandler(context));
+            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForCollectionsHandler(context));
     }
 
 }
