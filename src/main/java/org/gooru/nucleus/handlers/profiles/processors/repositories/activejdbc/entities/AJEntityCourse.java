@@ -60,6 +60,7 @@ public class AJEntityCourse extends Model {
     public static final String CRITERIA_SUBJECTBUCKET = "subject_bucket = ?";
     public static final String CRITERIA_TITLE = "title ilike ?";
     public static final String CLAUSE_ORDERBY_SEQUENCE_ID = "ORDER BY sequence_id asc";
+    public static final String CLAUSE_ORDERBY_CREATED_AT = "ORDER BY created_at desc";
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 
     public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, OWNER_ID,

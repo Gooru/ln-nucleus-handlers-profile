@@ -83,10 +83,12 @@ public class ListCoursesHandler implements DBHandler {
             query.append(HelperConstants.SPACE).append(AJEntityCourse.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityCourse.CRITERIA_SUBJECTBUCKET);
             params.add(subjectCode);
+            query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY_SEQUENCE_ID);
+        } else {
+            query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY_CREATED_AT);
         }
-
-        query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY_SEQUENCE_ID)
-            .append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
+        
+        query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
         params.add(limit);
         params.add(offset);
 
