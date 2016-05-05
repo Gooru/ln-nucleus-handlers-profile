@@ -1,10 +1,8 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,9 +16,9 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.en
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
@@ -147,7 +145,7 @@ public class ListAssessmentsHandler implements DBHandler {
                 .forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
 
             List<Map> questionCounts = Base.findAll(AJEntityCollection.SELECT_QUESTIONS_COUNT_FOR_COLLECTION,
-                toPostgresArrayString(collectionIdList));
+                HelperUtility.toPostgresArrayString(collectionIdList));
             Map<String, Integer> questionCountByCollection = new HashMap<>();
             questionCounts.stream()
                 .forEach(map -> questionCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
@@ -158,12 +156,13 @@ public class ListAssessmentsHandler implements DBHandler {
                 .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
                     && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
                 .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
-            LazyList<AJEntityCourse> courseList = AJEntityCourse
-                .findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION, toPostgresArrayString(courseIdList));
+            LazyList<AJEntityCourse> courseList =
+                AJEntityCourse.findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION,
+                    HelperUtility.toPostgresArrayString(courseIdList));
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
             courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
-            //for (AJEntityCollection collection : collectionList) {
+            // for (AJEntityCollection collection : collectionList) {
             collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
@@ -220,27 +219,6 @@ public class ListAssessmentsHandler implements DBHandler {
         return Boolean.parseBoolean(preview);
     }
 
-    private static String toPostgresArrayString(Collection<String> input) {
-        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
-                                                    // 36
-                                                    // chars
-        Iterator<String> it = input.iterator();
-        if (!it.hasNext()) {
-            return "{}";
-        }
-
-        StringBuilder sb = new StringBuilder(approxSize);
-        sb.append('{');
-        for (;;) {
-            String s = it.next();
-            sb.append('"').append(s).append('"');
-            if (!it.hasNext()) {
-                return sb.append('}').toString();
-            }
-            sb.append(',');
-        }
-    }
-
     private JsonObject getFiltersJson() {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
             .put(HelperConstants.RESP_JSON_KEY_FILTERBY, filterBy).put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
@@ -273,10 +251,10 @@ public class ListAssessmentsHandler implements DBHandler {
         collectionList.stream()
             .forEach(collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
 
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
-            .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
-        List<Map> usernames =
-            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
+        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
+            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
+        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
+            HelperUtility.toPostgresArrayString(ownerIdList));
         Map<String, String> usernamesById = new HashMap<>();
         usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
             username.get(AJEntityUserIdentity.USERNAME).toString()));

@@ -1,10 +1,8 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,9 +16,9 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.en
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
@@ -134,8 +132,8 @@ public class ListResourcesHandler implements DBHandler {
             resourceList.stream()
                 .forEach(resource -> creatorIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
 
-            resourceList.stream().forEach(resource -> resourceArray.add(new JsonObject(JsonFormatterBuilder
-                .buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))));
+            resourceList.stream().forEach(resource -> resourceArray.add(new JsonObject(
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))));
         }
 
         JsonObject responseBody = new JsonObject();
@@ -184,27 +182,6 @@ public class ListResourcesHandler implements DBHandler {
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }
 
-    private static String toPostgresArrayString(Collection<String> input) {
-        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
- // 36
- // chars
-        Iterator<String> it = input.iterator();
-        if (!it.hasNext()) {
-            return "{}";
-        }
-
-        StringBuilder sb = new StringBuilder(approxSize);
-        sb.append('{');
-        for (;;) {
-            String s = it.next();
-            sb.append('"').append(s).append('"');
-            if (!it.hasNext()) {
-                return sb.append('}').toString();
-            }
-            sb.append(',');
-        }
-    }
-
     private int getLimit() {
         try {
             String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
@@ -229,10 +206,10 @@ public class ListResourcesHandler implements DBHandler {
         Set<String> ownerIdList = new HashSet<>();
         resourceList.stream().forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
 
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
-            .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
-        List<Map> usernames =
-            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
+        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
+            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
+        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
+            HelperUtility.toPostgresArrayString(ownerIdList));
         Map<String, String> usernamesById = new HashMap<>();
         usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
             username.get(AJEntityUserIdentity.USERNAME).toString()));

@@ -1,10 +1,8 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,9 +16,9 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.en
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
@@ -134,8 +132,8 @@ public class ListQuestionsHandler implements DBHandler {
             questionList.stream()
                 .forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
-            questionList.stream().forEach(question -> questionArray.add(new JsonObject(JsonFormatterBuilder
-                .buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question))));
+            questionList.stream().forEach(question -> questionArray.add(new JsonObject(
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question))));
         }
 
         JsonObject responseBody = new JsonObject();
@@ -165,27 +163,6 @@ public class ListQuestionsHandler implements DBHandler {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
             .put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn).put(HelperConstants.RESP_JSON_KEY_ORDER, order)
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
-    }
-
-    private static String toPostgresArrayString(Collection<String> input) {
-        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
-                                                    // 36
-                                                    // chars
-        Iterator<String> it = input.iterator();
-        if (!it.hasNext()) {
-            return "{}";
-        }
-
-        StringBuilder sb = new StringBuilder(approxSize);
-        sb.append('{');
-        for (;;) {
-            String s = it.next();
-            sb.append('"').append(s).append('"');
-            if (!it.hasNext()) {
-                return sb.append('}').toString();
-            }
-            sb.append(',');
-        }
     }
 
     private boolean checkPublic() {
@@ -229,10 +206,10 @@ public class ListQuestionsHandler implements DBHandler {
         Set<String> ownerIdList = new HashSet<>();
         questionList.stream().forEach(question -> ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
-            .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, toPostgresArrayString(ownerIdList));
-        List<Map> usernames =
-            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, toPostgresArrayString(ownerIdList));
+        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
+            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
+        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
+            HelperUtility.toPostgresArrayString(ownerIdList));
         Map<String, String> usernamesById = new HashMap<>();
         usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
             username.get(AJEntityUserIdentity.USERNAME).toString()));
