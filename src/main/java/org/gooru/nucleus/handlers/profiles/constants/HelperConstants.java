@@ -21,8 +21,10 @@ public final class HelperConstants {
     public static final String PREFS_SFCODE = "standard_framework_code";
 
     public static final String RESP_JSON_KEY_COURSES = "courses";
+    public static final String RESP_JSON_KEY_COURSE = "course";
     public static final String RESP_JSON_KEY_COLLECTIONS = "collections";
     public static final String RESP_JSON_KEY_ASSESSMENTS = "assessments";
+    public static final String RESP_JSON_KEY_ASSESSMENT = "assessment";
     public static final String RESP_JSON_KEY_RESOURCES = "resources";
     public static final String RESP_JSON_KEY_QUESTIONS = "questions";
     public static final String RESP_JSON_KEY_FOLLOWERS = "followers";

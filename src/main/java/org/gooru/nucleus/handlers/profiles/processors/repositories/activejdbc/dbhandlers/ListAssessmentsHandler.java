@@ -157,21 +157,20 @@ public class ListAssessmentsHandler implements DBHandler {
                     && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
                 .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
             LazyList<AJEntityCourse> courseList =
-                AJEntityCourse.findBySQL(AJEntityCollection.SELECT_COURSE_TITLE_FOR_COLLECTION,
+                AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
                     HelperUtility.toPostgresArrayString(courseIdList));
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
             courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
 
-            // for (AJEntityCollection collection : collectionList) {
             collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
                 String courseId = collection.getString(AJEntityCollection.COURSE_ID);
-                String courseTitle = null;
                 if (courseId != null && !courseId.isEmpty()) {
-                    courseTitle = courseMap.get(courseId).get(AJEntityCourse.TITLE).toString();
+                    AJEntityCourse course = courseMap.get(courseId);
+                    result.put(HelperConstants.RESP_JSON_KEY_COURSE, new JsonObject(JsonFormatterBuilder
+                        .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION).toJson(course)));
                 }
-                result.put(AJEntityCollection.COURSE_TITLE, courseTitle);
                 Integer questionCount = questionCountByCollection.get(collection.getString(AJEntityCollection.ID));
                 result.put(AJEntityCollection.QUESTION_COUNT, questionCount != null ? questionCount : 0);
                 collectionArray.add(result);

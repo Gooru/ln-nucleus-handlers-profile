@@ -52,6 +52,9 @@ public class AJEntityCourse extends Model {
     public static final String SELECT_UNIT_COUNT_FOR_COURSES =
         "SELECT count(unit_id) as unit_count, course_id FROM unit WHERE course_id = ANY"
             + " (?::uuid[]) AND is_deleted = false GROUP BY course_id";
+    
+    public static final String SELECT_COURSE_FOR_COLLECTION =
+        "SELECT id, title, visible_on_profile FROM course WHERE id = ANY (?::uuid[]) AND is_deleted = false";
 
     public static final String OP_AND = "AND";
     public static final String CRITERIA_SUBJECTBUCKET = "subject_bucket = ?";
@@ -61,6 +64,8 @@ public class AJEntityCourse extends Model {
 
     public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, OWNER_ID,
         ORIGINAL_CREATOR_ID, COLLABORATOR, ORIGINAL_COURSE_ID, TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE);
+    
+    public static final List<String> COURSE_FIELDS_FOR_COLLECTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE);
 
     public static final int DEFAULT_LIMIT = 20;
     public static final int DEFAULT_OFFSET = 0;

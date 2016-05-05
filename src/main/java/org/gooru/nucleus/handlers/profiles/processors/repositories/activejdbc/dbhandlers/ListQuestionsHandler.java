@@ -10,6 +10,7 @@ import java.util.Set;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
@@ -132,8 +133,32 @@ public class ListQuestionsHandler implements DBHandler {
             questionList.stream()
                 .forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
-            questionList.stream().forEach(question -> questionArray.add(new JsonObject(
-                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question))));
+            List<String> assessmentIdList = new ArrayList<>();
+            questionList.stream().filter(question -> question.getString(AJEntityContent.COLLECTION_ID) != null)
+                .forEach(question -> assessmentIdList.add(question.getString(AJEntityContent.COLLECTION_ID)));
+            LOGGER.debug("number of assessment found {}", assessmentIdList.size());
+            
+            LazyList<AJEntityCollection> assessmentList =
+                AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
+                    HelperUtility.toPostgresArrayString(assessmentIdList));
+            Map<String, AJEntityCollection> assessmentMap = new HashMap<>();
+            assessmentList.stream()
+                .forEach(assessment -> assessmentMap.put(assessment.getString(AJEntityCollection.ID), assessment));
+            LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
+            
+            questionList.stream().forEach(question -> {
+                JsonObject result = new JsonObject(JsonFormatterBuilder
+                    .buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question));
+                String assessmentId = question.getString(AJEntityContent.COLLECTION_ID);
+                if (assessmentId != null && !assessmentId.isEmpty()) {
+                    AJEntityCollection assessment = assessmentMap.get(assessmentId);
+                    result.put(HelperConstants.RESP_JSON_KEY_ASSESSMENT,
+                        new JsonObject(JsonFormatterBuilder
+                            .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION)
+                            .toJson(assessment)));
+                }
+                questionArray.add(result);
+            });
         }
 
         JsonObject responseBody = new JsonObject();
