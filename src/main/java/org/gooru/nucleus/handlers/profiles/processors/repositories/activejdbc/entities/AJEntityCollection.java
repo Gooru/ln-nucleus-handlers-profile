@@ -56,7 +56,7 @@ public class AJEntityCollection extends Model {
             + " collection_id = ANY (?::uuid[]) AND is_deleted = false AND content_format = 'question'::content_format_type GROUP BY collection_id";
 
     public static final String SELECT_ASSESSMENT_FOR_QUESTION =
-        "SELECT id, title, visible_on_profile FROM collection WHERE id = ANY (?::uuid[]) AND format = 'assessment'::content_container_type AND is_deleted = false";
+        "SELECT id, title, visible_on_profile, format FROM collection WHERE id = ANY (?::uuid[]) AND is_deleted = false";
 
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "title ilike ?";
@@ -71,7 +71,7 @@ public class AJEntityCollection extends Model {
         TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID, ORIGINAL_CREATOR_ID);
     public static final List<String> ASSESSMENT_LIST = Arrays.asList(ID, TITLE, COURSE_ID, PUBLISH_STATUS, THUMBNAIL,
         TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID, ORIGINAL_CREATOR_ID);
-    public static final List<String> ASSESSMENT_FIELDS_FOR_QUESTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE);
+    public static final List<String> ASSESSMENT_FIELDS_FOR_QUESTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE, FORMAT);
     
     public static final String ORDER_DESC = "desc";
     public static final String ORDER_ASC = "asc";
