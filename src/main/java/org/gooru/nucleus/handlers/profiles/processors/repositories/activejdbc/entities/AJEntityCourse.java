@@ -11,6 +11,7 @@ public class AJEntityCourse extends Model {
 
     public static final String ID = "id";
     public static final String TITLE = "title";
+    public static final String DESCRIPTION = "description";
     public static final String CREATED_AT = "created_at";
     public static final String UPDATED_AT = "updated_at";
     public static final String OWNER_ID = "owner_id";
@@ -34,11 +35,11 @@ public class AJEntityCourse extends Model {
     public static final String OWNER_INFO = "owner_info";
 
     public static final String SELECT_COURSES =
-        "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
+        "SELECT id, title, description, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
             + " visible_on_profile FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
 
     public static final String SELECT_COURSES_PUBLIC =
-        "SELECT id, title, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
+        "SELECT id, title, description, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
             + " visible_on_profile FROM course WHERE owner_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
 
     public static final String SELECT_SUBJECT_BUCKETS =
@@ -63,7 +64,7 @@ public class AJEntityCourse extends Model {
     public static final String CLAUSE_ORDERBY_CREATED_AT = "ORDER BY created_at desc";
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 
-    public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, PUBLISH_STATUS, THUMBNAIL, OWNER_ID,
+    public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, THUMBNAIL, OWNER_ID,
         ORIGINAL_CREATOR_ID, COLLABORATOR, ORIGINAL_COURSE_ID, TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE);
     
     public static final List<String> COURSE_FIELDS_FOR_COLLECTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE);
