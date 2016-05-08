@@ -27,11 +27,11 @@ public class AJEntityContent extends Model {
 
     public static final String SELECT_RESOURCES =
         "SELECT id, title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id FROM content WHERE"
-            + " creator_id = ?::uuid AND original_content_id IS NULL AND original_creator_id IS NULL AND content_format = 'resource'::content_format_type AND is_deleted = false";
+            + " creator_id = ?::uuid AND original_content_id IS NULL AND content_format = 'resource'::content_format_type AND is_deleted = false";
 
     public static final String SELECT_RESOURCES_BY_TAXONOMY =
         "SELECT distinct(id), title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id FROM content con,"
-            + " jsonb_array_elements_text(con.taxonomy) as tx WHERE creator_id = ?::uuid AND original_content_id IS NULL AND original_creator_id IS NULL AND content_format ="
+            + " jsonb_array_elements_text(con.taxonomy) as tx WHERE creator_id = ?::uuid AND original_content_id IS NULL AND content_format ="
             + " 'resource'::content_format_type AND is_deleted = false AND tx like ?";
 
     public static final String SELECT_QUESTIONS =
