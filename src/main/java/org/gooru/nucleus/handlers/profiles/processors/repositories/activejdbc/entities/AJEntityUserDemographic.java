@@ -40,7 +40,7 @@ public class AJEntityUserDemographic extends Model {
             + " thumbnail_path, gender, about_me, school_id, school, school_district_id, school_district, email_id, country_id, country, state_id, state,"
             + " metadata, roster_id, roster_global_userid, created_at, updated_at FROM user_demographic WHERE id = ?::uuid";
     public static final String SELECT_DEMOGRAPHICS_MULTIPLE =
-        "SELECT id, firstname, lastname, thumbnail_path, school_district_id FROM"
+        "SELECT id, firstname, lastname, thumbnail_path, school_district_id, school_district, country, country_id  FROM"
             + " user_demographic WHERE id = ANY (?::uuid[])";
 
     public static final List<String> ALL_FIELDS =
