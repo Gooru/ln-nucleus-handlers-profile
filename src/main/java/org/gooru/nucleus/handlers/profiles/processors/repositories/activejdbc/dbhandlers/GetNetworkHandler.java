@@ -128,7 +128,7 @@ public class GetNetworkHandler implements DBHandler {
         List<Map> followersCount =
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT_MULTIPLE, listToPostgresArrayString(input));
         Map<String, Integer> followersCountMap = new HashMap<>();
-        followersCount.stream().forEach(map -> followersCountMap.put(map.get(AJEntityUserNetwork.USER_ID).toString(),
+        followersCount.stream().forEach(map -> followersCountMap.put(map.get(AJEntityUserNetwork.FOLLOW_ON_USER_ID).toString(),
             Integer.valueOf(map.get(AJEntityUserNetwork.FOLLOWERS_COUNT).toString())));
         return followersCountMap;
     }
@@ -139,7 +139,7 @@ public class GetNetworkHandler implements DBHandler {
             Base.findAll(AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT_MULTIPLE, listToPostgresArrayString(input));
         Map<String, Integer> followingsCountMap = new HashMap<>();
         followingsCount.stream()
-            .forEach(map -> followingsCountMap.put(map.get(AJEntityUserNetwork.FOLLOW_ON_USER_ID).toString(),
+            .forEach(map -> followingsCountMap.put(map.get(AJEntityUserNetwork.USER_ID).toString(),
                 Integer.valueOf(map.get(AJEntityUserNetwork.FOLLOWINGS_COUNT).toString())));
         return followingsCountMap;
     }

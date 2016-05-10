@@ -21,17 +21,17 @@ public class AJEntityUserNetwork extends Model {
     public static final String FOLLOW_ON_USER_ID = "follow_on_user_id";
 
     public static final String VERIFY_FOLLOW = "user_id = ?::uuid AND follow_on_user_id = ?::uuid";
-    public static final String SELECT_FOLLOWERS = "SELECT follow_on_user_id FROM user_network WHERE user_id = ?::uuid";
-    public static final String SELECT_FOLLOWINGS = "SELECT user_id FROM user_network WHERE follow_on_user_id = ?::uuid";
+    public static final String SELECT_FOLLOWERS = "SELECT user_id FROM user_network WHERE follow_on_user_id = ?::uuid";
+    public static final String SELECT_FOLLOWINGS = "SELECT follow_on_user_id FROM user_network WHERE user_id = ?::uuid";
     public static final String SELECT_FOLLOWERS_COUNT = "follow_on_user_id = ?::uuid";
     public static final String SELECT_FOLLOWINGS_COUNT = "user_id = ?::uuid";
     public static final String QUERY_UNFOLLOW = "user_id = ?::uuid AND follow_on_user_id = ?::uuid";
     public static final String SELECT_FOLLOWERS_COUNT_MULTIPLE =
-        "SELECT count(follow_on_user_id) as followers_count, user_id FROM user_network WHERE user_id ="
-            + " ANY (?::uuid[]) GROUP BY user_id";
-    public static final String SELECT_FOLLOWINGS_COUNT_MULTIPLE =
-        "SELECT count(user_id) as followings_count, follow_on_user_id FROM user_network WHERE follow_on_user_id"
+        "SELECT count(user_id) as followers_count, follow_on_user_id FROM user_network WHERE follow_on_user_id"
             + " = ANY (?::uuid[]) GROUP BY follow_on_user_id";
+    public static final String  SELECT_FOLLOWINGS_COUNT_MULTIPLE = 
+        "SELECT count(follow_on_user_id) as followings_count, user_id FROM user_network WHERE user_id ="
+            + " ANY (?::uuid[]) GROUP BY user_id";
     public static final String CHECK_IF_FOLLOWER = "user_id = ?::uuid AND follow_on_user_id = ?::uuid";
     public static final List<String> REQUIRED_FIELDS = Arrays.asList(USER_ID);
 
