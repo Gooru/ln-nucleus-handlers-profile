@@ -34,18 +34,16 @@ public class AJEntityCollection extends Model {
             + " original_creator_id FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false";
 
     public static final String SELECT_COLLECTIONS_BY_TAXONOMY =
-        "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-            + " original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE format ="
-            + " 'collection'::content_container_type AND is_deleted = false AND tx like ?";
+        "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+            + " original_creator_id FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false AND taxonomy ?? ?";
 
     public static final String SELECT_ASSESSMENTS =
         "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
             + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false";
 
     public static final String SELECT_ASSESSMENTS_BY_TAXONOMY =
-        "SELECT distinct(id), title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-            + " original_creator_id FROM collection col, jsonb_array_elements_text(col.taxonomy) as tx WHERE format = "
-            + "'assessment'::content_container_type AND is_deleted = false AND tx like ?";
+        "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
+            + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false AND taxonomy ?? ?";
 
     public static final String SELECT_RESOURCES_COUNT_FOR_COLLECTION =
         "SELECT count(id) as resource_count, collection_id FROM content WHERE"
@@ -57,6 +55,22 @@ public class AJEntityCollection extends Model {
 
     public static final String SELECT_ASSESSMENT_FOR_QUESTION =
         "SELECT id, title, visible_on_profile, format FROM collection WHERE id = ANY (?::uuid[]) AND is_deleted = false";
+    
+    public static final String SELECT_TAXONOMY_FOR_COLLECTIONS =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false"
+        + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
+    
+    public static final String SELECT_TAXONOMY_FOR_COLLECTIONS_PUBLIC =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false"
+        + " AND owner_id = ?::uuid AND visible_on_profile = true";
+    
+    public static final String SELECT_TAXONOMY_FOR_ASSESSMENTS =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false"
+        + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
+    
+    public static final String SELECT_TAXONOMY_FOR_ASSESSMENTS_PUBLIC =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false"
+        + " AND owner_id = ?::uuid AND visible_on_profile = true";
 
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "title ilike ?";

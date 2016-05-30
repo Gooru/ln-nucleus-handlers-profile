@@ -95,7 +95,7 @@ public class ListAssessmentsHandler implements DBHandler {
 
         if (standard != null) {
             query = new StringBuilder(AJEntityCollection.SELECT_ASSESSMENTS_BY_TAXONOMY);
-            params.add(standard + HelperConstants.PERCENTAGE);
+            params.add(standard);
         } else {
             query = new StringBuilder(AJEntityCollection.SELECT_ASSESSMENTS);
         }

@@ -1,23 +1,17 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
-import org.javalite.activejdbc.LazyList;
+import org.javalite.activejdbc.Base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,47 +49,24 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
         return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        List<Object> params = new ArrayList<>();
-        StringBuilder query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
-        params.add(context.userIdFromURL());
+        List<String> taxonomyList = null;
         if (isPublic) {
-            query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityContent.CRITERIA_PUBLIC);
+            taxonomyList =
+                Base.firstColumn(AJEntityContent.SELECT_TAXONOMY_FOR_RESOURCES_PUBLIC, context.userIdFromURL());
+        } else {
+            taxonomyList = Base.firstColumn(AJEntityContent.SELECT_TAXONOMY_FOR_RESOURCES, context.userIdFromURL());
         }
 
-        LazyList<AJEntityContent> resourcesList = AJEntityContent.findBySQL(query.toString(), params.toArray());
-
-        Map<String, Set<String>> taxonomyList = new HashMap<>();
-        taxonomyList.put(HelperConstants.KEY_STANDARDS, new HashSet<>());
-
-        for (AJEntityContent ajEntityContent : resourcesList) {
-            String taxonomy = ajEntityContent.getString(AJEntityContent.TAXONOMY);
-            if (taxonomy != null && !taxonomy.isEmpty()) {
-                JsonArray taxonomyArray = new JsonArray(taxonomy);
-                for (int i = 0; i < taxonomyArray.size(); i++) {
-                    String taxonomyCode = taxonomyArray.getString(i);
-                    StringTokenizer tokenizer = new StringTokenizer(taxonomyCode, HelperConstants.TAXONOMY_SEPARATOR);
-
-                    // Replying on number of token in taxonomy tag
-                    // 4 for standard
-                    if (tokenizer.countTokens() == 4) {
-                        taxonomyList.get(HelperConstants.KEY_STANDARDS).add(taxonomyCode);
-                    }
-                }
-            } else {
-                taxonomyList.get(HelperConstants.KEY_STANDARDS).add(HelperConstants.SUBJECT_OTHER);
-            }
+        JsonArray taxonomyArray = new JsonArray();
+        if (taxonomyList != null) {
+            taxonomyList.forEach(value -> taxonomyArray.add(value));
         }
 
         JsonObject responseBody = new JsonObject();
-        for (Map.Entry<String, Set<String>> stringSetEntry : taxonomyList.entrySet()) {
-            JsonArray tempArray = new JsonArray();
-            stringSetEntry.getValue().forEach(tempArray::add);
-            responseBody.put(stringSetEntry.getKey(), tempArray);
-        }
-
+        responseBody.put(HelperConstants.KEY_STANDARDS, taxonomyArray);
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);
     }

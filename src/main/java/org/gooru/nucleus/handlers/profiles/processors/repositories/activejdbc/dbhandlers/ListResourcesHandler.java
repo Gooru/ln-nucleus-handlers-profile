@@ -95,7 +95,7 @@ public class ListResourcesHandler implements DBHandler {
 
         if (standard != null) {
             query = new StringBuilder(AJEntityContent.SELECT_RESOURCES_BY_TAXONOMY);
-            params.add(standard + HelperConstants.PERCENTAGE);
+            params.add(standard);
         } else {
             query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
         }

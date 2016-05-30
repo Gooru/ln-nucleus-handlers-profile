@@ -96,7 +96,7 @@ public class ListQuestionsHandler implements DBHandler {
 
         if (standard != null) {
             query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS_BY_TAXONOMY);
-            params.add(standard + HelperConstants.PERCENTAGE);
+            params.add(standard);
         } else {
             query = new StringBuilder(AJEntityContent.SELECT_QUESTIONS);
         }
