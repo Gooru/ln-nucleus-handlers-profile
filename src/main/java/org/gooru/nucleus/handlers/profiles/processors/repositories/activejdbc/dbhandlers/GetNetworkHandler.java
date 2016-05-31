@@ -9,12 +9,13 @@ import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
@@ -72,7 +73,8 @@ public class GetNetworkHandler implements DBHandler {
                 Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followers);
                 Map<String, Integer> followersCountMap = getFollowersCount(followers);
                 Map<String, Integer> followingsCountMap = getFollowingsCount(followers);
-
+                Map<String, String> usernamesById = getUsernames(followers);
+                
                 followers.stream().forEach(follower -> {
                     String strFollower = follower.toString();
                     Integer followersCount = followersCountMap.get(strFollower);
@@ -81,13 +83,15 @@ public class GetNetworkHandler implements DBHandler {
                         .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
                         .toJson(userDemographicsMap.get(strFollower)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
-                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0)
+                            .put(AJEntityUserIdentity.USERNAME, usernamesById.get(strFollower)));
                 });
             } else if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWINGS)) {
                 Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followings);
                 Map<String, Integer> followersCountMap = getFollowersCount(followings);
                 Map<String, Integer> followingsCountMap = getFollowingsCount(followings);
-
+                Map<String, String> usernamesById = getUsernames(followings);
+                
                 followings.stream().forEach(following -> {
                     String strFollowing = following.toString();
                     Integer followersCount = followersCountMap.get(strFollowing);
@@ -96,7 +100,8 @@ public class GetNetworkHandler implements DBHandler {
                         .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
                         .toJson(userDemographicsMap.get(strFollowing)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
-                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0)
+                            .put(AJEntityUserIdentity.USERNAME, usernamesById.get(strFollowing)));
                 });
             }
         }
@@ -121,6 +126,16 @@ public class GetNetworkHandler implements DBHandler {
         Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
         userDemographics.forEach(user -> userDemographicsMap.put(user.getId().toString(), user));
         return userDemographicsMap;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    private static Map<String, String> getUsernames(List input) {
+        List<Map> usernames =
+            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, listToPostgresArrayString(input));
+        Map<String, String> usernamesById = new HashMap<>();
+        usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
+            username.get(AJEntityUserIdentity.USERNAME).toString()));
+        return usernamesById;
     }
 
     @SuppressWarnings("rawtypes")
