@@ -140,6 +140,7 @@ public class ListAssessmentsHandler implements DBHandler {
         LazyList<AJEntityCollection> collectionList = AJEntityCollection.findBySQL(query.toString(), params.toArray());
         JsonArray collectionArray = new JsonArray();
         if (!collectionList.isEmpty()) {
+            LOGGER.debug("# Assessments found: {}", collectionList.size());
             List<String> collectionIdList = new ArrayList<>();
             collectionList.stream()
                 .forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
@@ -150,18 +151,22 @@ public class ListAssessmentsHandler implements DBHandler {
             questionCounts.stream()
                 .forEach(map -> questionCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
                     Integer.valueOf(map.get(AJEntityCollection.QUESTION_COUNT).toString())));
-
+            LOGGER.debug("# of assessments has questions: {}", questionCountByCollection.size());
+            
             List<String> courseIdList = new ArrayList<>();
             collectionList.stream()
                 .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
                     && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
                 .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
+            LOGGER.debug("# Courses are associated with assessments: {}", courseIdList.size());
+            
             LazyList<AJEntityCourse> courseList =
                 AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
                     HelperUtility.toPostgresArrayString(courseIdList));
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
             courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
-
+            LOGGER.debug("# Courses returned from database: {}", courseMap.size());
+            
             collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
