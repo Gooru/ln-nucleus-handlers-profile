@@ -45,9 +45,8 @@ public class UnfollowHandler implements DBHandler {
         int deleteCount =
             AJEntityUserNetwork.delete(AJEntityUserNetwork.QUERY_UNFOLLOW, context.userId(), context.userIdFromURL());
         if (deleteCount == 0) {
-            LOGGER.error("error in unfollow user");
-            return new ExecutionResult<>(MessageResponseFactory.createInternalErrorResponse("error in unfollow user"),
-                ExecutionStatus.FAILED);
+            LOGGER.warn("Error: '{}' is unfollowing '{}'", context.userId(), context.userIdFromURL());
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(), ExecutionStatus.FAILED);
         }
 
         LOGGER.info("user {} is removed from followers of {}", context.userIdFromURL(), context.userId());
