@@ -133,8 +133,12 @@ public class GetNetworkHandler implements DBHandler {
         List<Map> usernames =
             Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, listToPostgresArrayString(input));
         Map<String, String> usernamesById = new HashMap<>();
-        usernames.stream().forEach(username -> usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(),
-            username.get(AJEntityUserIdentity.USERNAME).toString()));
+        usernames.stream().forEach(username -> {
+            String uname = (username.get(AJEntityUserIdentity.USERNAME) != null
+                && !username.get(AJEntityUserIdentity.USERNAME).toString().isEmpty())
+                    ? username.get(AJEntityUserIdentity.USERNAME).toString() : null;
+            usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(), uname);
+        });
         return usernamesById;
     }
 
