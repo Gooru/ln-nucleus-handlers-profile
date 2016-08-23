@@ -10,9 +10,8 @@ import java.util.Set;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -95,7 +94,7 @@ public class ListCoursesHandler implements DBHandler {
         LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, limit:{}, offset:{}", query, params.size(), subjectCode,
             limit, offset);
         LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
-
+        Set<String> ownerIdList = new HashSet<>();
         JsonArray courseArray = new JsonArray();
         if (!courseList.isEmpty()) {
             List<String> courseIdList = new ArrayList<>();
@@ -113,11 +112,13 @@ public class ListCoursesHandler implements DBHandler {
                     JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
                         .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
             });
+            
+            courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(courseList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
 
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
@@ -178,36 +179,5 @@ public class ListCoursesHandler implements DBHandler {
         } catch (NumberFormatException nfe) {
             return AJEntityCourse.DEFAULT_OFFSET;
         }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
-        Set<String> ownerIdList = new HashSet<>();
-        courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
-
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
-            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
-        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
-            HelperUtility.toPostgresArrayString(ownerIdList));
-        Map<String, String> usernamesById = new HashMap<>();
-        usernames.stream().forEach(username -> {
-            String uname = (username.get(AJEntityUserIdentity.USERNAME) != null
-                && !username.get(AJEntityUserIdentity.USERNAME).toString().isEmpty())
-                    ? username.get(AJEntityUserIdentity.USERNAME).toString() : null;
-            usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(), uname);
-        });
-
-        JsonArray userDetailsArray = new JsonArray();
-        if (!userDemographics.isEmpty()) {
-            userDemographics.forEach(user -> {
-                JsonObject userDemographic = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
-                userDemographic.put(AJEntityUserIdentity.USERNAME,
-                    usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
-                userDetailsArray.add(userDemographic);
-            });
-        }
-
-        return userDetailsArray;
     }
 }
