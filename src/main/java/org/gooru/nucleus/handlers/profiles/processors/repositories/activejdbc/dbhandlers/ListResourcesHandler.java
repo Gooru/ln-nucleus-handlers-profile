@@ -1,26 +1,22 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
-import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,18 +123,18 @@ public class ListResourcesHandler implements DBHandler {
 
         LazyList<AJEntityContent> resourceList = AJEntityContent.findBySQL(query.toString(), params.toArray());
         JsonArray resourceArray = new JsonArray();
+        Set<String> ownerIdList = new HashSet<>();
         if (!resourceList.isEmpty()) {
-            List<String> creatorIdList = new ArrayList<>();
             resourceList.stream()
-                .forEach(resource -> creatorIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
+                .forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
 
             resourceList.stream().forEach(resource -> resourceArray.add(new JsonObject(
                 JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))));
         }
-
+        
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(resourceList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);
@@ -200,36 +196,4 @@ public class ListResourcesHandler implements DBHandler {
             return AJEntityCourse.DEFAULT_OFFSET;
         }
     }
-
-    @SuppressWarnings("rawtypes")
-    private static JsonArray getOwnerDetails(LazyList<AJEntityContent> resourceList) {
-        Set<String> ownerIdList = new HashSet<>();
-        resourceList.stream().forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
-
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
-            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
-        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
-            HelperUtility.toPostgresArrayString(ownerIdList));
-        Map<String, String> usernamesById = new HashMap<>();
-        usernames.stream().forEach(username -> {
-            String uname = (username.get(AJEntityUserIdentity.USERNAME) != null
-                && !username.get(AJEntityUserIdentity.USERNAME).toString().isEmpty())
-                    ? username.get(AJEntityUserIdentity.USERNAME).toString() : null;
-            usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(), uname);
-        });
-
-        JsonArray userDetailsArray = new JsonArray();
-        if (!userDemographics.isEmpty()) {
-            userDemographics.forEach(user -> {
-                JsonObject userDemographic = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
-                userDemographic.put(AJEntityUserIdentity.USERNAME,
-                    usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
-                userDetailsArray.add(userDemographic);
-            });
-        }
-
-        return userDetailsArray;
-    }
-
 }
