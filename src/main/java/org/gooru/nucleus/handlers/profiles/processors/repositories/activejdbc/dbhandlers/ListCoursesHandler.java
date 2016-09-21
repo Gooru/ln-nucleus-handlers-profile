@@ -49,10 +49,10 @@ public class ListCoursesHandler implements DBHandler {
         }
 
         isPublic = checkPublic();
-        subjectCode = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+        subjectCode = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SUBJECT, context);
 
-        limit = getLimit();
-        offset = getOffset();
+        limit = HelperUtility.getLimitFromRequest(context);
+        offset = HelperUtility.getOffsetFromRequest(context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -130,7 +130,7 @@ public class ListCoursesHandler implements DBHandler {
         return true;
     }
 
-    private String readRequestParam(String param) {
+    /*private String readRequestParam(String param) {
         JsonArray requestParams = context.request().getJsonArray(param);
         if (requestParams == null || requestParams.isEmpty()) {
             return null;
@@ -138,7 +138,7 @@ public class ListCoursesHandler implements DBHandler {
 
         String value = requestParams.getString(0);
         return (value != null && !value.isEmpty()) ? value : null;
-    }
+    }*/
 
     private boolean checkPublic() {
         if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
@@ -162,13 +162,14 @@ public class ListCoursesHandler implements DBHandler {
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }
 
-    private int getLimit() {
+/*    private int getLimit() {
+        AppConfiguration appConfig = AppConfiguration.getInstance();
         try {
             String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-            int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
-            return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
+            int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : appConfig.getDefaultPagesize();
+            return limitFromRequest > appConfig.getMaxPagesize() ? appConfig.getDefaultPagesize(): limitFromRequest;
         } catch (NumberFormatException nfe) {
-            return AJEntityCourse.DEFAULT_LIMIT;
+            return appConfig.getDefaultPagesize();
         }
     }
 
@@ -179,5 +180,5 @@ public class ListCoursesHandler implements DBHandler {
         } catch (NumberFormatException nfe) {
             return AJEntityCourse.DEFAULT_OFFSET;
         }
-    }
+    }*/
 }

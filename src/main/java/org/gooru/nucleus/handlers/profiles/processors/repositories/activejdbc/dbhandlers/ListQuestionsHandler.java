@@ -13,7 +13,6 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.db
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -53,9 +52,9 @@ public class ListQuestionsHandler implements DBHandler {
         }
 
         isPublic = checkPublic();
-        searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
+        searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
-        String sortOnFromRequest = readRequestParam(HelperConstants.REQ_PARAM_SORTON);
+        String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
         sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityContent.DEFAULT_SORTON;
         if (!AJEntityContent.VALID_SORTON_FIELDS.contains(sortOn)) {
             LOGGER.warn("Invalid value provided for sort");
@@ -63,7 +62,7 @@ public class ListQuestionsHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        String orderFromRequest = readRequestParam(HelperConstants.REQ_PARAM_ORDER);
+        String orderFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_ORDER, context);
         order = orderFromRequest != null ? orderFromRequest : AJEntityContent.DEFAULT_ORDER;
         if (!AJEntityContent.VALID_ORDER_FIELDS.contains(order)) {
             LOGGER.warn("Invalid value provided for order");
@@ -71,10 +70,10 @@ public class ListQuestionsHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        limit = getLimit();
-        offset = getOffset();
+        limit = HelperUtility.getLimitFromRequest(context);
+        offset = HelperUtility.getOffsetFromRequest(context);
 
-        standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
+        standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -175,7 +174,7 @@ public class ListQuestionsHandler implements DBHandler {
         return true;
     }
 
-    private String readRequestParam(String param) {
+/*    private String readRequestParam(String param) {
         JsonArray requestParams = context.request().getJsonArray(param);
         if (requestParams == null || requestParams.isEmpty()) {
             return null;
@@ -183,7 +182,7 @@ public class ListQuestionsHandler implements DBHandler {
 
         String value = requestParams.getString(0);
         return (value != null && !value.isEmpty()) ? value : null;
-    }
+    }*/
 
     private JsonObject getFiltersJson() {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
@@ -208,7 +207,7 @@ public class ListQuestionsHandler implements DBHandler {
         return Boolean.parseBoolean(preview);
     }
 
-    private int getLimit() {
+/*    private int getLimit() {
         try {
             String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
             int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
@@ -225,5 +224,5 @@ public class ListQuestionsHandler implements DBHandler {
         } catch (NumberFormatException nfe) {
             return AJEntityCourse.DEFAULT_OFFSET;
         }
-    }
+    }*/
 }

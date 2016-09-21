@@ -52,6 +52,8 @@ public final class HelperConstants {
 
     public static final String FILTERBY_INCOURSE = "inCourse";
     public static final String FILTERBY_NOT_INCOURSE = "notInCourse";
+    
+    public static final int DEFAULT_OFFSET = 0;
 
     private HelperConstants() {
         throw new AssertionError();

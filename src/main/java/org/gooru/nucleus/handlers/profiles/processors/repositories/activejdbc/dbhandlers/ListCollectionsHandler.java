@@ -54,9 +54,9 @@ public class ListCollectionsHandler implements DBHandler {
         }
 
         isPublic = checkPublic();
-        searchText = readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT);
+        searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
-        String sortOnFromRequest = readRequestParam(HelperConstants.REQ_PARAM_SORTON);
+        String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
         sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityCollection.DEFAULT_SORTON;
         if (!AJEntityCollection.VALID_SORTON_FIELDS.contains(sortOn)) {
             LOGGER.warn("Invalid value provided for sort");
@@ -64,7 +64,7 @@ public class ListCollectionsHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        String orderFromRequest = readRequestParam(HelperConstants.REQ_PARAM_ORDER);
+        String orderFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_ORDER, context);
         order = orderFromRequest != null ? orderFromRequest : AJEntityCollection.DEFAULT_ORDER;
         if (!AJEntityCollection.VALID_ORDER_FIELDS.contains(order)) {
             LOGGER.warn("Invalid value provided for order");
@@ -72,11 +72,11 @@ public class ListCollectionsHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        limit = getLimit();
-        offset = getOffset();
+        limit = HelperUtility.getLimitFromRequest(context);
+        offset = HelperUtility.getOffsetFromRequest(context);
 
-        filterBy = readRequestParam(HelperConstants.REQ_PARAM_FILTERBY);
-        standard = readRequestParam(HelperConstants.REQ_PARAM_STANDARD);
+        filterBy = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_FILTERBY, context);
+        standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -210,7 +210,7 @@ public class ListCollectionsHandler implements DBHandler {
         return true;
     }
 
-    private String readRequestParam(String param) {
+/*    private String readRequestParam(String param) {
         JsonArray requestParams = context.request().getJsonArray(param);
         if (requestParams == null || requestParams.isEmpty()) {
             return null;
@@ -218,7 +218,7 @@ public class ListCollectionsHandler implements DBHandler {
 
         String value = requestParams.getString(0);
         return (value != null && !value.isEmpty()) ? value : null;
-    }
+    }*/
 
     private boolean checkPublic() {
         if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
@@ -244,7 +244,7 @@ public class ListCollectionsHandler implements DBHandler {
             .put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }
 
-    private int getLimit() {
+/*    private int getLimit() {
         try {
             String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
             int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
@@ -261,5 +261,5 @@ public class ListCollectionsHandler implements DBHandler {
         } catch (NumberFormatException nfe) {
             return AJEntityCourse.DEFAULT_OFFSET;
         }
-    }
+    }*/
 }
