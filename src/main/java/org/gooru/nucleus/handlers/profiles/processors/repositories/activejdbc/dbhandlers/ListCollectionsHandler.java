@@ -53,7 +53,7 @@ public class ListCollectionsHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        isPublic = checkPublic();
+        isPublic = HelperUtility.checkPublic(context);
         searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
         String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
@@ -210,56 +210,10 @@ public class ListCollectionsHandler implements DBHandler {
         return true;
     }
 
-/*    private String readRequestParam(String param) {
-        JsonArray requestParams = context.request().getJsonArray(param);
-        if (requestParams == null || requestParams.isEmpty()) {
-            return null;
-        }
-
-        String value = requestParams.getString(0);
-        return (value != null && !value.isEmpty()) ? value : null;
-    }*/
-
-    private boolean checkPublic() {
-        if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-            return true;
-        }
-
-        JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
-        if (previewArray == null || previewArray.isEmpty()) {
-            return false;
-        }
-
-        String preview = (String) previewArray.getValue(0);
-        // Assuming that preview parameter only exists when user want to view
-        // his
-        // profile as public
-        return Boolean.parseBoolean(preview);
-    }
-
     private JsonObject getFiltersJson() {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
             .put(HelperConstants.RESP_JSON_KEY_FILTERBY, filterBy).put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
             .put(HelperConstants.RESP_JSON_KEY_ORDER, order).put(HelperConstants.RESP_JSON_KEY_LIMIT, limit)
             .put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }
-
-/*    private int getLimit() {
-        try {
-            String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-            int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
-            return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
-        } catch (NumberFormatException nfe) {
-            return AJEntityCourse.DEFAULT_LIMIT;
-        }
-    }
-
-    private int getOffset() {
-        try {
-            String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
-            return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET;
-        } catch (NumberFormatException nfe) {
-            return AJEntityCourse.DEFAULT_OFFSET;
-        }
-    }*/
 }
