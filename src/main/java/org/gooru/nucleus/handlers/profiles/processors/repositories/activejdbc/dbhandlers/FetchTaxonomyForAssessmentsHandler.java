@@ -38,7 +38,7 @@ public class FetchTaxonomyForAssessmentsHandler implements DBHandler {
         }
 
         // identify whether the request is for public or owner
-        isPublic = checkPublic();
+        isPublic = HelperUtility.checkPublic(context);
         LOGGER.debug("isPublic:{}", isPublic);
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -76,22 +76,4 @@ public class FetchTaxonomyForAssessmentsHandler implements DBHandler {
     public boolean handlerReadOnly() {
         return true;
     }
-
-    private boolean checkPublic() {
-        if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-            return true;
-        }
-
-        JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
-        if (previewArray == null || previewArray.isEmpty()) {
-            return false;
-        }
-
-        String preview = (String) previewArray.getValue(0);
-        // Assuming that preview parameter only exists when user want to view
-        // his
-        // profile as public
-        return Boolean.parseBoolean(preview);
-    }
-
 }

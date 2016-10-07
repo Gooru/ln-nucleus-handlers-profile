@@ -69,7 +69,4 @@ public class AJEntityCourse extends Model {
     
     public static final List<String> COURSE_FIELDS_FOR_COLLECTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE);
 
-    public static final int DEFAULT_LIMIT = 20;
-    public static final int DEFAULT_OFFSET = 0;
-
 }
