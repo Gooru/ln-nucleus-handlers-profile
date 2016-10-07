@@ -31,10 +31,12 @@ public class ProfileVerticle extends AbstractVerticle {
         }, startApplicationFuture -> {
             if (startApplicationFuture.succeeded()) {
                 eb.consumer(MessagebusEndpoints.MBEP_PROFILE, message -> {
-                    LOGGER.debug("Received message: " + message.body());
+                    LOGGER.info("Received message: " + message.body());
+                    long startTime = System.currentTimeMillis();
                     vertx.executeBlocking(future -> {
                         MessageResponse result = new ProcessorBuilder(message).build().process();
-                        LOGGER.info("got response :" + result.reply());
+                        LOGGER.debug("got response :" + result.reply());
+                        LOGGER.info("Request processing time:{}ms", (System.currentTimeMillis() - startTime));
                         future.complete(result);
                     }, res -> {
                         MessageResponse result = (MessageResponse) res.result();

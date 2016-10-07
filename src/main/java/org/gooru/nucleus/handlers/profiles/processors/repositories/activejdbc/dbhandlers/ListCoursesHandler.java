@@ -10,9 +10,8 @@ import java.util.Set;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -49,11 +48,11 @@ public class ListCoursesHandler implements DBHandler {
                 ExecutionStatus.FAILED);
         }
 
-        isPublic = checkPublic();
-        subjectCode = readRequestParam(HelperConstants.REQ_PARAM_SUBJECT);
+        isPublic = HelperUtility.checkPublic(context);
+        subjectCode = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SUBJECT, context);
 
-        limit = getLimit();
-        offset = getOffset();
+        limit = HelperUtility.getLimitFromRequest(context);
+        offset = HelperUtility.getOffsetFromRequest(context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -95,7 +94,7 @@ public class ListCoursesHandler implements DBHandler {
         LOGGER.debug("SelectQuery:{}, paramSize:{}, txCode:{}, limit:{}, offset:{}", query, params.size(), subjectCode,
             limit, offset);
         LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(query.toString(), params.toArray());
-
+        Set<String> ownerIdList = new HashSet<>();
         JsonArray courseArray = new JsonArray();
         if (!courseList.isEmpty()) {
             List<String> courseIdList = new ArrayList<>();
@@ -113,11 +112,13 @@ public class ListCoursesHandler implements DBHandler {
                     JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
                         .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
             });
+            
+            courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, getOwnerDetails(courseList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
 
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
@@ -129,85 +130,8 @@ public class ListCoursesHandler implements DBHandler {
         return true;
     }
 
-    private String readRequestParam(String param) {
-        JsonArray requestParams = context.request().getJsonArray(param);
-        if (requestParams == null || requestParams.isEmpty()) {
-            return null;
-        }
-
-        String value = requestParams.getString(0);
-        return (value != null && !value.isEmpty()) ? value : null;
-    }
-
-    private boolean checkPublic() {
-        if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-            return true;
-        }
-
-        JsonArray previewArray = context.request().getJsonArray(HelperConstants.REQ_PARAM_PREVIEW);
-        if (previewArray == null || previewArray.isEmpty()) {
-            return false;
-        }
-
-        String preview = (String) previewArray.getValue(0);
-        // Assuming that preview parameter only exists when user want to view
-        // his
-        // profile as public
-        return Boolean.parseBoolean(preview);
-    }
-
     private JsonObject getFiltersJson() {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_SUBJECT, subjectCode)
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
-    }
-
-    private int getLimit() {
-        try {
-            String strLimit = readRequestParam(HelperConstants.REQ_PARAM_LIMIT);
-            int limitFromRequest = strLimit != null ? Integer.valueOf(strLimit) : AJEntityCourse.DEFAULT_LIMIT;
-            return limitFromRequest > AJEntityCourse.DEFAULT_LIMIT ? AJEntityCourse.DEFAULT_LIMIT : limitFromRequest;
-        } catch (NumberFormatException nfe) {
-            return AJEntityCourse.DEFAULT_LIMIT;
-        }
-    }
-
-    private int getOffset() {
-        try {
-            String offsetFromRequest = readRequestParam(HelperConstants.REQ_PARAM_OFFSET);
-            return offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) : AJEntityCourse.DEFAULT_OFFSET;
-        } catch (NumberFormatException nfe) {
-            return AJEntityCourse.DEFAULT_OFFSET;
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static JsonArray getOwnerDetails(LazyList<AJEntityCourse> courseList) {
-        Set<String> ownerIdList = new HashSet<>();
-        courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
-
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic.findBySQL(
-            AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, HelperUtility.toPostgresArrayString(ownerIdList));
-        List<Map> usernames = Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE,
-            HelperUtility.toPostgresArrayString(ownerIdList));
-        Map<String, String> usernamesById = new HashMap<>();
-        usernames.stream().forEach(username -> {
-            String uname = (username.get(AJEntityUserIdentity.USERNAME) != null
-                && !username.get(AJEntityUserIdentity.USERNAME).toString().isEmpty())
-                    ? username.get(AJEntityUserIdentity.USERNAME).toString() : null;
-            usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(), uname);
-        });
-
-        JsonArray userDetailsArray = new JsonArray();
-        if (!userDemographics.isEmpty()) {
-            userDemographics.forEach(user -> {
-                JsonObject userDemographic = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS).toJson(user));
-                userDemographic.put(AJEntityUserIdentity.USERNAME,
-                    usernamesById.get(user.getString(AJEntityUserDemographic.ID)));
-                userDetailsArray.add(userDemographic);
-            });
-        }
-
-        return userDetailsArray;
     }
 }
