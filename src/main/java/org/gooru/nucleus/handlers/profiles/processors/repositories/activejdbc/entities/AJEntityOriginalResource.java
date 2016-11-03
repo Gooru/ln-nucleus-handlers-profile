@@ -6,53 +6,49 @@ import java.util.List;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.Table;
 
-@Table("content")
-public class AJEntityContent extends Model {
+@Table("original_resource")
+public class AJEntityOriginalResource extends Model {
 
     public static final String ID = "id";
     public static final String TITLE = "title";
     public static final String DESCRIPTION = "description";
     public static final String FORMAT = "format";
     public static final String PUBLISH_STATUS = "publish_status";
-    public static final String CONTENT_FORMAT = "content_format";
     public static final String CONTENT_SUBFORMAT = "content_subformat";
     public static final String THUMBNAIL = "thumbnail";
     public static final String TAXONOMY = "taxonomy";
     public static final String UPDATED_AT = "updated_at";
     public static final String CREATOR_ID = "creator_id";
-    public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
     public static final String COLLECTION_ID = "collection_id";
     public static final String VISIBLE_ON_PROFILE = "visible_on_profile";
-
-    public static final String OWNER_INFO = "owner_info";
-
-    public static final String SELECT_QUESTIONS =
-        "SELECT id, title, description, publish_status, content_format, content_subformat, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " collection_id, visible_on_profile FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
-            + " AND is_deleted = false";
-
-    public static final String SELECT_QUESTIONS_BY_TAXONOMY =
-        "SELECT id, title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id,"
-            + " collection_id, visible_on_profile FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
-            + " AND is_deleted = false AND taxonomy ?? ?";
     
-    public static final String SELECT_TAXONOMY_FOR_QUESTIONS =
-        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
-        + " AND is_deleted = false";
+    public static final String CONTENT_FORMAT = "content_format";
+    public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
+    public static final String RESOURCE_CONTENT_FORMAT = "resource";
     
-    public static final String SELECT_TAXONOMY_FOR_QUESTIONS_PUBLIC =
-        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
-        + " AND is_deleted = false AND visible_on_profile = true";
+    public static final String SELECT_RESOURCES =
+        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile FROM original_resource"
+        + " WHERE creator_id = ?::uuid AND is_deleted = false";
+
+    public static final String SELECT_RESOURCES_BY_TAXONOMY =
+        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile FROM original_resource"
+        + " WHERE creator_id = ?::uuid AND is_deleted = false AND taxonomy ?? ?";
+    
+    public static final String SELECT_TAXONOMY_FOR_RESOURCES =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM original_resource WHERE creator_id = ?::uuid AND is_deleted = false";
+    
+    public static final String SELECT_TAXONOMY_FOR_RESOURCES_PUBLIC =
+        "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM original_resource WHERE creator_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
+    
+    public static final List<String> RESOURCE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
+        CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, VISIBLE_ON_PROFILE);
     
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "(title ilike ? OR description ilike ?)";
     public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
     public static final String CLAUSE_ORDERBY = "ORDER BY";
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
-
-    public static final List<String> QUESTION_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
-        CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);
-
+    
     public static final String ORDER_DESC = "desc";
     public static final String ORDER_ASC = "asc";
 
