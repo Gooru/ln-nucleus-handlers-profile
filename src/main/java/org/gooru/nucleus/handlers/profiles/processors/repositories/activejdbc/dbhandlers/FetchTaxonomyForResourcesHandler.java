@@ -5,7 +5,7 @@ import java.util.List;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
@@ -55,9 +55,9 @@ public class FetchTaxonomyForResourcesHandler implements DBHandler {
         List<String> taxonomyList = null;
         if (isPublic) {
             taxonomyList =
-                Base.firstColumn(AJEntityContent.SELECT_TAXONOMY_FOR_RESOURCES_PUBLIC, context.userIdFromURL());
+                Base.firstColumn(AJEntityOriginalResource.SELECT_TAXONOMY_FOR_RESOURCES_PUBLIC, context.userIdFromURL());
         } else {
-            taxonomyList = Base.firstColumn(AJEntityContent.SELECT_TAXONOMY_FOR_RESOURCES, context.userIdFromURL());
+            taxonomyList = Base.firstColumn(AJEntityOriginalResource.SELECT_TAXONOMY_FOR_RESOURCES, context.userIdFromURL());
         }
 
         JsonArray taxonomyArray = new JsonArray();
