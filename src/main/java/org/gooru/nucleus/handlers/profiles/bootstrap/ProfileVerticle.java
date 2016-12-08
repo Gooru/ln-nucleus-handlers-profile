@@ -38,7 +38,7 @@ public class ProfileVerticle extends AbstractVerticle {
                         LOGGER.debug("got response :" + result.reply());
                         LOGGER.info("Request processing time:{}ms", (System.currentTimeMillis() - startTime));
                         future.complete(result);
-                    }, false, res -> {
+                    }, res -> {
                         MessageResponse result = (MessageResponse) res.result();
                         message.reply(result.reply(), result.deliveryOptions());
                         JsonObject eventData = result.event();
