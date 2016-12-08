@@ -9,7 +9,8 @@ import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+//import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -52,16 +53,16 @@ public class ListResourcesHandler implements DBHandler {
         searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
         String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
-        sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityContent.DEFAULT_SORTON;
-        if (!AJEntityContent.VALID_SORTON_FIELDS.contains(sortOn)) {
+        sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityOriginalResource.DEFAULT_SORTON;
+        if (!AJEntityOriginalResource.VALID_SORTON_FIELDS.contains(sortOn)) {
             LOGGER.warn("Invalid value provided for sort");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for sort"),
                 ExecutionStatus.FAILED);
         }
 
         String orderFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_ORDER, context);
-        order = orderFromRequest != null ? orderFromRequest : AJEntityContent.DEFAULT_ORDER;
-        if (!AJEntityContent.VALID_ORDER_FIELDS.contains(order)) {
+        order = orderFromRequest != null ? orderFromRequest : AJEntityOriginalResource.DEFAULT_ORDER;
+        if (!AJEntityOriginalResource.VALID_ORDER_FIELDS.contains(order)) {
             LOGGER.warn("Invalid value provided for order");
             return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid value for order"),
                 ExecutionStatus.FAILED);
@@ -89,15 +90,15 @@ public class ListResourcesHandler implements DBHandler {
         params.add(context.userIdFromURL());
 
         if (standard != null) {
-            query = new StringBuilder(AJEntityContent.SELECT_RESOURCES_BY_TAXONOMY);
+            query = new StringBuilder(AJEntityOriginalResource.SELECT_RESOURCES_BY_TAXONOMY);
             params.add(standard);
         } else {
-            query = new StringBuilder(AJEntityContent.SELECT_RESOURCES);
+            query = new StringBuilder(AJEntityOriginalResource.SELECT_RESOURCES);
         }
 
         if (searchText != null) {
-            query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityContent.CRITERIA_TITLE);
+            query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityOriginalResource.CRITERIA_TITLE);
             // Purposefully adding same search text twice to fulfill the
             // criteria of
             // title and description search
@@ -106,13 +107,13 @@ public class ListResourcesHandler implements DBHandler {
         }
 
         if (isPublic) {
-            query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityContent.CRITERIA_PUBLIC);
+            query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityOriginalResource.CRITERIA_PUBLIC);
         }
 
-        query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
+        query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
-            .append(AJEntityContent.CLAUSE_LIMIT_OFFSET);
+            .append(AJEntityOriginalResource.CLAUSE_LIMIT_OFFSET);
         params.add(limit);
         params.add(offset);
 
@@ -120,15 +121,20 @@ public class ListResourcesHandler implements DBHandler {
             "SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
             query, params.size(), standard, searchText, sortOn, order, limit, offset);
 
-        LazyList<AJEntityContent> resourceList = AJEntityContent.findBySQL(query.toString(), params.toArray());
+        LazyList<AJEntityOriginalResource> resourceList = AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
         JsonArray resourceArray = new JsonArray();
         Set<String> ownerIdList = new HashSet<>();
         if (!resourceList.isEmpty()) {
             resourceList.stream()
-                .forEach(resource -> ownerIdList.add(resource.getString(AJEntityContent.CREATOR_ID)));
-
-            resourceList.stream().forEach(resource -> resourceArray.add(new JsonObject(
-                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.RESOURCE_LIST).toJson(resource))));
+                .forEach(resource -> ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID)));
+            String strNull = null;
+            resourceList.stream().forEach(resource -> { 
+                JsonObject resourceJson = new JsonObject(
+                    JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST).toJson(resource));
+                resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT, AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
+                resourceJson.put(AJEntityOriginalResource.ORIGINAL_CREATOR_ID, strNull);
+                resourceArray.add(resourceJson); 
+                });
         }
         
         JsonObject responseBody = new JsonObject();
