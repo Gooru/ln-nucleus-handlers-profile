@@ -52,7 +52,9 @@ public final class HelperConstants {
 
     public static final String FILTERBY_INCOURSE = "inCourse";
     public static final String FILTERBY_NOT_INCOURSE = "notInCourse";
-    
+    public static final String DEMOGRAPHICS_CACHE = "demographics.cache.store";
+    public static final String DEMOGRAPHICS_CACHE_TIMEOUT = "timeout.seconds";
+    public static final String DEMOGRAPHICS_CACHE_SIZE = "size";
     public static final int DEFAULT_OFFSET = 0;
 
     private HelperConstants() {
