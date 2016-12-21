@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.gooru.nucleus.handlers.profiles.app.components.AppConfiguration;
 import org.gooru.nucleus.handlers.profiles.app.components.DataSourceRegistry;
-import org.gooru.nucleus.handlers.profiles.app.components.DemographicsCacheStore;
 
 public class Initializers implements Iterable<Initializer> {
 
@@ -16,7 +15,6 @@ public class Initializers implements Iterable<Initializer> {
         List<Initializer> initializers = new ArrayList<>();
         initializers.add(DataSourceRegistry.getInstance());
         initializers.add(AppConfiguration.getInstance());
-        initializers.add(DemographicsCacheStore.getInstance());
         internalIterator = initializers.iterator();
     }
 

@@ -1,6 +1,5 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import org.gooru.nucleus.handlers.profiles.app.components.DemographicsCacheStore;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
@@ -50,11 +49,6 @@ public class GetDemographicsHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        ExecutionResult<MessageResponse> result = lookupProfileFromCache();
-        if (result.isSuccessful()) {
-            return result;
-        }
-
         LOGGER.debug("request to get demographics");
         LazyList<AJEntityUserDemographic> demographics =
             AJEntityUserDemographic.findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS, context.userIdFromURL());
@@ -92,30 +86,14 @@ public class GetDemographicsHandler implements DBHandler {
             username = userIdentities.get(0).getString(AJEntityUserIdentity.USERNAME);
         }
         responseBody.put(AJEntityUserIdentity.USERNAME, username);
-        storeResultInCache(responseBody);
+
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);
-    }
-
-    private void storeResultInCache(JsonObject profileData) {
-        DemographicsCacheStore.getInstance().store(context.userIdFromURL(), profileData);
     }
 
     @Override
     public boolean handlerReadOnly() {
         return true;
-    }
-
-    private ExecutionResult<MessageResponse> lookupProfileFromCache() {
-        String userId = context.userIdFromURL();
-        JsonObject profileData = DemographicsCacheStore.getInstance().fetch(userId);
-        if (profileData == null || profileData.isEmpty()) {
-            return new ExecutionResult<>(null, ExecutionStatus.FAILED);
-        } else {
-            LOGGER.debug("Profile request served from cache for user: {}", context.userIdFromURL());
-            return new ExecutionResult<>(MessageResponseFactory.createGetResponse(profileData),
-                ExecutionStatus.SUCCESSFUL);
-        }
     }
 
 }
