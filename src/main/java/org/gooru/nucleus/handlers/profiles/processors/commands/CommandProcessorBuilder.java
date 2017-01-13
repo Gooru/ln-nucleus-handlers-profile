@@ -2,7 +2,6 @@ package org.gooru.nucleus.handlers.profiles.processors.commands;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.Processor;
@@ -18,14 +17,12 @@ public enum CommandProcessorBuilder {
 
     DEFAULT("default") {
         private final Logger LOGGER = LoggerFactory.getLogger(CommandProcessorBuilder.class);
-        private final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
 
         @Override
         public Processor build(ProcessorContext context) {
             return () -> {
                 LOGGER.error("Invalid operation type passed in, not able to handle");
-                return MessageResponseFactory
-                    .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("invalid.operation"));
+                return MessageResponseFactory.createInvalidRequestResponse("Invalid operation");
             };
         }
     },
