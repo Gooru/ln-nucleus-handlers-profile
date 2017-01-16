@@ -6,6 +6,4 @@ public interface AssessmentRepo {
 
     MessageResponse listAssessments();
 
-    MessageResponse fetchTaxonomyForAssessments();
-
 }

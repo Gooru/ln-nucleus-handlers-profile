@@ -19,10 +19,4 @@ public class AJQuestionRepo implements QuestionRepo {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListQuestionsHandler(context));
     }
 
-    @Override
-    public MessageResponse fetchTaxonomyForQuestions() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForQuestionsHandler(context));
-    }
-
 }

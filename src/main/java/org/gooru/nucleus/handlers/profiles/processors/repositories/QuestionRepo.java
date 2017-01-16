@@ -6,6 +6,4 @@ public interface QuestionRepo {
 
     MessageResponse listQuestions();
 
-    MessageResponse fetchTaxonomyForQuestions();
-
 }
