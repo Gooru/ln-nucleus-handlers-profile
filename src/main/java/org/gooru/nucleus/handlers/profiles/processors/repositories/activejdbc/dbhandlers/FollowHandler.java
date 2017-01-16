@@ -1,5 +1,7 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import java.util.UUID;
+
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.events.EventBuilderFactory;
@@ -64,7 +66,7 @@ public class FollowHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        AJEntityUsers user = AJEntityUsers.findById(followOnUserId);
+        AJEntityUsers user = AJEntityUsers.findById(UUID.fromString(followOnUserId));
         if (user == null) {
             LOGGER.warn("user not found in database to which you are trying to follow");
             return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse("user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
