@@ -43,25 +43,4 @@ public final class DBHandlerBuilder {
     public static DBHandler buildGetNetworkHandler(ProcessorContext context) {
         return new GetNetworkHandler(context);
     }
-
-    public static DBHandler buildFetchTaxonomyForResourcesHandler(ProcessorContext context) {
-        return new FetchTaxonomyForResourcesHandler(context);
-    }
-
-    public static DBHandler buildFetchTaxonomyForQuestionsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForQuestionsHandler(context);
-    }
-
-    public static DBHandler buildFetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
-        return new FetchSubjectBucketsForCoursesHandler(context);
-    }
-
-    public static DBHandler buildFetchTaxonomyForCollectionsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForCollectionsHandler(context);
-    }
-
-    public static DBHandler buildFetchTaxonomyForAssessmentsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForAssessmentsHandler(context);
-    }
-
 }

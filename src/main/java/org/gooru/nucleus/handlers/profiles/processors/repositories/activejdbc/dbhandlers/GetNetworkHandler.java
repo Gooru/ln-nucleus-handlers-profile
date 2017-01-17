@@ -8,9 +8,8 @@ import java.util.Map;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserDemographic;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -70,38 +69,34 @@ public class GetNetworkHandler implements DBHandler {
         JsonArray detailsArray = new JsonArray();
         if (details != null) {
             if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWERS)) {
-                Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followers);
+                Map<String, AJEntityUsers> userDemographicsMap = getDemographics(followers);
                 Map<String, Integer> followersCountMap = getFollowersCount(followers);
                 Map<String, Integer> followingsCountMap = getFollowingsCount(followers);
-                Map<String, String> usernamesById = getUsernames(followers);
                 
                 followers.stream().forEach(follower -> {
                     String strFollower = follower.toString();
                     Integer followersCount = followersCountMap.get(strFollower);
                     Integer followingsCount = followingsCountMap.get(strFollower);
                     detailsArray.add(new JsonObject(JsonFormatterBuilder
-                        .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+                        .buildSimpleJsonFormatter(false, AJEntityUsers.SUMMARY_FIELDS)
                         .toJson(userDemographicsMap.get(strFollower)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
-                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0)
-                            .put(AJEntityUserIdentity.USERNAME, usernamesById.get(strFollower)));
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
                 });
             } else if (details.equalsIgnoreCase(HelperConstants.REQ_PARAM_DETAILS_FOLLOWINGS)) {
-                Map<String, AJEntityUserDemographic> userDemographicsMap = getDemographics(followings);
+                Map<String, AJEntityUsers> userDemographicsMap = getDemographics(followings);
                 Map<String, Integer> followersCountMap = getFollowersCount(followings);
                 Map<String, Integer> followingsCountMap = getFollowingsCount(followings);
-                Map<String, String> usernamesById = getUsernames(followings);
                 
                 followings.stream().forEach(following -> {
                     String strFollowing = following.toString();
                     Integer followersCount = followersCountMap.get(strFollowing);
                     Integer followingsCount = followingsCountMap.get(strFollowing);
                     detailsArray.add(new JsonObject(JsonFormatterBuilder
-                        .buildSimpleJsonFormatter(false, AJEntityUserDemographic.DEMOGRAPHIC_FIELDS)
+                        .buildSimpleJsonFormatter(false, AJEntityUsers.SUMMARY_FIELDS)
                         .toJson(userDemographicsMap.get(strFollowing)))
                             .put(AJEntityUserNetwork.FOLLOWERS_COUNT, followersCount != null ? followersCount : 0)
-                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0)
-                            .put(AJEntityUserIdentity.USERNAME, usernamesById.get(strFollowing)));
+                            .put(AJEntityUserNetwork.FOLLOWINGS_COUNT, followingsCount != null ? followingsCount : 0));
                 });
             }
         }
@@ -120,27 +115,14 @@ public class GetNetworkHandler implements DBHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private static Map<String, AJEntityUserDemographic> getDemographics(List input) {
-        LazyList<AJEntityUserDemographic> userDemographics = AJEntityUserDemographic
-            .findBySQL(AJEntityUserDemographic.SELECT_DEMOGRAPHICS_MULTIPLE, listToPostgresArrayString(input));
-        Map<String, AJEntityUserDemographic> userDemographicsMap = new HashMap<>();
+    private static Map<String, AJEntityUsers> getDemographics(List input) {
+        LazyList<AJEntityUsers> userDemographics = AJEntityUsers
+            .findBySQL(AJEntityUsers.SELECT_MULTIPLE_BY_ID, listToPostgresArrayString(input));
+        Map<String, AJEntityUsers> userDemographicsMap = new HashMap<>();
         userDemographics.forEach(user -> userDemographicsMap.put(user.getId().toString(), user));
         return userDemographicsMap;
     }
     
-    @SuppressWarnings("rawtypes")
-    private static Map<String, String> getUsernames(List input) {
-        List<Map> usernames =
-            Base.findAll(AJEntityUserIdentity.SELECT_USERNAME_MULIPLE, listToPostgresArrayString(input));
-        Map<String, String> usernamesById = new HashMap<>();
-        usernames.stream().forEach(username -> {
-            Object name = username.get(AJEntityUserIdentity.USERNAME);
-            String uname = (name != null && !name.toString().isEmpty()) ? name.toString() : null;
-            usernamesById.put(username.get(AJEntityUserIdentity.USER_ID).toString(), uname);
-        });
-        return usernamesById;
-    }
-
     @SuppressWarnings("rawtypes")
     private static Map<String, Integer> getFollowersCount(List input) {
         List<Map> followersCount =

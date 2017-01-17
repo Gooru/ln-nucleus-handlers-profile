@@ -13,11 +13,6 @@ class CollectionListProcessor extends AbstractCommandProcessor {
     }
 
     @Override
-    public MessageResponse process() {
-        return null;
-    }
-
-    @Override
     protected void setDeprecatedVersions() {
 
     }

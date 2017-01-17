@@ -79,36 +79,6 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new NetworkProcessor(context);
         }
-    },
-    PROFILE_COURSE_SUBJECTBUCKETS_GET(MessageConstants.MSG_OP_PROFILE_COURSE_SUBJECTBUCKETS_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new CourseSubjectBucketsProcessor(context);
-        }
-    },
-    PROFILE_COLLECTION_TAXONOMY_GET(MessageConstants.MSG_OP_PROFILE_COLLECTION_TAXONOMY_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new CollectionTaxonomyProcessor(context);
-        }
-    },
-    PROFILE_ASSESSMENT_TAXONOMY_GET(MessageConstants.MSG_OP_PROFILE_ASSESSMENT_TAXONOMY_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new AssessmentTaxonomyProcessor(context);
-        }
-    },
-    PROFILE_RESOURCE_TAXONOMY_GET(MessageConstants.MSG_OP_PROFILE_RESOURCE_TAXONOMY_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new ResourceTaxonomyProcessor(context);
-        }
-    },
-    PROFILE_QUESTION_TAXONOMY_GET(MessageConstants.MSG_OP_PROFILE_QUESTION_TAXONOMY_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new QuestionTaxonomyProcessor(context);
-        }
     };
 
     private String name;
