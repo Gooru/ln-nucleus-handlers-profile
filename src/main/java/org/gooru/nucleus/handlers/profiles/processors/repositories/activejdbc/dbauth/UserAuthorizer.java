@@ -22,8 +22,8 @@ public class UserAuthorizer implements Authorizer<AJEntityUsers> {
 
     @Override
     public ExecutionResult<MessageResponse> authorize(AJEntityUsers model) {
-        AJEntityUsers user = AJEntityUsers.findById(UUID.fromString(context.userIdFromURL()));
-        if (user == null) {
+        boolean userExists = AJEntityUsers.exists(UUID.fromString(context.userIdFromURL()));
+        if (!userExists) {
             LOGGER.warn("user not found in database");
             return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(), ExecutionStatus.FAILED);
         }

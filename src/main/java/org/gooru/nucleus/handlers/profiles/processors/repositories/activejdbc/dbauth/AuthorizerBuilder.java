@@ -13,4 +13,8 @@ public final class AuthorizerBuilder {
         return new UserAuthorizer(context);
     }
 
+    public static Authorizer<AJEntityUsers> buildFollowUserAuthorizer(ProcessorContext context) {
+        return new FollowUserAuthorizer(context);
+    }
+
 }
