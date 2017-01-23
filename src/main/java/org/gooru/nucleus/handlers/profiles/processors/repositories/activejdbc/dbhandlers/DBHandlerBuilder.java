@@ -43,4 +43,8 @@ public final class DBHandlerBuilder {
     public static DBHandler buildGetNetworkHandler(ProcessorContext context) {
         return new GetNetworkHandler(context);
     }
+
+    public static DBHandler buildSearchProfileHandler(ProcessorContext context) {
+        return new SearchProfileHandler(context);
+    }
 }

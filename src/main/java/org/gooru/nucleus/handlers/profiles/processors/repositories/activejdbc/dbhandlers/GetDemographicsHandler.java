@@ -12,7 +12,6 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
@@ -33,20 +32,14 @@ public class GetDemographicsHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        if (context.userIdFromURL() == null || context.userIdFromURL().isEmpty()
-            || !(HelperUtility.validateUUID(context.userIdFromURL()))) {
-            LOGGER.warn("Invalid user id");
-            return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse("Invalid user id"),
-                ExecutionStatus.FAILED);
-        }
-
+        
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        user = AJEntityUsers.findById(UUID.fromString(context.userIdFromURL()));
+        user = AJEntityUsers.findById(UUID.fromString(context.userId()));
         if (user == null) {
             LOGGER.warn("user not found in database");
             return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(), ExecutionStatus.FAILED);

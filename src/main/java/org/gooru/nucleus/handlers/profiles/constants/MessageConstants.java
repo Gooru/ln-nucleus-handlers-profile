@@ -29,11 +29,7 @@ public final class MessageConstants {
     public static final String MSG_OP_PROFILE_FOLLOW = "profile.follow";
     public static final String MSG_OP_PROFILE_UNFOLLOW = "profile.unfollow";
     public static final String MSG_OP_PROFILE_NETWORK_GET = "profile.network.get";
-    public static final String MSG_OP_PROFILE_COURSE_SUBJECTBUCKETS_GET = "profile.course.subjectbucket.get";
-    public static final String MSG_OP_PROFILE_COLLECTION_TAXONOMY_GET = "profile.collection.taxonomy.get";
-    public static final String MSG_OP_PROFILE_ASSESSMENT_TAXONOMY_GET = "profile.assessment.taxonomy.get";
-    public static final String MSG_OP_PROFILE_RESOURCE_TAXONOMY_GET = "profile.resource.taxonomy.get";
-    public static final String MSG_OP_PROFILE_QUESTION_TAXONOMY_GET = "profile.question.taxonomy.get";
+    public static final String MSG_OP_PROFILE_SEARCH = "profile.search";
 
     // Containers for different responses
     public static final String RESP_CONTAINER_MBUS = "mb.container";

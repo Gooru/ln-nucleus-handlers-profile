@@ -79,6 +79,12 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new NetworkProcessor(context);
         }
+    },
+    PROFILE_SEARCH(MessageConstants.MSG_OP_PROFILE_SEARCH) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new SearchProfileProcessor(context);
+        }
     };
 
     private String name;

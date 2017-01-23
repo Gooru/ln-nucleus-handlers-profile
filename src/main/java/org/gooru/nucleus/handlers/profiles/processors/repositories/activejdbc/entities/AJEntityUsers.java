@@ -55,6 +55,10 @@ public class AJEntityUsers extends Model {
             + " ANY (?::uuid[])";
 
     public static final String SELECT_USERNAME_MULIPLE = "SELECT id, username FROM users WHERE id = ANY(?::uuid[])";
+    
+    public static final String SELECT_BY_USERNAME = "username = ?";
+    public static final String SELECT_BY_EMAIL = "email = ?";
+    public static final String SELECT_BY_IDS = "id = ANY(?::uuid[])";
 
     public static final List<String> ALL_FIELDS = Arrays
         .asList(ID, USERNAME, FIRST_NAME, LAST_NAME, PARENT_USER_ID, USER_CATEGORY, BIRTH_DATE, GRADE, COURSE,
