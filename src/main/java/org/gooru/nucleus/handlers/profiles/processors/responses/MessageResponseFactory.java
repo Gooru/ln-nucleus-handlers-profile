@@ -64,6 +64,10 @@ public final class MessageResponseFactory {
         return new MessageResponse.Builder().successful().setStatusCreated().setEventData(eventBuilder.build()).build();
     }
 
+    public static MessageResponse createNoContentResponse() {
+        return new MessageResponse.Builder().successful().setStatusNoOutput().build();
+    }
+    
     public static MessageResponse createNoContentResponse(EventBuilder eventBuilder) {
         return new MessageResponse.Builder().successful().setStatusNoOutput().setEventData(eventBuilder.build())
             .build();

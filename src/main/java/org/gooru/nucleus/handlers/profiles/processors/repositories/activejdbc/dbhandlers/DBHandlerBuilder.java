@@ -47,4 +47,12 @@ public final class DBHandlerBuilder {
     public static DBHandler buildSearchProfileHandler(ProcessorContext context) {
         return new SearchProfileHandler(context);
     }
+    
+    public static DBHandler buildGetPreferenceHandler(ProcessorContext context) {
+        return new GetPreferenceHandler(context);
+    }
+    
+    public static DBHandler buildUpdatePreferenceHandler(ProcessorContext context) {
+        return new UpdatePreferenceHandler(context);
+    }
 }
