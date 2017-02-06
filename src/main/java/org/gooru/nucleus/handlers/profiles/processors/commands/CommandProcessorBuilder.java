@@ -85,6 +85,18 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new SearchProfileProcessor(context);
         }
+    },
+    PROFILE_PREFERENCE_GET(MessageConstants.MSG_OP_PROFILE_PREFERENCE_GET) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new PreferenceGetProcessor(context);
+        }
+    },
+    PROFILE_PREFERENCE_UPDATE(MessageConstants.MSG_OP_PROFILE_PREFERENCE_UPDATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new PreferenceUpdateProcessor(context);
+        }
     };
 
     private String name;
