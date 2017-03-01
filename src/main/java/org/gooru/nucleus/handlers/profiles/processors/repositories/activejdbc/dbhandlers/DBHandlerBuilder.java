@@ -55,4 +55,8 @@ public final class DBHandlerBuilder {
     public static DBHandler buildUpdatePreferenceHandler(ProcessorContext context) {
         return new UpdatePreferenceHandler(context);
     }
+
+    public static DBHandler buildListRubricsHandler(ProcessorContext context) {
+        return new ListRubricsHandler(context);
+    }
 }

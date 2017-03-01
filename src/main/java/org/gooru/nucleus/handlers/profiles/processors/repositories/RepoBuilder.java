@@ -37,4 +37,8 @@ public final class RepoBuilder {
         return AJRepoBuilder.buildPreferenceRepo(context);
     }
 
+    public static RubricRepo buildRubricRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildRubricRepo(context);
+    }
+
 }

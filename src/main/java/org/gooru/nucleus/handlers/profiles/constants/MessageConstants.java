@@ -25,6 +25,7 @@ public final class MessageConstants {
     public static final String MSG_OP_PROFILE_ASSESSMENT_LIST = "profile.assessment.list";
     public static final String MSG_OP_PROFILE_RESOURCE_LIST = "profile.resource.list";
     public static final String MSG_OP_PROFILE_QUESTION_LIST = "profile.question.list";
+    public static final String MSG_OP_PROFILE_RUBRIC_LIST = "profile.rubric.list";
     public static final String MSG_OP_PROFILE_DEMOGRAPHICS_GET = "profile.demographics.get";
     public static final String MSG_OP_PROFILE_FOLLOW = "profile.follow";
     public static final String MSG_OP_PROFILE_UNFOLLOW = "profile.unfollow";

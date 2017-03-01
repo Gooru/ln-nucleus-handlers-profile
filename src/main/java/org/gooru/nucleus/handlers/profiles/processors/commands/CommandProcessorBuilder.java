@@ -56,6 +56,12 @@ public enum CommandProcessorBuilder {
             return new QuestionListProcessor(context);
         }
     },
+    PROFILE_RUBRIC_LIST(MessageConstants.MSG_OP_PROFILE_RUBRIC_LIST) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new RubricListProcessor(context);
+        }
+    },
     ROFILE_DEMOGRAPHICS_GET(MessageConstants.MSG_OP_PROFILE_DEMOGRAPHICS_GET) {
         @Override
         public Processor build(ProcessorContext context) {
