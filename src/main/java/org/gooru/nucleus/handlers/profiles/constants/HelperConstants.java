@@ -27,6 +27,7 @@ public final class HelperConstants {
     public static final String RESP_JSON_KEY_ASSESSMENT = "assessment";
     public static final String RESP_JSON_KEY_RESOURCES = "resources";
     public static final String RESP_JSON_KEY_QUESTIONS = "questions";
+    public static final String RESP_JSON_KEY_RUBRICS = "rubrics";
     public static final String RESP_JSON_KEY_FOLLOWERS = "followers";
     public static final String RESP_JSON_KEY_FOLLOWINGS = "followings";
     public static final String RESP_JSON_KEY_SUBJECTBUCKETS = "subject_buckets";
