@@ -24,7 +24,6 @@ public class AJEntityRubric extends Model {
     public static final String IS_REMOTE = "is_remote";
     public static final String DESCRIPTION = "description";
     public static final String CATEGORIES = "categories";
-    public static final String TYPE = "type";
     public static final String FEEDBACK_GUIDANCE = "feedback_guidance";
     public static final String TOTAL_POINTS = "total_points";
     public static final String OVERALL_FEEDBACK_REQUIRED = "overall_feedback_required";
@@ -48,14 +47,14 @@ public class AJEntityRubric extends Model {
     public static final String CREATOR_SYSTEM = "creator_system";
 
     public static final String SELECT_RUBRICS =
-        "SELECT id, title, type, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
+        "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
             + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_RUBRICS_BY_TAXONOMY =
-        "SELECT id, title, type, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
+        "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
             + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false AND taxonomy ?? ?";
 
-    public static final List<String> RUBRIC_LIST = Arrays.asList(ID, TITLE, TYPE, DESCRIPTION, PUBLISH_STATUS,
+    public static final List<String> RUBRIC_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
         THUMBNAIL, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);
 
     public static final String OP_AND = "AND";
