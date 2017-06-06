@@ -1,7 +1,5 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import java.util.UUID;
-
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
@@ -32,19 +30,21 @@ public class GetDemographicsHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> checkSanity() {
-        
+
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        user = AJEntityUsers.findById(UUID.fromString(context.userId()));
-        if (user == null) {
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_USER, context.userId());
+        if (users == null || users.isEmpty()) {
             LOGGER.warn("user not found in database");
-            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(), ExecutionStatus.FAILED);
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse("user not found in database"),
+                ExecutionStatus.FAILED);
         }
 
+        this.user = users.get(0);
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
