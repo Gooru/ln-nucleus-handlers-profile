@@ -1,7 +1,5 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import java.util.UUID;
-
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.events.EventBuilderFactory;
@@ -13,6 +11,7 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
+import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,15 +46,17 @@ public class FollowHandler implements DBHandler {
         followOnUserId = context.request().getString(AJEntityUserNetwork.USER_ID);
         if (!(HelperUtility.validateUUID(followOnUserId))) {
             LOGGER.error("Invalid user id passed in request json");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(
-                new JsonObject().put(MessageConstants.MSG_MESSAGE, "Invalid user id passed in request JSON")),
+            return new ExecutionResult<>(
+                MessageResponseFactory.createValidationErrorResponse(
+                    new JsonObject().put(MessageConstants.MSG_MESSAGE, "Invalid user id passed in request JSON")),
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
         if (context.userId().equalsIgnoreCase(followOnUserId)) {
             LOGGER.error("user trying to follow him self");
-            return new ExecutionResult<>(MessageResponseFactory.createValidationErrorResponse(
-                new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")),
+            return new ExecutionResult<>(
+                MessageResponseFactory.createValidationErrorResponse(
+                    new JsonObject().put(MessageConstants.MSG_MESSAGE, "User is trying to follow him self")),
                 ExecutionStatus.FAILED);
         }
 
@@ -65,13 +66,14 @@ public class FollowHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        AJEntityUsers user = AJEntityUsers.findById(UUID.fromString(followOnUserId));
-        if (user == null) {
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.VALIDATE_USER, this.followOnUserId);
+        if (users == null || users.isEmpty()) {
             LOGGER.warn("user not found in database to which you are trying to follow");
-            return new ExecutionResult<>(MessageResponseFactory
-                .createForbiddenResponse("user not found in database to which you are trying to follow"),
-                ExecutionStatus.FAILED);
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(
+                "user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
         }
+
+        AJEntityUsers user = users.get(0);
 
         AJEntityUserNetwork userNetwork =
             AJEntityUserNetwork.findFirst(AJEntityUserNetwork.VERIFY_FOLLOW, context.userId(), followOnUserId);
@@ -100,8 +102,9 @@ public class FollowHandler implements DBHandler {
 
         if (userNetwork.insert()) {
             LOGGER.info("user {} is now following {}", context.userId(), followOnUserId);
-            return new ExecutionResult<>(MessageResponseFactory
-                .createPostResponse(EventBuilderFactory.getFollowProfileEventBuilder(context.userId(), followOnUserId)),
+            return new ExecutionResult<>(
+                MessageResponseFactory.createPostResponse(
+                    EventBuilderFactory.getFollowProfileEventBuilder(context.userId(), followOnUserId)),
                 ExecutionStatus.SUCCESSFUL);
         } else {
             LOGGER.error("error while adding follower");
@@ -127,8 +130,9 @@ public class FollowHandler implements DBHandler {
     private JsonObject validateNullFields() {
         JsonObject input = context.request();
         JsonObject output = new JsonObject();
-        AJEntityUserNetwork.REQUIRED_FIELDS.stream().filter(
-            notNullField -> (input.getValue(notNullField) == null || input.getValue(notNullField).toString().isEmpty()))
+        AJEntityUserNetwork.REQUIRED_FIELDS.stream()
+            .filter(notNullField -> (input.getValue(notNullField) == null
+                || input.getValue(notNullField).toString().isEmpty()))
             .forEach(notNullField -> output.put(notNullField, "Field should not be empty or null"));
         return output.isEmpty() ? null : output;
     }

@@ -1,13 +1,12 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth;
 
-import java.util.UUID;
-
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
+import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +21,11 @@ public class UserAuthorizer implements Authorizer<AJEntityUsers> {
 
     @Override
     public ExecutionResult<MessageResponse> authorize(AJEntityUsers model) {
-        boolean userExists = AJEntityUsers.exists(UUID.fromString(context.userIdFromURL()));
-        if (!userExists) {
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.VALIDATE_USER, context.userIdFromURL());
+        if (users == null || users.isEmpty()) {
             LOGGER.warn("user not found in database");
-            return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse(), ExecutionStatus.FAILED);
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse("user not found in database"),
+                ExecutionStatus.FAILED);
         }
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);

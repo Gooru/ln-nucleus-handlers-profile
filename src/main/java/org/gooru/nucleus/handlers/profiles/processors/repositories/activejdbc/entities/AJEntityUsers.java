@@ -14,17 +14,13 @@ public class AJEntityUsers extends Model {
 
     public static final String TABLE = "users";
 
-    private static final String ID = "id";
+    public static final String ID = "id";
     private static final String USERNAME = "username";
-    private static final String REFERENCE_ID = "reference_id";
     private static final String EMAIL = "email";
-    private static final String PASSWORD = "password";
-    private static final String LOGIN_TYPE = "login_type";
     private static final String FIRST_NAME = "first_name";
     private static final String LAST_NAME = "last_name";
     private static final String PARENT_USER_ID = "parent_user_id";
     private static final String USER_CATEGORY = "user_category";
-    private static final String ROLES = "roles";
     private static final String BIRTH_DATE = "birth_date";
     private static final String GRADE = "grade";
     private static final String COURSE = "course";
@@ -44,30 +40,33 @@ public class AJEntityUsers extends Model {
     private static final String ROSTER_GLOBAL_USERID = "roster_global_userid";
     private static final String TENANT_ROOT = "tenant_root";
     private static final String TENANT_ID = "tenant_id";
-    private static final String PARENT_ID = "partner_id";
-    private static final String IS_DELETED = "is_deleted";
     private static final String CREATED_AT = "created_at";
     private static final String UPDATED_AT = "updated_at";
 
     public static final String SELECT_MULTIPLE_BY_ID =
         "SELECT id, username, first_name, last_name, thumbnail, school_district_id, school_district, country, "
-            + "country_id  FROM users WHERE id ="
-            + " ANY (?::uuid[])";
+            + "country_id  FROM users WHERE id = ANY (?::uuid[]) AND is_deleted = false";
 
     public static final String SELECT_USERNAME_MULIPLE = "SELECT id, username FROM users WHERE id = ANY(?::uuid[])";
-    
-    public static final String SELECT_BY_USERNAME = "username = ?";
-    public static final String SELECT_BY_EMAIL = "email = ?";
-    public static final String SELECT_BY_IDS = "id = ANY(?::uuid[])";
 
-    public static final List<String> ALL_FIELDS = Arrays
-        .asList(ID, USERNAME, FIRST_NAME, LAST_NAME, PARENT_USER_ID, USER_CATEGORY, BIRTH_DATE, GRADE, COURSE,
+    public static final String SELECT_BY_USERNAME = "username = ? AND is_deleted = false";
+    public static final String SELECT_BY_EMAIL = "email = ? AND is_deleted = false";
+    public static final String SELECT_BY_IDS = "id = ANY(?::uuid[]) AND is_deleted = false";
+
+    public static final String SELECT_USER =
+        "SELECT id, username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id,"
+        + " roster_global_userid, created_at, updated_at FROM users WHERE id = ?::uuid AND is_deleted = false";
+    public static final String VALIDATE_USER =
+        "SELECT id, username, tenant_id, tenant_root FROM users WHERE id = ?::uuid AND is_deleted = false";
+
+    public static final List<String> ALL_FIELDS =
+        Arrays.asList(ID, USERNAME, FIRST_NAME, LAST_NAME, PARENT_USER_ID, USER_CATEGORY, BIRTH_DATE, GRADE, COURSE,
             THUMBNAIL, GENDER, ABOUT, SCHOOL_ID, SCHOOL, SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, EMAIL, COUNTRY_ID,
             COUNTRY, STATE_ID, STATE, METADATA, ROSTER_ID, ROSTER_GLOBAL_USERID, CREATED_AT, UPDATED_AT);
 
-    public static final List<String> SUMMARY_FIELDS = Arrays
-        .asList(ID, USERNAME, FIRST_NAME, LAST_NAME, THUMBNAIL, SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, COUNTRY_ID,
-            COUNTRY);
+    public static final List<String> SUMMARY_FIELDS = Arrays.asList(ID, USERNAME, FIRST_NAME, LAST_NAME, THUMBNAIL,
+        SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, COUNTRY_ID, COUNTRY);
 
     public String getTenantRoot() {
         return this.getString(TENANT_ROOT);
