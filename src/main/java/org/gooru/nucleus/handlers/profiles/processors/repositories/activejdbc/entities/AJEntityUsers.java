@@ -17,6 +17,7 @@ public class AJEntityUsers extends Model {
     public static final String ID = "id";
     private static final String USERNAME = "username";
     private static final String EMAIL = "email";
+    private static final String LOGIN_TYPE = "login_type";
     private static final String FIRST_NAME = "first_name";
     private static final String LAST_NAME = "last_name";
     private static final String PARENT_USER_ID = "parent_user_id";
@@ -55,7 +56,7 @@ public class AJEntityUsers extends Model {
 
     public static final String SELECT_USER =
         "SELECT id, username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
-        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id,"
+        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
         + " roster_global_userid, created_at, updated_at FROM users WHERE id = ?::uuid AND is_deleted = false";
     public static final String VALIDATE_USER =
         "SELECT id, username, tenant_id, tenant_root FROM users WHERE id = ?::uuid AND is_deleted = false";
@@ -63,7 +64,7 @@ public class AJEntityUsers extends Model {
     public static final List<String> ALL_FIELDS =
         Arrays.asList(ID, USERNAME, FIRST_NAME, LAST_NAME, PARENT_USER_ID, USER_CATEGORY, BIRTH_DATE, GRADE, COURSE,
             THUMBNAIL, GENDER, ABOUT, SCHOOL_ID, SCHOOL, SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, EMAIL, COUNTRY_ID,
-            COUNTRY, STATE_ID, STATE, METADATA, ROSTER_ID, ROSTER_GLOBAL_USERID, CREATED_AT, UPDATED_AT);
+            LOGIN_TYPE, COUNTRY, STATE_ID, STATE, METADATA, ROSTER_ID, ROSTER_GLOBAL_USERID, CREATED_AT, UPDATED_AT);
 
     public static final List<String> SUMMARY_FIELDS = Arrays.asList(ID, USERNAME, FIRST_NAME, LAST_NAME, THUMBNAIL,
         SCHOOL_DISTRICT_ID, SCHOOL_DISTRICT, COUNTRY_ID, COUNTRY);
