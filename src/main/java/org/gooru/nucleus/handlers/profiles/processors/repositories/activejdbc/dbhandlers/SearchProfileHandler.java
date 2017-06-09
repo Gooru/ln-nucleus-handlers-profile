@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
+import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
@@ -12,6 +15,7 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
+import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,8 +126,10 @@ public class SearchProfileHandler implements DBHandler {
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
-        JsonObject result = new JsonObject(
-            JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users.get(0)));
+        AJEntityUsers user = users.get(0);
+        JsonObject result =
+            new JsonObject(JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(user));
+        result.mergeIn(getNetworkDetails(user.getString(AJEntityUsers.ID)));
         return new ExecutionResult<MessageResponse>(MessageResponseFactory.createGetResponse(result),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
@@ -149,10 +155,51 @@ public class SearchProfileHandler implements DBHandler {
                 ExecutionResult.ExecutionStatus.FAILED);
         }
 
-        JsonObject result = new JsonObject().put("users", new JsonArray(
-            JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users)));
+        // Assuming that if only 1 id for search then probably user is looking
+        // at other users profile and we need to populate network details.
+        // This is not applicable for request where more that one user exists in
+        // request to search
+        JsonArray resultArray = new JsonArray();
+        if (userIds.size() == 1) {
+            JsonObject userJson = new JsonObject(
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users.get(0)));
+            userJson.mergeIn(getNetworkDetails(userIds.get(0)));
+            resultArray.add(userJson);
+        } else {
+            resultArray
+                .add(JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
+        }
+
+        JsonObject result = new JsonObject();
+        result.put(HelperConstants.RESP_JSON_KEY_USERS, resultArray);
         return new ExecutionResult<MessageResponse>(MessageResponseFactory.createGetResponse(result),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
+    }
+
+    private JsonObject getNetworkDetails(String userId) {
+        JsonObject network = new JsonObject();
+        Long followers =
+            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, userId);
+        Long followings =
+            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT, userId);
+
+        network.put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, followers);
+        network.put(HelperConstants.RESP_JSON_KEY_FOLLOWINGS, followings);
+
+        // Check whether user is following other user
+        // In case own profile it should be false
+        boolean isFollowing = false;
+        LOGGER.debug("current logged in user: " + context.userId());
+        if (!context.userId().equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)
+            && !context.userId().equalsIgnoreCase(userId)) {
+            LazyList<AJEntityUserNetwork> userNetwork =
+                AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), userId);
+            if (!userNetwork.isEmpty()) {
+                isFollowing = true;
+            }
+        }
+        network.put(HelperConstants.RESP_JSON_KEY_ISFOLLOWING, isFollowing);
+        return network;
     }
 
 }
