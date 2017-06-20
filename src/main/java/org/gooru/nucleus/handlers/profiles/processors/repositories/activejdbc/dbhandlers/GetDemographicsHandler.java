@@ -54,27 +54,12 @@ public class GetDemographicsHandler implements DBHandler {
             new JsonObject(JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(user));
 
         Long followers =
-            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, context.userIdFromURL());
+            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWERS_COUNT, context.userId());
         Long followings =
-            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT, context.userIdFromURL());
+            Base.count(AJEntityUserNetwork.TABLE, AJEntityUserNetwork.SELECT_FOLLOWINGS_COUNT, context.userId());
 
         responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWERS, followers);
         responseBody.put(HelperConstants.RESP_JSON_KEY_FOLLOWINGS, followings);
-
-        // Check whether user is following other user
-        // In case own profile it should be false
-        boolean isFollowing = false;
-        LOGGER.debug("current logged in user: " + context.userId());
-        if (!context.userId().equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)
-            && !context.userId().equalsIgnoreCase(context.userIdFromURL())) {
-            LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork.where(AJEntityUserNetwork.CHECK_IF_FOLLOWER,
-                context.userId(), context.userIdFromURL());
-            if (!userNetwork.isEmpty()) {
-                isFollowing = true;
-            }
-        }
-        responseBody.put(HelperConstants.RESP_JSON_KEY_ISFOLLOWING, isFollowing);
-
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);
     }

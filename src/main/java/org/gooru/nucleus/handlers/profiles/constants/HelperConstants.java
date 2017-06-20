@@ -30,6 +30,7 @@ public final class HelperConstants {
     public static final String RESP_JSON_KEY_RUBRICS = "rubrics";
     public static final String RESP_JSON_KEY_FOLLOWERS = "followers";
     public static final String RESP_JSON_KEY_FOLLOWINGS = "followings";
+    public static final String RESP_JSON_KEY_USERS = "users";
     public static final String RESP_JSON_KEY_SUBJECTBUCKETS = "subject_buckets";
     public static final String RESP_JSON_KEY_FILTERS = "filters";
     public static final String RESP_JSON_KEY_SUBJECT = "subject";
