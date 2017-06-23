@@ -159,15 +159,15 @@ public class SearchProfileHandler implements DBHandler {
         // at other users profile and we need to populate network details.
         // This is not applicable for request where more that one user exists in
         // request to search
-        JsonArray resultArray = new JsonArray();
+        JsonArray resultArray;
         if (userIds.size() == 1) {
             JsonObject userJson = new JsonObject(
                 JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users.get(0)));
             userJson.mergeIn(getNetworkDetails(userIds.get(0)));
-            resultArray.add(userJson);
+            resultArray =  new JsonArray().add(userJson);
         } else {
-            resultArray
-                .add(JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
+            resultArray = new JsonArray(
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
         }
 
         JsonObject result = new JsonObject();
