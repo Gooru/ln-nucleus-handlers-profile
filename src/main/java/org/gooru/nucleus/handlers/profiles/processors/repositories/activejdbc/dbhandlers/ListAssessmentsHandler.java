@@ -124,6 +124,9 @@ public class ListAssessmentsHandler implements DBHandler {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
             }
+        } else {
+            query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
         }
 
         query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE)

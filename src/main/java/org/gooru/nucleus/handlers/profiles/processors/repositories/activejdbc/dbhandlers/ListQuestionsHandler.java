@@ -37,6 +37,7 @@ public class ListQuestionsHandler implements DBHandler {
     private String order;
     private int limit;
     private int offset;
+    private String filterBy;
 
     public ListQuestionsHandler(ProcessorContext context) {
         this.context = context;
@@ -72,7 +73,7 @@ public class ListQuestionsHandler implements DBHandler {
 
         limit = HelperUtility.getLimitFromRequest(context);
         offset = HelperUtility.getOffsetFromRequest(context);
-
+        filterBy = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_FILTERBY, context);
         standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -111,6 +112,19 @@ public class ListQuestionsHandler implements DBHandler {
         if (isPublic) {
             query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityContent.CRITERIA_PUBLIC);
+        }
+        
+        if (filterBy != null) {
+            if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOLLECTION)) {
+                query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
+                    .append(AJEntityContent.CRITERIA_INCOLLECTION);
+            } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOLLECTION)) {
+                query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
+                    .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
+            }
+        } else {
+            query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
         }
 
         query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
