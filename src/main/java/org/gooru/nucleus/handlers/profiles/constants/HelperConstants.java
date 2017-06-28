@@ -54,6 +54,8 @@ public final class HelperConstants {
 
     public static final String FILTERBY_INCOURSE = "inCourse";
     public static final String FILTERBY_NOT_INCOURSE = "notInCourse";
+    public static final String FILTERBY_INCOLLECTION = "inCollection";
+    public static final String FILTERBY_NOT_INCOLLECTION = "notInCollection";
     
     public static final int DEFAULT_OFFSET = 0;
 
