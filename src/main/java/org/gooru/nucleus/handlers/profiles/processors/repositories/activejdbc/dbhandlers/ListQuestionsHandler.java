@@ -114,10 +114,12 @@ public class ListQuestionsHandler implements DBHandler {
                 .append(AJEntityContent.CRITERIA_PUBLIC);
         }
         
+        boolean inCollectionFilter = false;
         if (filterBy != null) {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOLLECTION)) {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityContent.CRITERIA_INCOLLECTION);
+                inCollectionFilter = true;
             } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOLLECTION)) {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
@@ -145,18 +147,21 @@ public class ListQuestionsHandler implements DBHandler {
             questionList.stream()
                 .forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
-            List<String> assessmentIdList = new ArrayList<>();
-            questionList.stream().filter(question -> question.getString(AJEntityContent.COLLECTION_ID) != null)
-                .forEach(question -> assessmentIdList.add(question.getString(AJEntityContent.COLLECTION_ID)));
-            LOGGER.debug("number of assessment found {}", assessmentIdList.size());
-            
-            LazyList<AJEntityCollection> assessmentList =
-                AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
-                    HelperUtility.toPostgresArrayString(assessmentIdList));
             Map<String, AJEntityCollection> assessmentMap = new HashMap<>();
-            assessmentList.stream()
-                .forEach(assessment -> assessmentMap.put(assessment.getString(AJEntityCollection.ID), assessment));
-            LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
+            if (inCollectionFilter) {
+                LOGGER.debug("in collection filter is ON, fetching collections/assessments");
+                Set<String> assessmentIdList = new HashSet<>();
+                questionList.stream().filter(question -> question.getString(AJEntityContent.COLLECTION_ID) != null)
+                    .forEach(question -> assessmentIdList.add(question.getString(AJEntityContent.COLLECTION_ID)));
+                LOGGER.debug("number of assessment found {}", assessmentIdList.size());
+                
+                LazyList<AJEntityCollection> assessmentList =
+                    AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
+                        HelperUtility.toPostgresArrayString(assessmentIdList));
+                assessmentList.stream()
+                    .forEach(assessment -> assessmentMap.put(assessment.getString(AJEntityCollection.ID), assessment));
+                LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
+            }
             
             questionList.stream().forEach(question -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder
