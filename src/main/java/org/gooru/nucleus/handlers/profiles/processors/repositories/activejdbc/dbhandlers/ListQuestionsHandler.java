@@ -114,7 +114,8 @@ public class ListQuestionsHandler implements DBHandler {
                 .append(AJEntityContent.CRITERIA_PUBLIC);
         }
         
-        boolean inCollectionFilter = false;
+        // Be defualt true to filter by in collection
+        boolean inCollectionFilter = true;
         if (filterBy != null) {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOLLECTION)) {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
@@ -124,9 +125,6 @@ public class ListQuestionsHandler implements DBHandler {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
             }
-        } else {
-            query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
         }
 
         query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_ORDERBY).append(HelperConstants.SPACE)

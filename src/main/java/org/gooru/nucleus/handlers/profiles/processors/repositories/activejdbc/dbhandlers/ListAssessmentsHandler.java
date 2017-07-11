@@ -116,7 +116,8 @@ public class ListAssessmentsHandler implements DBHandler {
             params.add(context.userIdFromURL()); // for collaborator
         }
 
-        boolean inCourseFilter = false;
+        // By default true to filter by in course
+        boolean inCourseFilter = true;
         if (filterBy != null) {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOURSE)) {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
@@ -126,10 +127,7 @@ public class ListAssessmentsHandler implements DBHandler {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
             }
-        } else {
-            query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
-        }
+        } 
 
         query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
