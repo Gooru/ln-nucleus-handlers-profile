@@ -45,17 +45,26 @@ public class AJEntityUsers extends Model {
     private static final String UPDATED_AT = "updated_at";
 
     public static final String SELECT_MULTIPLE_BY_ID =
-        "SELECT id, username, first_name, last_name, thumbnail, school_district_id, school_district, country, "
+        "SELECT id, display_name as username, first_name, last_name, thumbnail, school_district_id, school_district, country, "
             + "country_id  FROM users WHERE id = ANY (?::uuid[]) AND is_deleted = false";
 
-    public static final String SELECT_USERNAME_MULIPLE = "SELECT id, username FROM users WHERE id = ANY(?::uuid[])";
-
-    public static final String SELECT_BY_USERNAME = "username = ? AND is_deleted = false";
-    public static final String SELECT_BY_EMAIL = "email = ? AND is_deleted = false";
-    public static final String SELECT_BY_IDS = "id = ANY(?::uuid[]) AND is_deleted = false";
+    public static final String SELECT_BY_USERNAME =
+        "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
+        + " roster_global_userid, created_at, updated_at FROM users WHERE username = ? AND is_deleted = false";
+    
+    public static final String SELECT_BY_EMAIL =
+        "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
+        + " roster_global_userid, created_at, updated_at FROM users WHERE email = ? AND is_deleted = false";
+    
+    public static final String SELECT_BY_IDS =
+        "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+        + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
+        + " roster_global_userid, created_at, updated_at FROM users WHERE id = ANY(?::uuid[]) AND is_deleted = false";
 
     public static final String SELECT_USER =
-        "SELECT id, username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+        "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
         + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
         + " roster_global_userid, created_at, updated_at FROM users WHERE id = ?::uuid AND is_deleted = false";
     public static final String VALIDATE_USER =
