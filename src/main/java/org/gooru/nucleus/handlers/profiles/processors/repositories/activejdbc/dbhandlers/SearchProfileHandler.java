@@ -120,7 +120,7 @@ public class SearchProfileHandler implements DBHandler {
     }
 
     private ExecutionResult<MessageResponse> searchByUsername(String username) {
-        LazyList<AJEntityUsers> users = AJEntityUsers.find(AJEntityUsers.SELECT_BY_USERNAME, username);
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_USERNAME, username);
         if (users.isEmpty()) {
             return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
                 ExecutionResult.ExecutionStatus.FAILED);
@@ -135,7 +135,7 @@ public class SearchProfileHandler implements DBHandler {
     }
 
     private ExecutionResult<MessageResponse> searchByEmail(String email) {
-        LazyList<AJEntityUsers> users = AJEntityUsers.find(AJEntityUsers.SELECT_BY_EMAIL, email);
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL, email);
         if (users.isEmpty()) {
             return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
                 ExecutionResult.ExecutionStatus.FAILED);
@@ -149,7 +149,7 @@ public class SearchProfileHandler implements DBHandler {
 
     private ExecutionResult<MessageResponse> searchByUserids(List<String> userIds) {
         LazyList<AJEntityUsers> users =
-            AJEntityUsers.find(AJEntityUsers.SELECT_BY_IDS, HelperUtility.toPostgresArrayString(userIds));
+            AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_IDS, HelperUtility.toPostgresArrayString(userIds));
         if (users.isEmpty()) {
             return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
                 ExecutionResult.ExecutionStatus.FAILED);
