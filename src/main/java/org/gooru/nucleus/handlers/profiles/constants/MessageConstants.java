@@ -4,9 +4,8 @@ public final class MessageConstants {
 
     public static final String MSG_HEADER_OP = "mb.operation";
     public static final String MSG_HEADER_TOKEN = "session.token";
-    public static final String MSG_OP_AUTH_WITH_PREFS = "auth.with.prefs";
     public static final String MSG_OP_STATUS = "mb.operation.status";
-    public static final String MSG_KEY_PREFS = "prefs";
+    public static final String MSG_KEY_SESSION = "session";
     public static final String MSG_OP_STATUS_SUCCESS = "success";
     public static final String MSG_OP_STATUS_ERROR = "error";
     public static final String MSG_OP_STATUS_VALIDATION_ERROR = "error.validation";
@@ -26,15 +25,14 @@ public final class MessageConstants {
     public static final String MSG_OP_PROFILE_ASSESSMENT_LIST = "profile.assessment.list";
     public static final String MSG_OP_PROFILE_RESOURCE_LIST = "profile.resource.list";
     public static final String MSG_OP_PROFILE_QUESTION_LIST = "profile.question.list";
+    public static final String MSG_OP_PROFILE_RUBRIC_LIST = "profile.rubric.list";
     public static final String MSG_OP_PROFILE_DEMOGRAPHICS_GET = "profile.demographics.get";
     public static final String MSG_OP_PROFILE_FOLLOW = "profile.follow";
     public static final String MSG_OP_PROFILE_UNFOLLOW = "profile.unfollow";
     public static final String MSG_OP_PROFILE_NETWORK_GET = "profile.network.get";
-    public static final String MSG_OP_PROFILE_COURSE_SUBJECTBUCKETS_GET = "profile.course.subjectbucket.get";
-    public static final String MSG_OP_PROFILE_COLLECTION_TAXONOMY_GET = "profile.collection.taxonomy.get";
-    public static final String MSG_OP_PROFILE_ASSESSMENT_TAXONOMY_GET = "profile.assessment.taxonomy.get";
-    public static final String MSG_OP_PROFILE_RESOURCE_TAXONOMY_GET = "profile.resource.taxonomy.get";
-    public static final String MSG_OP_PROFILE_QUESTION_TAXONOMY_GET = "profile.question.taxonomy.get";
+    public static final String MSG_OP_PROFILE_SEARCH = "profile.search";
+    public static final String MSG_OP_PROFILE_PREFERENCE_GET = "profile.preference.get";
+    public static final String MSG_OP_PROFILE_PREFERENCE_UPDATE = "profile.preference.update";
 
     // Containers for different responses
     public static final String RESP_CONTAINER_MBUS = "mb.container";

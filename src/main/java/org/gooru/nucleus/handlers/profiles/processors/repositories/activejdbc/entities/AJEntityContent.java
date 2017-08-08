@@ -49,6 +49,8 @@ public class AJEntityContent extends Model {
     public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
     public static final String CLAUSE_ORDERBY = "ORDER BY";
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
+    public static final String CRITERIA_INCOLLECTION = "collection_id IS NOT NULL";
+    public static final String CRITERIA_NOT_INCOLLECTION = "collection_id IS NULL";
 
     public static final List<String> QUESTION_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
         CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);

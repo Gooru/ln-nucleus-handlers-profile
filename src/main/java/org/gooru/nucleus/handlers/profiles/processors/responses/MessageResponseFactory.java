@@ -1,11 +1,16 @@
 package org.gooru.nucleus.handlers.profiles.processors.responses;
 
+import org.gooru.nucleus.handlers.profiles.constants.HttpConstants;
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.events.EventBuilder;
 
 import io.vertx.core.json.JsonObject;
 
 public final class MessageResponseFactory {
+
+    private static final String API_VERSION_DEPRECATED = "API version is deprecated";
+    private static final String API_VERSION_NOT_SUPPORTED = "API version is not supported";
+
     private MessageResponseFactory() {
         throw new AssertionError();
     }
@@ -59,6 +64,10 @@ public final class MessageResponseFactory {
         return new MessageResponse.Builder().successful().setStatusCreated().setEventData(eventBuilder.build()).build();
     }
 
+    public static MessageResponse createNoContentResponse() {
+        return new MessageResponse.Builder().successful().setStatusNoOutput().build();
+    }
+    
     public static MessageResponse createNoContentResponse(EventBuilder eventBuilder) {
         return new MessageResponse.Builder().successful().setStatusNoOutput().setEventData(eventBuilder.build())
             .build();
@@ -67,5 +76,11 @@ public final class MessageResponseFactory {
     public static MessageResponse createValidationErrorResponse(JsonObject errors) {
         return new MessageResponse.Builder().validationFailed().setStatusBadRequest().setContentTypeJson()
             .setResponseBody(errors).build();
+    }
+
+    public static MessageResponse createVersionDeprecatedResponse() {
+        return new MessageResponse.Builder().failed().setStatusHttpCode(HttpConstants.HttpStatus.GONE)
+            .setContentTypeJson()
+            .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, API_VERSION_DEPRECATED)).build();
     }
 }

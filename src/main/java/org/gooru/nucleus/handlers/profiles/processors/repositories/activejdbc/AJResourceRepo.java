@@ -19,10 +19,4 @@ public class AJResourceRepo implements ResourceRepo {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListResourcesHandler(context));
     }
 
-    @Override
-    public MessageResponse fetchTaxonomyForResources() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForResourcesHandler(context));
-    }
-
 }

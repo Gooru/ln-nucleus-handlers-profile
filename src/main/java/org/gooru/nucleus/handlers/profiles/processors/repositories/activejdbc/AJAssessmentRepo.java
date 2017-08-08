@@ -20,10 +20,4 @@ public class AJAssessmentRepo implements AssessmentRepo {
             .executeTransaction(DBHandlerBuilder.buildListAssessmentsHandler(context));
     }
 
-    @Override
-    public MessageResponse fetchTaxonomyForAssessments() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildFetchTaxonomyForAssessmentsHandler(context));
-    }
-
 }

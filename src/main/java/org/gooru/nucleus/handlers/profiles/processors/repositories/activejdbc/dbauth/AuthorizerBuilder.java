@@ -1,7 +1,7 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth;
 
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
 
 public final class AuthorizerBuilder {
 
@@ -9,8 +9,12 @@ public final class AuthorizerBuilder {
         throw new AssertionError();
     }
 
-    public static Authorizer<AJEntityUserIdentity> buildUserAuthorizer(ProcessorContext context) {
+    public static Authorizer<AJEntityUsers> buildUserAuthorizer(ProcessorContext context) {
         return new UserAuthorizer(context);
+    }
+
+    public static Authorizer<AJEntityUsers> buildFollowUserAuthorizer(ProcessorContext context) {
+        return new FollowUserAuthorizer(context);
     }
 
 }

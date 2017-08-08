@@ -6,6 +6,4 @@ public interface ResourceRepo {
 
     MessageResponse listResources();
 
-    MessageResponse fetchTaxonomyForResources();
-
 }

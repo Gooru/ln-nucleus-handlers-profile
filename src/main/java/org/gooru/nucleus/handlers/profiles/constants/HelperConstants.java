@@ -27,8 +27,10 @@ public final class HelperConstants {
     public static final String RESP_JSON_KEY_ASSESSMENT = "assessment";
     public static final String RESP_JSON_KEY_RESOURCES = "resources";
     public static final String RESP_JSON_KEY_QUESTIONS = "questions";
+    public static final String RESP_JSON_KEY_RUBRICS = "rubrics";
     public static final String RESP_JSON_KEY_FOLLOWERS = "followers";
     public static final String RESP_JSON_KEY_FOLLOWINGS = "followings";
+    public static final String RESP_JSON_KEY_USERS = "users";
     public static final String RESP_JSON_KEY_SUBJECTBUCKETS = "subject_buckets";
     public static final String RESP_JSON_KEY_FILTERS = "filters";
     public static final String RESP_JSON_KEY_SUBJECT = "subject";
@@ -52,6 +54,8 @@ public final class HelperConstants {
 
     public static final String FILTERBY_INCOURSE = "inCourse";
     public static final String FILTERBY_NOT_INCOURSE = "notInCourse";
+    public static final String FILTERBY_INCOLLECTION = "inCollection";
+    public static final String FILTERBY_NOT_INCOLLECTION = "notInCollection";
     
     public static final int DEFAULT_OFFSET = 0;
 
