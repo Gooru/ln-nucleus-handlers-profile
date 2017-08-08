@@ -116,15 +116,18 @@ public class ListAssessmentsHandler implements DBHandler {
             params.add(context.userIdFromURL()); // for collaborator
         }
 
+        // By default true to filter by in course
+        boolean inCourseFilter = true;
         if (filterBy != null) {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOURSE)) {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_INCOURSE);
+                inCourseFilter = true;
             } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOURSE)) {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
             }
-        }
+        } 
 
         query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
@@ -153,19 +156,22 @@ public class ListAssessmentsHandler implements DBHandler {
                     Integer.valueOf(map.get(AJEntityCollection.QUESTION_COUNT).toString())));
             LOGGER.debug("# of assessments has questions: {}", questionCountByCollection.size());
             
-            List<String> courseIdList = new ArrayList<>();
-            collectionList.stream()
-                .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
-                    && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
-                .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
-            LOGGER.debug("# Courses are associated with assessments: {}", courseIdList.size());
-            
-            LazyList<AJEntityCourse> courseList =
-                AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
-                    HelperUtility.toPostgresArrayString(courseIdList));
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
-            courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
-            LOGGER.debug("# Courses returned from database: {}", courseMap.size());
+            if (inCourseFilter) {
+                LOGGER.debug("in course filter is ON, fetching courses");
+                Set<String> courseIdList = new HashSet<>();
+                collectionList.stream()
+                    .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
+                        && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
+                    .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
+                LOGGER.debug("# Courses are associated with assessments: {}", courseIdList.size());
+                
+                LazyList<AJEntityCourse> courseList =
+                    AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
+                        HelperUtility.toPostgresArrayString(courseIdList));
+                courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
+                LOGGER.debug("# Courses returned from database: {}", courseMap.size());
+            }
             
             collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder

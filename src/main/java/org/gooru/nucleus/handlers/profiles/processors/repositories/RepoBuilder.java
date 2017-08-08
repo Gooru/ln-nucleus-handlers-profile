@@ -32,5 +32,13 @@ public final class RepoBuilder {
     public static ProfileRepo buildProfileRepo(ProcessorContext context) {
         return AJRepoBuilder.buildProfileRepo(context);
     }
+    
+    public static PreferenceRepo buildPreferenceRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildPreferenceRepo(context);
+    }
+
+    public static RubricRepo buildRubricRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildRubricRepo(context);
+    }
 
 }

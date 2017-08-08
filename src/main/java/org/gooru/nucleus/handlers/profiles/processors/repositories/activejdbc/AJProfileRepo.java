@@ -35,4 +35,9 @@ public class AJProfileRepo implements ProfileRepo {
         return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetNetworkHandler(context));
     }
 
+    @Override
+    public MessageResponse searchProfile() {
+        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildSearchProfileHandler(context));
+    }
+
 }

@@ -44,24 +44,19 @@ public final class DBHandlerBuilder {
         return new GetNetworkHandler(context);
     }
 
-    public static DBHandler buildFetchTaxonomyForResourcesHandler(ProcessorContext context) {
-        return new FetchTaxonomyForResourcesHandler(context);
+    public static DBHandler buildSearchProfileHandler(ProcessorContext context) {
+        return new SearchProfileHandler(context);
+    }
+    
+    public static DBHandler buildGetPreferenceHandler(ProcessorContext context) {
+        return new GetPreferenceHandler(context);
+    }
+    
+    public static DBHandler buildUpdatePreferenceHandler(ProcessorContext context) {
+        return new UpdatePreferenceHandler(context);
     }
 
-    public static DBHandler buildFetchTaxonomyForQuestionsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForQuestionsHandler(context);
+    public static DBHandler buildListRubricsHandler(ProcessorContext context) {
+        return new ListRubricsHandler(context);
     }
-
-    public static DBHandler buildFetchSubjectBucketsForCoursesHandler(ProcessorContext context) {
-        return new FetchSubjectBucketsForCoursesHandler(context);
-    }
-
-    public static DBHandler buildFetchTaxonomyForCollectionsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForCollectionsHandler(context);
-    }
-
-    public static DBHandler buildFetchTaxonomyForAssessmentsHandler(ProcessorContext context) {
-        return new FetchTaxonomyForAssessmentsHandler(context);
-    }
-
 }

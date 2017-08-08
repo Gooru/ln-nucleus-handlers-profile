@@ -3,12 +3,13 @@ package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.d
 import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.events.EventBuilderFactory;
-import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserIdentity;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
+import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
-import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.profiles.processors.utils.HelperUtility;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
@@ -65,12 +66,14 @@ public class FollowHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        LazyList<AJEntityUserIdentity> user =
-            AJEntityUserIdentity.findBySQL(AJEntityUserIdentity.SELECT_USER_TO_VALIDATE, followOnUserId);
-        if (user.isEmpty()) {
+        LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.VALIDATE_USER, this.followOnUserId);
+        if (users == null || users.isEmpty()) {
             LOGGER.warn("user not found in database to which you are trying to follow");
-            return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse("user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
+            return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(
+                "user not found in database to which you are trying to follow"), ExecutionStatus.FAILED);
         }
+
+        AJEntityUsers user = users.get(0);
 
         AJEntityUserNetwork userNetwork =
             AJEntityUserNetwork.findFirst(AJEntityUserNetwork.VERIFY_FOLLOW, context.userId(), followOnUserId);
@@ -82,7 +85,7 @@ public class FollowHandler implements DBHandler {
         }
 
         LOGGER.debug("validateRequest() OK");
-        return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
+        return AuthorizerBuilder.buildFollowUserAuthorizer(context).authorize(user);
     }
 
     @Override
