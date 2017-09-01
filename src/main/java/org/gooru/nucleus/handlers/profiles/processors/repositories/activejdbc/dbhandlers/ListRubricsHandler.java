@@ -39,6 +39,7 @@ public class ListRubricsHandler implements DBHandler {
     private String order;
     private int limit;
     private int offset;
+    private String filterBy;
 
     public ListRubricsHandler(ProcessorContext context) {
         this.context = context;
@@ -76,6 +77,7 @@ public class ListRubricsHandler implements DBHandler {
         offset = HelperUtility.getOffsetFromRequest(context);
 
         standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
+        filterBy = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_FILTERBY, context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -113,6 +115,14 @@ public class ListRubricsHandler implements DBHandler {
         if (isPublic) {
             query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityRubric.CRITERIA_PUBLIC);
+        }
+        
+        if (filterBy != null && filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_COPIES)) {
+            query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
+            .append(AJEntityRubric.CRITERIA_COPIES);
+        } else {
+            query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
+            .append(AJEntityRubric.CRITERIA_ORIGINAL);
         }
 
         query.append(HelperConstants.SPACE).append(AJEntityRubric.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
