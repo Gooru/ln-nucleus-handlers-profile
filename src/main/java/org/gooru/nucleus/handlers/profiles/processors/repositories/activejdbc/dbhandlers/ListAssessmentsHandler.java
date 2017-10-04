@@ -122,12 +122,12 @@ public class ListAssessmentsHandler implements DBHandler {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOURSE)) {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_INCOURSE);
-                inCourseFilter = true;
             } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOURSE)) {
                 query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
+                inCourseFilter = false;
             }
-        } 
+        }
 
         query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
@@ -145,17 +145,16 @@ public class ListAssessmentsHandler implements DBHandler {
         if (!collectionList.isEmpty()) {
             LOGGER.debug("# Assessments found: {}", collectionList.size());
             List<String> collectionIdList = new ArrayList<>();
-            collectionList.stream()
-                .forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
+            collectionList.forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
 
             List<Map> questionCounts = Base.findAll(AJEntityCollection.SELECT_QUESTIONS_COUNT_FOR_COLLECTION,
                 HelperUtility.toPostgresArrayString(collectionIdList));
             Map<String, Integer> questionCountByCollection = new HashMap<>();
-            questionCounts.stream()
+            questionCounts
                 .forEach(map -> questionCountByCollection.put(map.get(AJEntityCollection.COLLECTION_ID).toString(),
                     Integer.valueOf(map.get(AJEntityCollection.QUESTION_COUNT).toString())));
             LOGGER.debug("# of assessments has questions: {}", questionCountByCollection.size());
-            
+
             Map<String, AJEntityCourse> courseMap = new HashMap<>();
             if (inCourseFilter) {
                 LOGGER.debug("in course filter is ON, fetching courses");
@@ -165,35 +164,40 @@ public class ListAssessmentsHandler implements DBHandler {
                         && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
                     .forEach(collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
                 LOGGER.debug("# Courses are associated with assessments: {}", courseIdList.size());
-                
-                LazyList<AJEntityCourse> courseList =
-                    AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
-                        HelperUtility.toPostgresArrayString(courseIdList));
-                courseList.stream().forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
+
+                LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(
+                    AJEntityCourse.SELECT_COURSE_FOR_COLLECTION, HelperUtility.toPostgresArrayString(courseIdList));
+                courseList.forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
                 LOGGER.debug("# Courses returned from database: {}", courseMap.size());
             }
-            
+
             collectionList.forEach(collection -> {
                 JsonObject result = new JsonObject(JsonFormatterBuilder
                     .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
                 String courseId = collection.getString(AJEntityCollection.COURSE_ID);
                 if (courseId != null && !courseId.isEmpty()) {
                     AJEntityCourse course = courseMap.get(courseId);
-                    result.put(HelperConstants.RESP_JSON_KEY_COURSE, new JsonObject(JsonFormatterBuilder
-                        .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION).toJson(course)));
+                    if (course != null) {
+                    result.put(HelperConstants.RESP_JSON_KEY_COURSE,
+                        new JsonObject(JsonFormatterBuilder
+                            .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION)
+                            .toJson(course)));
+                    } else {
+                        result.putNull(HelperConstants.RESP_JSON_KEY_COURSE);
+                    }
                 }
                 Integer questionCount = questionCountByCollection.get(collection.getString(AJEntityCollection.ID));
                 result.put(AJEntityCollection.QUESTION_COUNT, questionCount != null ? questionCount : 0);
                 collectionArray.add(result);
             });
-            
-            collectionList.stream()
-                .forEach(collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
+
+            collectionList.forEach(collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_ASSESSMENTS, collectionArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+            DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);

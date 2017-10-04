@@ -9,7 +9,6 @@ import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
-//import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
@@ -111,9 +110,9 @@ public class ListResourcesHandler implements DBHandler {
                 .append(AJEntityOriginalResource.CRITERIA_PUBLIC);
         }
 
-        query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
-            .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
-            .append(AJEntityOriginalResource.CLAUSE_LIMIT_OFFSET);
+        query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.CLAUSE_ORDERBY)
+            .append(HelperConstants.SPACE).append(sortOn).append(HelperConstants.SPACE).append(order)
+            .append(HelperConstants.SPACE).append(AJEntityOriginalResource.CLAUSE_LIMIT_OFFSET);
         params.add(limit);
         params.add(offset);
 
@@ -121,25 +120,27 @@ public class ListResourcesHandler implements DBHandler {
             "SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
             query, params.size(), standard, searchText, sortOn, order, limit, offset);
 
-        LazyList<AJEntityOriginalResource> resourceList = AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
+        LazyList<AJEntityOriginalResource> resourceList =
+            AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
         JsonArray resourceArray = new JsonArray();
         Set<String> ownerIdList = new HashSet<>();
         if (!resourceList.isEmpty()) {
-            resourceList.stream()
-                .forEach(resource -> ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID)));
+            resourceList.forEach(resource -> ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID)));
             String strNull = null;
-            resourceList.stream().forEach(resource -> { 
-                JsonObject resourceJson = new JsonObject(
-                    JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST).toJson(resource));
-                resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT, AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
+            resourceList.forEach(resource -> {
+                JsonObject resourceJson = new JsonObject(JsonFormatterBuilder
+                    .buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST).toJson(resource));
+                resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT,
+                    AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
                 resourceJson.put(AJEntityOriginalResource.ORIGINAL_CREATOR_ID, strNull);
-                resourceArray.add(resourceJson); 
-                });
+                resourceArray.add(resourceJson);
+            });
         }
-        
+
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+            DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);

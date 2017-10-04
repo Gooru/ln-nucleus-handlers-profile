@@ -45,32 +45,32 @@ public class AJEntityCollection extends Model {
         "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
             + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false AND taxonomy ?? ?";
 
-    public static final String SELECT_RESOURCES_COUNT_FOR_COLLECTION =
-        "SELECT count(id) as resource_count, collection_id FROM content WHERE"
-            + " collection_id = ANY (?::uuid[]) AND is_deleted = false AND content_format = 'resource'::content_format_type GROUP BY collection_id";
-
     public static final String SELECT_QUESTIONS_COUNT_FOR_COLLECTION =
         "SELECT count(id) as question_count, collection_id FROM content WHERE"
             + " collection_id = ANY (?::uuid[]) AND is_deleted = false AND content_format = 'question'::content_format_type GROUP BY collection_id";
 
+    public static final String SELECT_CONTENT_COUNTS_FOR_COLLECTIONS =
+        "SELECT SUM(CASE WHEN content_format = 'resource' THEN 1 ELSE 0 END) AS resource_count, SUM(CASE WHEN content_format = 'question' THEN 1"
+            + " ELSE 0 END) AS question_count, collection_id FROM content WHERE collection_id = ANY (?::uuid[]) AND is_deleted = false GROUP BY collection_id";
+
     public static final String SELECT_ASSESSMENT_FOR_QUESTION =
         "SELECT id, title, visible_on_profile, format FROM collection WHERE id = ANY (?::uuid[]) AND is_deleted = false";
-    
+
     public static final String SELECT_TAXONOMY_FOR_COLLECTIONS =
         "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false"
-        + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
-    
+            + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
+
     public static final String SELECT_TAXONOMY_FOR_COLLECTIONS_PUBLIC =
         "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false"
-        + " AND owner_id = ?::uuid AND visible_on_profile = true";
-    
+            + " AND owner_id = ?::uuid AND visible_on_profile = true";
+
     public static final String SELECT_TAXONOMY_FOR_ASSESSMENTS =
         "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false"
-        + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
-    
+            + " AND (owner_id = ?::uuid OR collaborator ?? ?)";
+
     public static final String SELECT_TAXONOMY_FOR_ASSESSMENTS_PUBLIC =
         "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false"
-        + " AND owner_id = ?::uuid AND visible_on_profile = true";
+            + " AND owner_id = ?::uuid AND visible_on_profile = true";
 
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "title ilike ?";
@@ -85,8 +85,9 @@ public class AJEntityCollection extends Model {
         TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID, ORIGINAL_CREATOR_ID);
     public static final List<String> ASSESSMENT_LIST = Arrays.asList(ID, TITLE, COURSE_ID, PUBLISH_STATUS, THUMBNAIL,
         TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID, ORIGINAL_CREATOR_ID);
-    public static final List<String> ASSESSMENT_FIELDS_FOR_QUESTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE, FORMAT);
-    
+    public static final List<String> ASSESSMENT_FIELDS_FOR_QUESTION =
+        Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE, FORMAT);
+
     public static final String ORDER_DESC = "desc";
     public static final String ORDER_ASC = "asc";
 
