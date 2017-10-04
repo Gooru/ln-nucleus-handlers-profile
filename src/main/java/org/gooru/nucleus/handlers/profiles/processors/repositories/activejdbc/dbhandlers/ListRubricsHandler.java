@@ -122,7 +122,7 @@ public class ListRubricsHandler implements DBHandler {
             .append(AJEntityRubric.CRITERIA_COPIES);
         } else {
             query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
-            .append(AJEntityRubric.CRITERIA_ORIGINAL);
+            .append(AJEntityRubric.CRITERIA_STANDALONE);
         }
 
         query.append(HelperConstants.SPACE).append(AJEntityRubric.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
