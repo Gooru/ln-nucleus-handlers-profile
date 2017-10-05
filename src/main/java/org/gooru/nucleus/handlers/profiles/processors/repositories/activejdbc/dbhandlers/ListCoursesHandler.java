@@ -12,6 +12,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -106,11 +107,13 @@ public class ListCoursesHandler implements DBHandler {
             unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
                 Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
 
+            JsonFormatter courseFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST);
+
             courseList.forEach(course -> {
                 Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
-                courseArray.add(new JsonObject(
-                    JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
-                        .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
+                courseArray.add(new JsonObject(courseFieldsFormatter.toJson(course)).put(AJEntityCourse.UNIT_COUNT,
+                    unitCount != null ? unitCount : 0));
             });
 
             courseList.forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));

@@ -13,6 +13,7 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.db
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -171,17 +172,19 @@ public class ListAssessmentsHandler implements DBHandler {
                 LOGGER.debug("# Courses returned from database: {}", courseMap.size());
             }
 
+            JsonFormatter assessmentFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST);
+            JsonFormatter courseFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION);
+
             collectionList.forEach(collection -> {
-                JsonObject result = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_LIST).toJson(collection));
+                JsonObject result = new JsonObject(assessmentFieldsFormatter.toJson(collection));
                 String courseId = collection.getString(AJEntityCollection.COURSE_ID);
                 if (courseId != null && !courseId.isEmpty()) {
                     AJEntityCourse course = courseMap.get(courseId);
                     if (course != null) {
-                    result.put(HelperConstants.RESP_JSON_KEY_COURSE,
-                        new JsonObject(JsonFormatterBuilder
-                            .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION)
-                            .toJson(course)));
+                        result.put(HelperConstants.RESP_JSON_KEY_COURSE,
+                            new JsonObject(courseFieldsFormatter.toJson(course)));
                     } else {
                         result.putNull(HelperConstants.RESP_JSON_KEY_COURSE);
                     }

@@ -10,6 +10,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityRubric;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -138,11 +139,12 @@ public class ListRubricsHandler implements DBHandler {
         JsonArray rubricArray = new JsonArray();
         Set<String> ownerIdList = new HashSet<>();
         if (!rubricList.isEmpty()) {
-            rubricList.forEach(rubric -> ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID)));
-
+            JsonFormatter rubricFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST);
+            
             rubricList.forEach(rubric -> {
-                JsonObject result = new JsonObject(
-                    JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST).toJson(rubric));
+                ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID));
+                JsonObject result = new JsonObject(rubricFieldsFormatter.toJson(rubric));
                 rubricArray.add(result);
             });
         }

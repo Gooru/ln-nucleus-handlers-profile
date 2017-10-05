@@ -13,6 +13,7 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.db
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -160,16 +161,18 @@ public class ListQuestionsHandler implements DBHandler {
                 LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
             }
 
+            JsonFormatter questionFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST);
+            JsonFormatter assessmentFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION);
+
             questionList.forEach(question -> {
-                JsonObject result = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question));
+                JsonObject result = new JsonObject(questionFieldsFormatter.toJson(question));
                 String assessmentId = question.getString(AJEntityContent.COLLECTION_ID);
                 if (assessmentId != null && !assessmentId.isEmpty()) {
                     AJEntityCollection assessment = assessmentMap.get(assessmentId);
                     result.put(HelperConstants.RESP_JSON_KEY_ASSESSMENT,
-                        new JsonObject(JsonFormatterBuilder
-                            .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION)
-                            .toJson(assessment)));
+                        new JsonObject(assessmentFieldsFormatter.toJson(assessment)));
                 }
                 questionArray.add(result);
             });

@@ -10,6 +10,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -125,14 +126,15 @@ public class ListResourcesHandler implements DBHandler {
         JsonArray resourceArray = new JsonArray();
         Set<String> ownerIdList = new HashSet<>();
         if (!resourceList.isEmpty()) {
-            resourceList.forEach(resource -> ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID)));
-            String strNull = null;
+            JsonFormatter resourceFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST);
+            
             resourceList.forEach(resource -> {
-                JsonObject resourceJson = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST).toJson(resource));
+                ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID));
+                JsonObject resourceJson = new JsonObject(resourceFieldsFormatter.toJson(resource));
                 resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT,
                     AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
-                resourceJson.put(AJEntityOriginalResource.ORIGINAL_CREATOR_ID, strNull);
+                resourceJson.putNull(AJEntityOriginalResource.ORIGINAL_CREATOR_ID);
                 resourceArray.add(resourceJson);
             });
         }
