@@ -13,6 +13,7 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.db
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -113,17 +114,17 @@ public class ListQuestionsHandler implements DBHandler {
             query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                 .append(AJEntityContent.CRITERIA_PUBLIC);
         }
-        
+
         // Be defualt true to filter by in collection
         boolean inCollectionFilter = true;
         if (filterBy != null) {
             if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOLLECTION)) {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityContent.CRITERIA_INCOLLECTION);
-                inCollectionFilter = true;
             } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOLLECTION)) {
                 query.append(HelperConstants.SPACE).append(AJEntityContent.OP_AND).append(HelperConstants.SPACE)
                     .append(AJEntityContent.CRITERIA_NOT_INCOLLECTION);
+                inCollectionFilter = false;
             }
         }
 
@@ -142,8 +143,7 @@ public class ListQuestionsHandler implements DBHandler {
         Set<String> ownerIdList = new HashSet<>();
         if (!questionList.isEmpty()) {
             List<String> creatorIdList = new ArrayList<>();
-            questionList.stream()
-                .forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
+            questionList.forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
             Map<String, AJEntityCollection> assessmentMap = new HashMap<>();
             if (inCollectionFilter) {
@@ -152,35 +152,38 @@ public class ListQuestionsHandler implements DBHandler {
                 questionList.stream().filter(question -> question.getString(AJEntityContent.COLLECTION_ID) != null)
                     .forEach(question -> assessmentIdList.add(question.getString(AJEntityContent.COLLECTION_ID)));
                 LOGGER.debug("number of assessment found {}", assessmentIdList.size());
-                
+
                 LazyList<AJEntityCollection> assessmentList =
                     AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
                         HelperUtility.toPostgresArrayString(assessmentIdList));
-                assessmentList.stream()
+                assessmentList
                     .forEach(assessment -> assessmentMap.put(assessment.getString(AJEntityCollection.ID), assessment));
                 LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
             }
-            
-            questionList.stream().forEach(question -> {
-                JsonObject result = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST).toJson(question));
+
+            JsonFormatter questionFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST);
+            JsonFormatter assessmentFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION);
+
+            questionList.forEach(question -> {
+                JsonObject result = new JsonObject(questionFieldsFormatter.toJson(question));
                 String assessmentId = question.getString(AJEntityContent.COLLECTION_ID);
                 if (assessmentId != null && !assessmentId.isEmpty()) {
                     AJEntityCollection assessment = assessmentMap.get(assessmentId);
                     result.put(HelperConstants.RESP_JSON_KEY_ASSESSMENT,
-                        new JsonObject(JsonFormatterBuilder
-                            .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION)
-                            .toJson(assessment)));
+                        new JsonObject(assessmentFieldsFormatter.toJson(assessment)));
                 }
                 questionArray.add(result);
             });
-            
-            questionList.stream().forEach(question -> ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
+
+            questionList.forEach(question -> ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS, questionArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+            DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);

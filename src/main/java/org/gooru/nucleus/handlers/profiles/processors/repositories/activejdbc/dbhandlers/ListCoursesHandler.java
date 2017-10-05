@@ -12,6 +12,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -86,7 +87,7 @@ public class ListCoursesHandler implements DBHandler {
         } else {
             query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_ORDERBY_CREATED_AT);
         }
-        
+
         query.append(HelperConstants.SPACE).append(AJEntityCourse.CLAUSE_LIMIT_OFFSET);
         params.add(limit);
         params.add(offset);
@@ -98,7 +99,7 @@ public class ListCoursesHandler implements DBHandler {
         JsonArray courseArray = new JsonArray();
         if (!courseList.isEmpty()) {
             List<String> courseIdList = new ArrayList<>();
-            courseList.stream().forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
+            courseList.forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
 
             List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES,
                 HelperUtility.toPostgresArrayString(courseIdList));
@@ -106,19 +107,22 @@ public class ListCoursesHandler implements DBHandler {
             unitCounts.stream().forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
                 Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
 
-            courseList.stream().forEach(course -> {
+            JsonFormatter courseFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST);
+
+            courseList.forEach(course -> {
                 Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
-                courseArray.add(new JsonObject(
-                    JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST).toJson(course))
-                        .put(AJEntityCourse.UNIT_COUNT, unitCount != null ? unitCount : 0));
+                courseArray.add(new JsonObject(courseFieldsFormatter.toJson(course)).put(AJEntityCourse.UNIT_COUNT,
+                    unitCount != null ? unitCount : 0));
             });
-            
-            courseList.stream().forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
+
+            courseList.forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+            DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
 
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
