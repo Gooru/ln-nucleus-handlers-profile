@@ -10,6 +10,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbutils.DBHelperUtility;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityRubric;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatter;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
@@ -24,14 +25,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
- * @author szgooru
- * Created On: 01-Mar-2017
+ * @author szgooru Created On: 01-Mar-2017
  */
 public class ListRubricsHandler implements DBHandler {
-    
+
     private final ProcessorContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(ListRubricsHandler.class);
-    
+
     private boolean isPublic;
     private String searchText;
     private String standard;
@@ -39,6 +39,7 @@ public class ListRubricsHandler implements DBHandler {
     private String order;
     private int limit;
     private int offset;
+    private String filterBy;
 
     public ListRubricsHandler(ProcessorContext context) {
         this.context = context;
@@ -76,6 +77,7 @@ public class ListRubricsHandler implements DBHandler {
         offset = HelperUtility.getOffsetFromRequest(context);
 
         standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
+        filterBy = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_FILTERBY, context);
 
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
@@ -92,7 +94,7 @@ public class ListRubricsHandler implements DBHandler {
 
         // Parameters to be added in list should be in same way as below
         params.add(context.userIdFromURL());
-        
+
         if (standard != null) {
             query = new StringBuilder(AJEntityRubric.SELECT_RUBRICS_BY_TAXONOMY);
             params.add(standard);
@@ -115,6 +117,14 @@ public class ListRubricsHandler implements DBHandler {
                 .append(AJEntityRubric.CRITERIA_PUBLIC);
         }
 
+        if (filterBy != null && filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_COPIES)) {
+            query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityRubric.CRITERIA_COPIES);
+        } else {
+            query.append(HelperConstants.SPACE).append(AJEntityRubric.OP_AND).append(HelperConstants.SPACE)
+                .append(AJEntityRubric.CRITERIA_STANDALONE);
+        }
+
         query.append(HelperConstants.SPACE).append(AJEntityRubric.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
             .append(AJEntityRubric.CLAUSE_LIMIT_OFFSET);
@@ -124,24 +134,25 @@ public class ListRubricsHandler implements DBHandler {
         LOGGER.debug(
             "SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
             query, params.size(), standard, searchText, sortOn, order, limit, offset);
-        
+
         LazyList<AJEntityRubric> rubricList = AJEntityRubric.findBySQL(query.toString(), params.toArray());
         JsonArray rubricArray = new JsonArray();
         Set<String> ownerIdList = new HashSet<>();
         if (!rubricList.isEmpty()) {
-            rubricList.stream()
-                .forEach(rubric -> ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID)));
-
-            rubricList.stream().forEach(rubric -> {
-                JsonObject result = new JsonObject(JsonFormatterBuilder
-                    .buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST).toJson(rubric));
+            JsonFormatter rubricFieldsFormatter =
+                JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST);
+            
+            rubricList.forEach(rubric -> {
+                ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID));
+                JsonObject result = new JsonObject(rubricFieldsFormatter.toJson(rubric));
                 rubricArray.add(result);
             });
         }
 
         JsonObject responseBody = new JsonObject();
         responseBody.put(HelperConstants.RESP_JSON_KEY_RUBRICS, rubricArray);
-        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, DBHelperUtility.getOwnerDemographics(ownerIdList));
+        responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+            DBHelperUtility.getOwnerDemographics(ownerIdList));
         responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
         return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
             ExecutionStatus.SUCCESSFUL);
@@ -151,7 +162,7 @@ public class ListRubricsHandler implements DBHandler {
     public boolean handlerReadOnly() {
         return true;
     }
-    
+
     private JsonObject getFiltersJson() {
         return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
             .put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn).put(HelperConstants.RESP_JSON_KEY_ORDER, order)

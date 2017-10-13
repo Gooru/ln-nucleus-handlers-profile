@@ -48,11 +48,11 @@ public class AJEntityRubric extends Model {
 
     public static final String SELECT_RUBRICS =
         "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false";
+            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false AND is_rubric = true";
 
     public static final String SELECT_RUBRICS_BY_TAXONOMY =
         "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false AND taxonomy ?? ?";
+            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false  AND is_rubric = true AND taxonomy ?? ?";
 
     public static final List<String> RUBRIC_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
         THUMBNAIL, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);
@@ -60,6 +60,8 @@ public class AJEntityRubric extends Model {
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "(title ilike ? OR description ilike ?)";
     public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
+    public static final String CRITERIA_STANDALONE = "content_id IS NULL";
+    public static final String CRITERIA_COPIES = "original_rubric_id IS NOT NULL AND content_id IS NOT NULL";
     public static final String CLAUSE_ORDERBY = "ORDER BY";
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 
