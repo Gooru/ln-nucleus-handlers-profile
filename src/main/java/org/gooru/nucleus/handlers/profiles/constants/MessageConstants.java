@@ -33,6 +33,7 @@ public final class MessageConstants {
     public static final String MSG_OP_PROFILE_SEARCH = "profile.search";
     public static final String MSG_OP_PROFILE_PREFERENCE_GET = "profile.preference.get";
     public static final String MSG_OP_PROFILE_PREFERENCE_UPDATE = "profile.preference.update";
+    public static final String MSG_OP_PROFILE_STATE_UPDATE = "profile.state.update";
 
     // Containers for different responses
     public static final String RESP_CONTAINER_MBUS = "mb.container";

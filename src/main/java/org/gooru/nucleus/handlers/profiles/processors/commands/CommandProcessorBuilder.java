@@ -103,6 +103,13 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new PreferenceUpdateProcessor(context);
         }
+    },
+    PROFILE_STATE_UPDATE(MessageConstants.MSG_OP_PROFILE_STATE_UPDATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new UserStateUpdateProcessor(context);
+        }
+        
     };
 
     private String name;
