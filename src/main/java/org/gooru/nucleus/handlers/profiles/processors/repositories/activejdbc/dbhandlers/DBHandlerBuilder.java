@@ -59,4 +59,8 @@ public final class DBHandlerBuilder {
     public static DBHandler buildListRubricsHandler(ProcessorContext context) {
         return new ListRubricsHandler(context);
     }
+
+    public static DBHandler buildUpdateUserStateHandler(ProcessorContext context) {
+        return new UpdateUserStateHandler(context);
+    }
 }
