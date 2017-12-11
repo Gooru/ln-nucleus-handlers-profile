@@ -5,6 +5,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserState;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.profiles.processors.responses.ExecutionResult.ExecutionStatus;
+import org.javalite.activejdbc.LazyList;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class UpdateUserStateHandler implements DBHandler {
 
     private final ProcessorContext context;
     private JsonObject clientState = null;
+    private JsonObject systemState = null;
     private AJEntityUserState userState = null;
 
     public UpdateUserStateHandler(ProcessorContext context) {
@@ -35,7 +37,7 @@ public class UpdateUserStateHandler implements DBHandler {
             return new ExecutionResult<>(
                 MessageResponseFactory.createForbiddenResponse("Invalid user id or anonymous access"),
                 ExecutionStatus.FAILED);
-        }   
+        }
 
         if (this.context.request() == null || this.context.request().isEmpty()) {
             LOGGER.warn("Invalid request body to update user client state");
@@ -45,6 +47,7 @@ public class UpdateUserStateHandler implements DBHandler {
         }
 
         this.clientState = this.context.request().getJsonObject(AJEntityUserState.CLIENT_STATE);
+        this.systemState = this.context.request().getJsonObject(AJEntityUserState.SYSTEM_STATE);
 
         LOGGER.debug("checkSanity() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -52,9 +55,31 @@ public class UpdateUserStateHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        this.userState = new AJEntityUserState();
-        this.userState.setUserId(this.context.userId());
-        this.userState.setClientState(this.clientState.toString());
+        LazyList<AJEntityUserState> userStates =
+            AJEntityUserState.findBySQL(AJEntityUserState.SELECT_USER_STATE, this.context.userId());
+        if (userStates.isEmpty()) {
+            this.userState = new AJEntityUserState();
+            this.userState.setUserId(this.context.userId());
+            if (this.clientState != null)
+                this.userState.setClientState(this.clientState.toString());
+
+            if (this.systemState != null)
+                this.userState.setSystemState(this.systemState.toString());
+        } else {
+            this.userState = userStates.get(0);
+
+            if (this.clientState != null) {
+                JsonObject clientStateFromDB = this.userState.getClientState();
+                JsonObject result = (clientStateFromDB != null) ? clientStateFromDB.mergeIn(this.clientState) : this.clientState;
+                this.userState.setClientState(result.toString());
+            }
+
+            if (this.systemState != null) {
+                JsonObject systemStateFromDB = this.userState.getSystemState();
+                JsonObject result = (systemStateFromDB != null) ? systemStateFromDB.mergeIn(this.systemState) : this.systemState; 
+                this.userState.setSystemState(result.toString());
+            }
+        }
 
         LOGGER.debug("validateRequest() OK");
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -76,5 +101,4 @@ public class UpdateUserStateHandler implements DBHandler {
     public boolean handlerReadOnly() {
         return false;
     }
-
 }
