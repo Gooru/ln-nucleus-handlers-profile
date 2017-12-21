@@ -41,4 +41,8 @@ public final class RepoBuilder {
         return AJRepoBuilder.buildRubricRepo(context);
     }
 
+    public static UserStateRepo buildUserStateRepo(ProcessorContext context) {
+        return AJRepoBuilder.buildUserStateRepo(context);
+    }
+
 }

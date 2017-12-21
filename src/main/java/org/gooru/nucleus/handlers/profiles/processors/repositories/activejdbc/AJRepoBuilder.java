@@ -9,6 +9,7 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.ProfileRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.QuestionRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.ResourceRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.RubricRepo;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.UserStateRepo;
 
 public final class AJRepoBuilder {
 
@@ -46,5 +47,9 @@ public final class AJRepoBuilder {
 
     public static RubricRepo buildRubricRepo(ProcessorContext context) {
         return new AJRubricRepo(context);
+    }
+
+    public static UserStateRepo buildUserStateRepo(ProcessorContext context) {
+        return new AJUserStateRepo(context);
     }
 }
