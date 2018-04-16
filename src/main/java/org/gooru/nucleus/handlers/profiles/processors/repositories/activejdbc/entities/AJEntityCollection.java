@@ -35,7 +35,8 @@ public class AJEntityCollection extends Model {
 
     public static final String SELECT_COLLECTIONS_BY_TAXONOMY =
         "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-            + " original_creator_id FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false AND taxonomy ?? ?";
+            + " original_creator_id FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false"
+            + " AND taxonomy ?? ?";
 
     public static final String SELECT_ASSESSMENTS =
         "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
@@ -43,7 +44,8 @@ public class AJEntityCollection extends Model {
 
     public static final String SELECT_ASSESSMENTS_BY_TAXONOMY =
         "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-            + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false AND taxonomy ?? ?";
+            + " original_creator_id FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false"
+            + " AND taxonomy ?? ?";
 
     public static final String SELECT_QUESTIONS_COUNT_FOR_COLLECTION =
         "SELECT count(id) as question_count, collection_id FROM content WHERE"
