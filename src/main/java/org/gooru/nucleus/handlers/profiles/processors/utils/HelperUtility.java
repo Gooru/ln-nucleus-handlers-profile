@@ -48,22 +48,22 @@ public final class HelperUtility {
         }
     }
     
-    public static String toPostgresArrayInt(JsonArray input) {
-		if (input.isEmpty()) {
+	public static String toPostgresArrayInt(Collection<Integer> input) {
+		Iterator<Integer> it = input.iterator();
+		if (!it.hasNext()) {
 			return "{}";
 		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		for (int i = 0; i < input.size(); i++) {
-			Integer value = input.getInteger(i);
-			sb.append(value);
-			if (i == (input.size() - 1)) {
-				break;
+		for (;;) {
+			Integer i = it.next();
+			sb.append(i);
+			if (!it.hasNext()) {
+				return sb.append('}').toString();
 			}
 			sb.append(',');
 		}
-		return sb.append('}').toString();
 	}
     
     public static boolean checkPublic(ProcessorContext context) {

@@ -1,5 +1,7 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
@@ -119,7 +121,8 @@ public class UpdatePreferenceHandler implements DBHandler {
 							AJEntityTaxonomySubject.FETCH_SUBJECT_BY_GUT_AND_FWCODE, subject,
 							standardPreferences.getString(subject));
 					if (count < 1) {
-						LOGGER.warn("invalid subject preference provided '{}' and framework '{}'", subject, standardPreferences.getString(subject));
+						LOGGER.warn("invalid subject preference provided '{}' and framework '{}'", subject,
+								standardPreferences.getString(subject));
 						return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse(
 								"Invalid subject preference provided"), ExecutionResult.ExecutionStatus.FAILED);
 					}
@@ -127,10 +130,23 @@ public class UpdatePreferenceHandler implements DBHandler {
 			}
 
 			JsonArray languagePreference = preferenceSettings.getJsonArray(REQ_KEY_LANGUAGE_PREF, null);
+
 			if (languagePreference != null && !languagePreference.isEmpty()) {
+				Set<Integer> languageIds = new HashSet<>();
+				languagePreference.forEach(langId -> {
+					languageIds.add(Integer.valueOf(langId.toString()));
+				});
+				
+				if (languagePreference.size() != languageIds.size()) {
+					LOGGER.warn("non unique language preferences provided, aborting");
+					return new ExecutionResult<>(
+							MessageResponseFactory.createInvalidRequestResponse("non unique language preference provided"),
+							ExecutionResult.ExecutionStatus.FAILED);
+				}
+ 
 				Long count = Base.count(AJEntityGooruLanguage.TABLE, AJEntityGooruLanguage.FETCH_LANGUAGES_BY_IDS,
-						HelperUtility.toPostgresArrayInt(languagePreference));
-				if (count != languagePreference.size()) {
+						HelperUtility.toPostgresArrayInt(languageIds));
+				if (count != languageIds.size()) {
 					LOGGER.warn("invalid language preferences provided, aborting");
 					return new ExecutionResult<>(
 							MessageResponseFactory.createInvalidRequestResponse("Invalid language preference provided"),
