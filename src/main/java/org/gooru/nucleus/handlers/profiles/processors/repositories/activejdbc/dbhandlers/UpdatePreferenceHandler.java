@@ -109,12 +109,7 @@ public class UpdatePreferenceHandler implements DBHandler {
 
 	private ExecutionResult<MessageResponse> validateRequestPayload() {
 		try {
-			JsonObject preferenceSettings = this.context.request().getJsonObject(REQ_KEY_PREFERENCE_SETTING, null);
-			if (preferenceSettings == null || preferenceSettings.isEmpty()) {
-				return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
-			}
-
-			JsonObject standardPreferences = preferenceSettings.getJsonObject(REQ_KEY_STANDARD_PREF, null);
+			JsonObject standardPreferences = this.context.request().getJsonObject(REQ_KEY_STANDARD_PREF, null);
 			if (standardPreferences != null && !standardPreferences.isEmpty()) {
 				for (String subject : standardPreferences.fieldNames()) {
 					Long count = Base.count(AJEntityTaxonomySubject.TABLE,
@@ -129,7 +124,7 @@ public class UpdatePreferenceHandler implements DBHandler {
 				}
 			}
 
-			JsonArray languagePreference = preferenceSettings.getJsonArray(REQ_KEY_LANGUAGE_PREF, null);
+			JsonArray languagePreference = this.context.request().getJsonArray(REQ_KEY_LANGUAGE_PREF, null);
 
 			if (languagePreference != null && !languagePreference.isEmpty()) {
 				Set<Integer> languageIds = new HashSet<>();
