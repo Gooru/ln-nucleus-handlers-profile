@@ -48,6 +48,24 @@ public final class HelperUtility {
         }
     }
     
+	public static String toPostgresArrayInt(Collection<Integer> input) {
+		Iterator<Integer> it = input.iterator();
+		if (!it.hasNext()) {
+			return "{}";
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+			Integer i = it.next();
+			sb.append(i);
+			if (!it.hasNext()) {
+				return sb.append('}').toString();
+			}
+			sb.append(',');
+		}
+	}
+    
     public static boolean checkPublic(ProcessorContext context) {
         if (!context.userId().equalsIgnoreCase(context.userIdFromURL())) {
             return true;
