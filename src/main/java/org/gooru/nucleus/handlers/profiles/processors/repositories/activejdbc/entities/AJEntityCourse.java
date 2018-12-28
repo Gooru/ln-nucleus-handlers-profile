@@ -30,6 +30,7 @@ public class AJEntityCourse extends Model {
     public static final String SEQUENCE_ID = "sequence_id";
     public static final String SUBJECT_BUCKET = "subject_bucket";
     public static final String AGGREGATED_TAXONOMY = "aggregated_taxonomy";
+    public static final String PRIMARY_LANGUAGE = "primary_language";
 
     public static final String COURSE_ID = "course_id";
     public static final String UNIT_COUNT = "unit_count";
@@ -37,11 +38,11 @@ public class AJEntityCourse extends Model {
 
     public static final String SELECT_COURSES =
         "SELECT id, title, description, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
-            + " visible_on_profile, aggregated_taxonomy FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
+            + " visible_on_profile, aggregated_taxonomy, primary_language FROM course WHERE (owner_id = ?::uuid OR collaborator ?? ?) AND is_deleted = false";
 
     public static final String SELECT_COURSES_PUBLIC =
         "SELECT id, title, description, publish_status, thumbnail, owner_id, original_creator_id, original_course_id, collaborator, taxonomy, sequence_id,"
-            + " visible_on_profile, aggregated_taxonomy FROM course WHERE owner_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
+            + " visible_on_profile, aggregated_taxonomy, primary_language FROM course WHERE owner_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
 
     public static final String SELECT_SUBJECT_BUCKETS =
         "SELECT distinct(subject_bucket) as subject_bucket FROM course WHERE"
@@ -66,7 +67,7 @@ public class AJEntityCourse extends Model {
     public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 
     public static final List<String> COURSE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS, THUMBNAIL, OWNER_ID,
-        ORIGINAL_CREATOR_ID, COLLABORATOR, ORIGINAL_COURSE_ID, TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE, AGGREGATED_TAXONOMY);
+        ORIGINAL_CREATOR_ID, COLLABORATOR, ORIGINAL_COURSE_ID, TAXONOMY, SEQUENCE_ID, VISIBLE_ON_PROFILE, AGGREGATED_TAXONOMY, PRIMARY_LANGUAGE);
     
     public static final List<String> COURSE_FIELDS_FOR_COLLECTION = Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE);
 

@@ -23,17 +23,18 @@ public class AJEntityContent extends Model {
     public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
     public static final String COLLECTION_ID = "collection_id";
     public static final String VISIBLE_ON_PROFILE = "visible_on_profile";
+    public static final String PRIMARY_LANGUAGE = "primary_language";
 
     public static final String OWNER_INFO = "owner_info";
 
     public static final String SELECT_QUESTIONS =
         "SELECT id, title, description, publish_status, content_format, content_subformat, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " collection_id, visible_on_profile FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
+            + " collection_id, visible_on_profile, primary_language FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
             + " AND is_deleted = false";
 
     public static final String SELECT_QUESTIONS_BY_TAXONOMY =
         "SELECT id, title, description, publish_status, content_format, content_subformat, taxonomy, creator_id, original_creator_id,"
-            + " collection_id, visible_on_profile FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
+            + " collection_id, visible_on_profile, primary_language FROM content WHERE creator_id = ?::uuid AND content_format = 'question'::content_format_type"
             + " AND is_deleted = false AND taxonomy ?? ?";
     
     public static final String SELECT_TAXONOMY_FOR_QUESTIONS =
@@ -53,7 +54,7 @@ public class AJEntityContent extends Model {
     public static final String CRITERIA_NOT_INCOLLECTION = "collection_id IS NULL";
 
     public static final List<String> QUESTION_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
-        CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);
+        CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE, PRIMARY_LANGUAGE);
 
     public static final String ORDER_DESC = "desc";
     public static final String ORDER_ASC = "asc";
