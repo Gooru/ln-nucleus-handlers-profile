@@ -34,7 +34,7 @@ public class UpdatePreferenceHandler implements DBHandler {
 
   private AJEntityUserPreference userPreference;
 
-  public UpdatePreferenceHandler(ProcessorContext context) {
+  UpdatePreferenceHandler(ProcessorContext context) {
     this.context = context;
   }
 

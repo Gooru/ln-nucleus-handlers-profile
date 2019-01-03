@@ -23,7 +23,7 @@ public class FollowHandler implements DBHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(FollowHandler.class);
   private String followOnUserId;
 
-  public FollowHandler(ProcessorContext context) {
+  FollowHandler(ProcessorContext context) {
     this.context = context;
   }
 
@@ -148,8 +148,7 @@ public class FollowHandler implements DBHandler {
 
   private JsonObject getModelErrors() {
     JsonObject errors = new JsonObject();
-    this.userNetwork.errors().entrySet()
-        .forEach(entry -> errors.put(entry.getKey(), entry.getValue()));
+    this.userNetwork.errors().forEach(errors::put);
     return errors;
   }
 

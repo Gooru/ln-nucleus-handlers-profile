@@ -33,7 +33,7 @@ public class SearchProfileHandler implements DBHandler {
   private SearchType searchType = SearchType.NONE;
   private List<String> userIds;
 
-  public SearchProfileHandler(ProcessorContext context) {
+  SearchProfileHandler(ProcessorContext context) {
     this.context = context;
   }
 
@@ -80,9 +80,7 @@ public class SearchProfileHandler implements DBHandler {
       }
 
       for (String userId : userIds) {
-        try {
-          UUID.fromString(userId);
-        } catch (IllegalArgumentException e) {
+        if (!HelperUtility.validateUUID(userId)) {
           return new ExecutionResult<>(
               MessageResponseFactory
                   .createInvalidRequestResponse("Invalid user id passed in the URL"),
@@ -116,7 +114,7 @@ public class SearchProfileHandler implements DBHandler {
   }
 
   private enum SearchType {
-    NONE, USERIDS, USERNAME, EMAIL;
+    NONE, USERIDS, USERNAME, EMAIL
   }
 
   private ExecutionResult<MessageResponse> searchByUsername(String username) {
@@ -133,7 +131,7 @@ public class SearchProfileHandler implements DBHandler {
             JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
                 .toJson(user));
     result.mergeIn(getNetworkDetails(user.getString(AJEntityUsers.ID)));
-    return new ExecutionResult<MessageResponse>(MessageResponseFactory.createGetResponse(result),
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
 
@@ -147,7 +145,7 @@ public class SearchProfileHandler implements DBHandler {
     JsonObject result = new JsonObject(
         JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
             .toJson(users.get(0)));
-    return new ExecutionResult<MessageResponse>(MessageResponseFactory.createGetResponse(result),
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
 
@@ -179,7 +177,7 @@ public class SearchProfileHandler implements DBHandler {
 
     JsonObject result = new JsonObject();
     result.put(HelperConstants.RESP_JSON_KEY_USERS, resultArray);
-    return new ExecutionResult<MessageResponse>(MessageResponseFactory.createGetResponse(result),
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
 

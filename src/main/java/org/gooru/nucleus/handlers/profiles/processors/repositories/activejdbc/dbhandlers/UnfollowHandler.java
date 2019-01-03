@@ -17,7 +17,7 @@ public class UnfollowHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(UnfollowHandler.class);
 
-  public UnfollowHandler(ProcessorContext context) {
+  UnfollowHandler(ProcessorContext context) {
     this.context = context;
   }
 

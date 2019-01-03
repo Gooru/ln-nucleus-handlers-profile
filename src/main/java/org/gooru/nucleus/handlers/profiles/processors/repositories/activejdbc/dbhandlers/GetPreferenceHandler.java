@@ -21,7 +21,7 @@ public class GetPreferenceHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(GetPreferenceHandler.class);
 
-  public GetPreferenceHandler(ProcessorContext context) {
+  GetPreferenceHandler(ProcessorContext context) {
     this.context = context;
   }
 

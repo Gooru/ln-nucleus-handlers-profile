@@ -24,7 +24,7 @@ public class UpdateUserStateHandler implements DBHandler {
   private JsonObject systemState = null;
   private AJEntityUserState userState = null;
 
-  public UpdateUserStateHandler(ProcessorContext context) {
+  UpdateUserStateHandler(ProcessorContext context) {
     this.context = context;
   }
 

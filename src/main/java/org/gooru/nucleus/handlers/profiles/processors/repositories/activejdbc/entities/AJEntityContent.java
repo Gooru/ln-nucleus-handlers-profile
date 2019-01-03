@@ -8,21 +8,21 @@ import org.javalite.activejdbc.annotations.Table;
 @Table("content")
 public class AJEntityContent extends Model {
 
-  public static final String ID = "id";
-  public static final String TITLE = "title";
-  public static final String DESCRIPTION = "description";
+  private static final String ID = "id";
+  private static final String TITLE = "title";
+  private static final String DESCRIPTION = "description";
   public static final String FORMAT = "format";
-  public static final String PUBLISH_STATUS = "publish_status";
-  public static final String CONTENT_FORMAT = "content_format";
-  public static final String CONTENT_SUBFORMAT = "content_subformat";
+  private static final String PUBLISH_STATUS = "publish_status";
+  private static final String CONTENT_FORMAT = "content_format";
+  private static final String CONTENT_SUBFORMAT = "content_subformat";
   public static final String THUMBNAIL = "thumbnail";
-  public static final String TAXONOMY = "taxonomy";
-  public static final String UPDATED_AT = "updated_at";
+  private static final String TAXONOMY = "taxonomy";
+  private static final String UPDATED_AT = "updated_at";
   public static final String CREATOR_ID = "creator_id";
-  public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
+  private static final String ORIGINAL_CREATOR_ID = "original_creator_id";
   public static final String COLLECTION_ID = "collection_id";
-  public static final String VISIBLE_ON_PROFILE = "visible_on_profile";
-  public static final String PRIMARY_LANGUAGE = "primary_language";
+  private static final String VISIBLE_ON_PROFILE = "visible_on_profile";
+  private static final String PRIMARY_LANGUAGE = "primary_language";
 
   public static final String OWNER_INFO = "owner_info";
 
@@ -57,8 +57,8 @@ public class AJEntityContent extends Model {
           CONTENT_FORMAT, CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID,
           VISIBLE_ON_PROFILE, PRIMARY_LANGUAGE);
 
-  public static final String ORDER_DESC = "desc";
-  public static final String ORDER_ASC = "asc";
+  private static final String ORDER_DESC = "desc";
+  private static final String ORDER_ASC = "asc";
 
   public static final int DEFAULT_LIMIT = 20;
   public static final int DEFAULT_OFFSET = 0;

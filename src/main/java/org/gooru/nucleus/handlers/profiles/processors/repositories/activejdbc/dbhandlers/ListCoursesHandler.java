@@ -34,7 +34,7 @@ public class ListCoursesHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListCoursesHandler(ProcessorContext context) {
+  ListCoursesHandler(ProcessorContext context) {
     this.context = context;
   }
 
@@ -107,7 +107,7 @@ public class ListCoursesHandler implements DBHandler {
       List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES,
           HelperUtility.toPostgresArrayString(courseIdList));
       Map<String, Integer> unitCountByCourse = new HashMap<>();
-      unitCounts.stream()
+      unitCounts
           .forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
               Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
 

@@ -20,7 +20,7 @@ public class ProfileVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfileVerticle.class);
 
   @Override
-  public void start(Future<Void> voidFuture) throws Exception {
+  public void start(Future<Void> voidFuture) {
 
     EventBus eb = vertx.eventBus();
 

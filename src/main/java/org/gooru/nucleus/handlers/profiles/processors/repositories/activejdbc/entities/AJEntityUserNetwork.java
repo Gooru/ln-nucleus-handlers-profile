@@ -38,7 +38,7 @@ public class AJEntityUserNetwork extends Model {
   public static final String FOLLOWERS_COUNT = "followers_count";
   public static final String FOLLOWINGS_COUNT = "followings_count";
 
-  public static final String UUID_TYPE = "uuid";
+  private static final String UUID_TYPE = "uuid";
 
   public void setUserId(String userId) {
     setPGObject(USER_ID, UUID_TYPE, userId);

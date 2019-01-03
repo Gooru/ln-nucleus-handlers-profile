@@ -32,7 +32,7 @@ public class ListResourcesHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListResourcesHandler(ProcessorContext context) {
+  ListResourcesHandler(ProcessorContext context) {
     this.context = context;
   }
 

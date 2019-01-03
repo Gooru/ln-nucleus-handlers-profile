@@ -36,7 +36,7 @@ public class ListAssessmentsHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListAssessmentsHandler(ProcessorContext context) {
+  ListAssessmentsHandler(ProcessorContext context) {
     this.context = context;
   }
 

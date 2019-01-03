@@ -19,15 +19,13 @@ public class AJEntityUserPreference extends Model {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AJEntityUserPreference.class);
 
-  public static final String USER_ID = "user_id";
+  private static final String USER_ID = "user_id";
   public static final String PREFERENCE_SETTINGS = "preference_settings";
 
   public static final String SELECT_BY_USERID = "user_id = ?::uuid";
 
-  public static final List<String> RESPONSE_FIELDS = Arrays.asList(PREFERENCE_SETTINGS);
-
-  public static final String UUID_TYPE = "uuid";
-  public static final String JSONB_TYPE = "jsonb";
+  private static final String UUID_TYPE = "uuid";
+  private static final String JSONB_TYPE = "jsonb";
 
   public void setUserId(String userId) {
     this.setPGObject(USER_ID, UUID_TYPE, userId);

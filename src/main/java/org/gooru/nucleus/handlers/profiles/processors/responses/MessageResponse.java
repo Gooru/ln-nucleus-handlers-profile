@@ -40,7 +40,7 @@ public final class MessageResponse {
     private String status;
     private HttpConstants.HttpStatus httpStatus = null;
     private JsonObject responseBody = null;
-    private JsonObject headers = null;
+    private JsonObject headers;
     private JsonObject eventData = null;
 
     public Builder() {

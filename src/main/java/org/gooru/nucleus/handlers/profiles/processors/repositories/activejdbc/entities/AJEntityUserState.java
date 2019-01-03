@@ -18,7 +18,7 @@ public class AJEntityUserState extends Model {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AJEntityUserState.class);
 
-  public static final String USER_ID = "user_id";
+  private static final String USER_ID = "user_id";
   public static final String CLIENT_STATE = "client_state";
   public static final String SYSTEM_STATE = "system_state";
 

@@ -36,7 +36,7 @@ public class ListRubricsHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListRubricsHandler(ProcessorContext context) {
+  ListRubricsHandler(ProcessorContext context) {
     this.context = context;
   }
 

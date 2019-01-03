@@ -16,8 +16,7 @@ public final class DBHelperUtility {
   public static JsonArray getOwnerDemographics(Set<String> idlist) {
     LazyList<AJEntityUsers> userDemographics = AJEntityUsers.findBySQL(
         AJEntityUsers.SELECT_MULTIPLE_BY_ID, HelperUtility.toPostgresArrayString(idlist));
-    JsonArray userDetailsArray = new JsonArray(JsonFormatterBuilder
+    return new JsonArray(JsonFormatterBuilder
         .buildSimpleJsonFormatter(false, AJEntityUsers.SUMMARY_FIELDS).toJson(userDemographics));
-    return userDetailsArray;
   }
 }

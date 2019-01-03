@@ -22,7 +22,7 @@ public class GetDemographicsHandler implements DBHandler {
 
   private AJEntityUsers user;
 
-  public GetDemographicsHandler(ProcessorContext context) {
+  GetDemographicsHandler(ProcessorContext context) {
     this.context = context;
   }
 

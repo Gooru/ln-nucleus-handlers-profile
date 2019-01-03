@@ -35,7 +35,7 @@ public class ListQuestionsHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListQuestionsHandler(ProcessorContext context) {
+  ListQuestionsHandler(ProcessorContext context) {
     this.context = context;
   }
 
@@ -115,9 +115,6 @@ public class ListQuestionsHandler implements DBHandler {
     JsonArray questionArray = new JsonArray();
     Set<String> ownerIdList = new HashSet<>();
     if (!questionList.isEmpty()) {
-      List<String> creatorIdList = new ArrayList<>();
-      questionList
-          .forEach(question -> creatorIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
 
       Map<String, AJEntityCollection> assessmentMap = new HashMap<>();
       if (inCollectionFilter) {

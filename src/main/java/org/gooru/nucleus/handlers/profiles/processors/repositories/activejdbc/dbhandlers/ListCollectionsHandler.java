@@ -36,7 +36,7 @@ public class ListCollectionsHandler implements DBHandler {
   private int limit;
   private int offset;
 
-  public ListCollectionsHandler(ProcessorContext context) {
+  ListCollectionsHandler(ProcessorContext context) {
     this.context = context;
   }
 
