@@ -14,6 +14,9 @@ public final class DBHelperUtility {
   }
 
   public static JsonArray getOwnerDemographics(Set<String> idlist) {
+    if (idlist == null || idlist.isEmpty()) {
+      return new JsonArray();
+    }
     LazyList<AJEntityUsers> userDemographics = AJEntityUsers.findBySQL(
         AJEntityUsers.SELECT_MULTIPLE_BY_ID, HelperUtility.toPostgresArrayString(idlist));
     return new JsonArray(JsonFormatterBuilder

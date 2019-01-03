@@ -35,6 +35,11 @@ public class ListCollectionsHandler implements DBHandler {
   private String order;
   private int limit;
   private int offset;
+  private StringBuilder query;
+  private List<Object> params;
+  private Map<String, Integer> resourceCountByCollection;
+  private Map<String, Integer> questionCountByCollection;
+  private Map<String, AJEntityCourse> courseInfo;
 
   ListCollectionsHandler(ProcessorContext context) {
     this.context = context;
@@ -86,8 +91,122 @@ public class ListCollectionsHandler implements DBHandler {
   @SuppressWarnings("rawtypes")
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuilder query;
-    List<Object> params = new ArrayList<>();
+    initializeQueryAndParams();
+
+    LazyList<AJEntityCollection> collectionList = AJEntityCollection
+        .findBySQL(query.toString(), params.toArray());
+    if (collectionList.isEmpty()) {
+      return sendEmptyResponse();
+    }
+    LOGGER.debug("# Collections found: {}", collectionList.size());
+    return processNonEmptyResponse(collectionList);
+  }
+
+  private ExecutionResult<MessageResponse> processNonEmptyResponse(
+      LazyList<AJEntityCollection> collectionList) {
+
+    Set<String> ownerIdList = new HashSet<>();
+    List<String> collectionIdList = new ArrayList<>();
+    Set<String> courseIdList = new HashSet<>();
+
+    for (AJEntityCollection collection : collectionList) {
+      collectionIdList.add(collection.getString(AJEntityCollection.ID));
+      ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID));
+      if (collection.getString(AJEntityCollection.COURSE_ID) != null
+          && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty()) {
+        courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID));
+      }
+    }
+    LOGGER.debug("# Courses are associated with collections: {}", courseIdList.size());
+
+    initializeQuestionResourceCount(collectionIdList);
+
+    initializeCourseInfo(courseIdList);
+
+    return createAndSendResponse(collectionList, ownerIdList);
+  }
+
+  private ExecutionResult<MessageResponse> createAndSendResponse(
+      LazyList<AJEntityCollection> collectionList, Set<String> ownerIdList) {
+    JsonFormatter collectionFieldsFormatter =
+        JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.COLLECTION_LIST);
+    JsonFormatter courseFieldsFormatter =
+        JsonFormatterBuilder
+            .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION);
+    JsonArray collectionArray = new JsonArray();
+
+    for (AJEntityCollection collection : collectionList) {
+      JsonObject result = new JsonObject(collectionFieldsFormatter.toJson(collection));
+      String courseId = collection.getString(AJEntityCollection.COURSE_ID);
+      if (courseId != null && !courseId.isEmpty()) {
+        AJEntityCourse course = courseInfo.get(courseId);
+        if (course != null) {
+          result.put(HelperConstants.RESP_JSON_KEY_COURSE,
+              new JsonObject(courseFieldsFormatter.toJson(course)));
+        } else {
+          result.putNull(HelperConstants.RESP_JSON_KEY_COURSE);
+        }
+      }
+
+      String collectionId = collection.getString(AJEntityCollection.ID);
+      Integer resourceCount = resourceCountByCollection.get(collectionId);
+      Integer questionCount = questionCountByCollection.get(collectionId);
+      result.put(AJEntityCollection.RESOURCE_COUNT, resourceCount != null ? resourceCount : 0);
+      result.put(AJEntityCollection.QUESTION_COUNT, questionCount != null ? questionCount : 0);
+      collectionArray.add(result);
+    }
+
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_COLLECTIONS, collectionArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+        DBHelperUtility.getOwnerDemographics(ownerIdList));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+  private void initializeCourseInfo(Set<String> courseIdList) {
+    courseInfo = new HashMap<>();
+    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(
+        AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
+        HelperUtility.toPostgresArrayString(courseIdList));
+    courseList.forEach(course -> courseInfo.put(course.getString(AJEntityCourse.ID), course));
+    LOGGER.debug("# Courses returned from database: {}", courseInfo.size());
+  }
+
+  private void initializeQuestionResourceCount(List<String> collectionIdList) {
+    List<Map> contentCounts = Base
+        .findAll(AJEntityCollection.SELECT_CONTENT_COUNTS_FOR_COLLECTIONS,
+            HelperUtility.toPostgresArrayString(collectionIdList));
+    resourceCountByCollection = new HashMap<>();
+    questionCountByCollection = new HashMap<>();
+    contentCounts.forEach(entry -> {
+      String collectionId = entry.get(AJEntityCollection.COLLECTION_ID).toString();
+      questionCountByCollection.put(collectionId,
+          Integer.valueOf(entry.get(AJEntityCollection.QUESTION_COUNT).toString()));
+      resourceCountByCollection.put(collectionId,
+          Integer.valueOf(entry.get(AJEntityCollection.RESOURCE_COUNT).toString()));
+    });
+  }
+
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
+
+  private ExecutionResult<MessageResponse> sendEmptyResponse() {
+    JsonObject responseBody = new JsonObject()
+        .put(HelperConstants.RESP_JSON_KEY_COLLECTIONS, new JsonArray())
+        .put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, new JsonArray())
+        .put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+
+  private void initializeQueryAndParams() {
+    params = new ArrayList<>();
 
     query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
 
@@ -104,9 +223,6 @@ public class ListCollectionsHandler implements DBHandler {
       params.add(context.userIdFromURL()); // for collaborator
     }
 
-    // By default true to filter by course
-    boolean inCourseFilter = true;
-
     query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY)
         .append(HelperConstants.SPACE)
         .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
@@ -117,91 +233,6 @@ public class ListCollectionsHandler implements DBHandler {
     LOGGER.debug(
         "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
         query, params.size(), sortOn, order, limit, offset);
-
-    LazyList<AJEntityCollection> collectionList = AJEntityCollection
-        .findBySQL(query.toString(), params.toArray());
-    JsonArray collectionArray = new JsonArray();
-    Set<String> ownerIdList = new HashSet<>();
-    if (!collectionList.isEmpty()) {
-      LOGGER.debug("# Collections found: {}", collectionList.size());
-      List<String> collectionIdList = new ArrayList<>();
-      collectionList
-          .forEach(collection -> collectionIdList.add(collection.getString(AJEntityCollection.ID)));
-
-      List<Map> contentCounts = Base
-          .findAll(AJEntityCollection.SELECT_CONTENT_COUNTS_FOR_COLLECTIONS,
-              HelperUtility.toPostgresArrayString(collectionIdList));
-      Map<String, Integer> resourceCountByCollection = new HashMap<>();
-      Map<String, Integer> questionCountByCollection = new HashMap<>();
-      contentCounts.forEach(entry -> {
-        String collectionId = entry.get(AJEntityCollection.COLLECTION_ID).toString();
-        questionCountByCollection.put(collectionId,
-            Integer.valueOf(entry.get(AJEntityCollection.QUESTION_COUNT).toString()));
-        resourceCountByCollection.put(collectionId,
-            Integer.valueOf(entry.get(AJEntityCollection.RESOURCE_COUNT).toString()));
-      });
-
-      Map<String, AJEntityCourse> courseMap = new HashMap<>();
-      if (inCourseFilter) {
-        LOGGER.debug("in course filter is ON, fetching courses");
-        Set<String> courseIdList = new HashSet<>();
-        collectionList.stream()
-            .filter(collection -> collection.getString(AJEntityCollection.COURSE_ID) != null
-                && !collection.getString(AJEntityCollection.COURSE_ID).isEmpty())
-            .forEach(
-                collection -> courseIdList.add(collection.getString(AJEntityCollection.COURSE_ID)));
-        LOGGER.debug("# Courses are associated with collections: {}", courseIdList.size());
-
-        LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(
-            AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
-            HelperUtility.toPostgresArrayString(courseIdList));
-        courseList.forEach(course -> courseMap.put(course.getString(AJEntityCourse.ID), course));
-        LOGGER.debug("# Courses returned from database: {}", courseMap.size());
-      }
-
-      JsonFormatter collectionFieldsFormatter =
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.COLLECTION_LIST);
-      JsonFormatter courseFieldsFormatter =
-          JsonFormatterBuilder
-              .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION);
-
-      collectionList.forEach(collection -> {
-        JsonObject result = new JsonObject(collectionFieldsFormatter.toJson(collection));
-        String courseId = collection.getString(AJEntityCollection.COURSE_ID);
-        if (courseId != null && !courseId.isEmpty()) {
-          AJEntityCourse course = courseMap.get(courseId);
-          if (course != null) {
-            result.put(HelperConstants.RESP_JSON_KEY_COURSE,
-                new JsonObject(courseFieldsFormatter.toJson(course)));
-          } else {
-            result.putNull(HelperConstants.RESP_JSON_KEY_COURSE);
-          }
-        }
-
-        String collectionId = collection.getString(AJEntityCollection.ID);
-        Integer resourceCount = resourceCountByCollection.get(collectionId);
-        Integer questionCount = questionCountByCollection.get(collectionId);
-        result.put(AJEntityCollection.RESOURCE_COUNT, resourceCount != null ? resourceCount : 0);
-        result.put(AJEntityCollection.QUESTION_COUNT, questionCount != null ? questionCount : 0);
-        collectionArray.add(result);
-      });
-
-      collectionList.forEach(
-          collection -> ownerIdList.add(collection.getString(AJEntityCollection.OWNER_ID)));
-    }
-
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_COLLECTIONS, collectionArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
-        DBHelperUtility.getOwnerDemographics(ownerIdList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
-        ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
   }
 
   private JsonObject getFiltersJson() {

@@ -33,6 +33,8 @@ public class ListCoursesHandler implements DBHandler {
   private String subjectCode;
   private int limit;
   private int offset;
+  private StringBuilder query;
+  private List<Object> params;
 
   ListCoursesHandler(ProcessorContext context) {
     this.context = context;
@@ -66,8 +68,55 @@ public class ListCoursesHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
 
-    StringBuilder query;
-    List<Object> params = new ArrayList<>();
+    initializeQueryAndParams();
+    LazyList<AJEntityCourse> courseList = AJEntityCourse
+        .findBySQL(query.toString(), params.toArray());
+    Set<String> ownerIdList = new HashSet<>();
+    JsonArray courseArray = new JsonArray();
+    List<String> courseIdList = new ArrayList<>();
+    if (!courseList.isEmpty()) {
+      for (AJEntityCourse course : courseList) {
+        courseIdList.add(course.getString(AJEntityCourse.ID));
+        ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID));
+      }
+
+      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES,
+          HelperUtility.toPostgresArrayString(courseIdList));
+      Map<String, Integer> unitCountByCourse = new HashMap<>();
+
+      for (Map map : unitCounts) {
+        unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
+            Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString()));
+      }
+
+      JsonFormatter courseFieldsFormatter =
+          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST);
+
+      for (AJEntityCourse course : courseList) {
+        Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
+        courseArray
+            .add(new JsonObject(courseFieldsFormatter.toJson(course)).put(AJEntityCourse.UNIT_COUNT,
+                unitCount != null ? unitCount : 0));
+      }
+    }
+
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+        DBHelperUtility.getOwnerDemographics(ownerIdList));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
+
+  private void initializeQueryAndParams() {
+    params = new ArrayList<>();
 
     if (isPublic) {
       query = new StringBuilder(AJEntityCourse.SELECT_COURSES_PUBLIC);
@@ -96,47 +145,6 @@ public class ListCoursesHandler implements DBHandler {
         .debug("SelectQuery:{}, paramSize:{}, txCode:{}, limit:{}, offset:{}", query, params.size(),
             subjectCode,
             limit, offset);
-    LazyList<AJEntityCourse> courseList = AJEntityCourse
-        .findBySQL(query.toString(), params.toArray());
-    Set<String> ownerIdList = new HashSet<>();
-    JsonArray courseArray = new JsonArray();
-    if (!courseList.isEmpty()) {
-      List<String> courseIdList = new ArrayList<>();
-      courseList.forEach(course -> courseIdList.add(course.getString(AJEntityCourse.ID)));
-
-      List<Map> unitCounts = Base.findAll(AJEntityCourse.SELECT_UNIT_COUNT_FOR_COURSES,
-          HelperUtility.toPostgresArrayString(courseIdList));
-      Map<String, Integer> unitCountByCourse = new HashMap<>();
-      unitCounts
-          .forEach(map -> unitCountByCourse.put(map.get(AJEntityCourse.COURSE_ID).toString(),
-              Integer.valueOf(map.get(AJEntityCourse.UNIT_COUNT).toString())));
-
-      JsonFormatter courseFieldsFormatter =
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_LIST);
-
-      courseList.forEach(course -> {
-        Integer unitCount = unitCountByCourse.get(course.getString(AJEntityCourse.ID));
-        courseArray
-            .add(new JsonObject(courseFieldsFormatter.toJson(course)).put(AJEntityCourse.UNIT_COUNT,
-                unitCount != null ? unitCount : 0));
-      });
-
-      courseList.forEach(course -> ownerIdList.add(course.getString(AJEntityCourse.OWNER_ID)));
-    }
-
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_COURSES, courseArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
-        DBHelperUtility.getOwnerDemographics(ownerIdList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
-        ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
   }
 
   private JsonObject getFiltersJson() {

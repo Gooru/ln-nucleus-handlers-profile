@@ -35,6 +35,8 @@ public class ListRubricsHandler implements DBHandler {
   private String order;
   private int limit;
   private int offset;
+  private StringBuilder query;
+  private List<Object> params;
 
   ListRubricsHandler(ProcessorContext context) {
     this.context = context;
@@ -85,8 +87,39 @@ public class ListRubricsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuilder query;
-    List<Object> params = new ArrayList<>();
+    initializeQueryAndParams();
+
+    LazyList<AJEntityRubric> rubricList = AJEntityRubric
+        .findBySQL(query.toString(), params.toArray());
+    JsonArray rubricArray = new JsonArray();
+    Set<String> ownerIdList = new HashSet<>();
+    if (!rubricList.isEmpty()) {
+      JsonFormatter rubricFieldsFormatter =
+          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST);
+
+      for (AJEntityRubric rubric : rubricList) {
+        ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID));
+        JsonObject result = new JsonObject(rubricFieldsFormatter.toJson(rubric));
+        rubricArray.add(result);
+      }
+    }
+
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_RUBRICS, rubricArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+        DBHelperUtility.getOwnerDemographics(ownerIdList));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
+
+  private void initializeQueryAndParams() {
+    params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
@@ -110,34 +143,6 @@ public class ListRubricsHandler implements DBHandler {
     LOGGER.debug(
         "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
         query, params.size(), sortOn, order, limit, offset);
-
-    LazyList<AJEntityRubric> rubricList = AJEntityRubric
-        .findBySQL(query.toString(), params.toArray());
-    JsonArray rubricArray = new JsonArray();
-    Set<String> ownerIdList = new HashSet<>();
-    if (!rubricList.isEmpty()) {
-      JsonFormatter rubricFieldsFormatter =
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityRubric.RUBRIC_LIST);
-
-      rubricList.forEach(rubric -> {
-        ownerIdList.add(rubric.getString(AJEntityRubric.CREATOR_ID));
-        JsonObject result = new JsonObject(rubricFieldsFormatter.toJson(rubric));
-        rubricArray.add(result);
-      });
-    }
-
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_RUBRICS, rubricArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
-        DBHelperUtility.getOwnerDemographics(ownerIdList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
-        ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
   }
 
   private JsonObject getFiltersJson() {

@@ -31,6 +31,8 @@ public class ListResourcesHandler implements DBHandler {
   private String order;
   private int limit;
   private int offset;
+  private StringBuilder query;
+  private List<Object> params;
 
   ListResourcesHandler(ProcessorContext context) {
     this.context = context;
@@ -82,8 +84,44 @@ public class ListResourcesHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuilder query;
-    List<Object> params = new ArrayList<>();
+    initializeQueryAndParams();
+
+    LazyList<AJEntityOriginalResource> resourceList =
+        AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
+    JsonArray resourceArray = new JsonArray();
+    Set<String> ownerIdList = new HashSet<>();
+    if (!resourceList.isEmpty()) {
+      JsonFormatter resourceFieldsFormatter =
+          JsonFormatterBuilder
+              .buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST);
+
+      for (AJEntityOriginalResource resource : resourceList) {
+        ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID));
+        JsonObject resourceJson = new JsonObject(resourceFieldsFormatter.toJson(resource));
+        resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT,
+            AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
+        resourceJson.putNull(AJEntityOriginalResource.ORIGINAL_CREATOR_ID);
+        resourceArray.add(resourceJson);
+      }
+    }
+
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+        DBHelperUtility.getOwnerDemographics(ownerIdList));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+
+  @Override
+  public boolean handlerReadOnly() {
+    return true;
+  }
+
+  private void initializeQueryAndParams() {
+    params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
@@ -104,38 +142,6 @@ public class ListResourcesHandler implements DBHandler {
     LOGGER.debug(
         "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
         query, params.size(), sortOn, order, limit, offset);
-
-    LazyList<AJEntityOriginalResource> resourceList =
-        AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
-    JsonArray resourceArray = new JsonArray();
-    Set<String> ownerIdList = new HashSet<>();
-    if (!resourceList.isEmpty()) {
-      JsonFormatter resourceFieldsFormatter =
-          JsonFormatterBuilder
-              .buildSimpleJsonFormatter(false, AJEntityOriginalResource.RESOURCE_LIST);
-
-      resourceList.forEach(resource -> {
-        ownerIdList.add(resource.getString(AJEntityOriginalResource.CREATOR_ID));
-        JsonObject resourceJson = new JsonObject(resourceFieldsFormatter.toJson(resource));
-        resourceJson.put(AJEntityOriginalResource.CONTENT_FORMAT,
-            AJEntityOriginalResource.RESOURCE_CONTENT_FORMAT);
-        resourceJson.putNull(AJEntityOriginalResource.ORIGINAL_CREATOR_ID);
-        resourceArray.add(resourceJson);
-      });
-    }
-
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_RESOURCES, resourceArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
-        DBHelperUtility.getOwnerDemographics(ownerIdList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
-        ExecutionStatus.SUCCESSFUL);
-  }
-
-  @Override
-  public boolean handlerReadOnly() {
-    return true;
   }
 
   private JsonObject getFiltersJson() {

@@ -34,6 +34,9 @@ public class ListQuestionsHandler implements DBHandler {
   private String order;
   private int limit;
   private int offset;
+  private StringBuilder query;
+  private List<Object> params;
+  private Map<String, AJEntityCollection> assessmentInfo;
 
   ListQuestionsHandler(ProcessorContext context) {
     this.context = context;
@@ -84,8 +87,85 @@ public class ListQuestionsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
-    StringBuilder query;
-    List<Object> params = new ArrayList<>();
+    initializeQueryAndParams();
+
+    LazyList<AJEntityContent> questionList = AJEntityContent
+        .findBySQL(query.toString(), params.toArray());
+    Set<String> ownerIdList = new HashSet<>();
+    if (questionList.isEmpty()) {
+      sendEmptyResponse();
+    }
+
+    return processNonEmptyResponse(questionList, ownerIdList);
+  }
+
+  private ExecutionResult<MessageResponse> processNonEmptyResponse(
+      LazyList<AJEntityContent> questionList, Set<String> ownerIdList) {
+    Set<String> assessmentIdList = new HashSet<>();
+    for (AJEntityContent question : questionList) {
+      ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID));
+      if (question.getString(AJEntityContent.COLLECTION_ID) != null) {
+        assessmentIdList.add(question.getString(AJEntityContent.COLLECTION_ID));
+      }
+    }
+    LOGGER.debug("number of assessment found {}", assessmentIdList.size());
+
+    initializeAssessmentInfo(assessmentIdList);
+
+    return createAndSendResponse(questionList, ownerIdList);
+  }
+
+  private ExecutionResult<MessageResponse> createAndSendResponse(
+      LazyList<AJEntityContent> questionList, Set<String> ownerIdList) {
+    JsonArray questionArray = new JsonArray();
+    JsonFormatter questionFieldsFormatter =
+        JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST);
+    JsonFormatter assessmentFieldsFormatter =
+        JsonFormatterBuilder
+            .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION);
+
+    for (AJEntityContent question : questionList) {
+      JsonObject result = new JsonObject(questionFieldsFormatter.toJson(question));
+      String assessmentId = question.getString(AJEntityContent.COLLECTION_ID);
+      if (assessmentId != null && !assessmentId.isEmpty()) {
+        AJEntityCollection assessment = assessmentInfo.get(assessmentId);
+        result.put(HelperConstants.RESP_JSON_KEY_ASSESSMENT,
+            new JsonObject(assessmentFieldsFormatter.toJson(assessment)));
+      }
+      questionArray.add(result);
+    }
+
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS, questionArray);
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
+        DBHelperUtility.getOwnerDemographics(ownerIdList));
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+  private ExecutionResult<MessageResponse> sendEmptyResponse() {
+    JsonObject responseBody = new JsonObject();
+    responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS, new JsonArray());
+    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, new JsonArray());
+    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
+        ExecutionStatus.SUCCESSFUL);
+  }
+
+  private void initializeAssessmentInfo(Set<String> assessmentIdList) {
+    assessmentInfo = new HashMap<>();
+    LazyList<AJEntityCollection> assessmentList =
+        AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
+            HelperUtility.toPostgresArrayString(assessmentIdList));
+    for (AJEntityCollection assessment : assessmentList) {
+      assessmentInfo.put(assessment.getString(AJEntityCollection.ID), assessment);
+    }
+    LOGGER.debug("assessment fetched from DB are {}", assessmentInfo.size());
+  }
+
+  private void initializeQueryAndParams() {
+    params = new ArrayList<>();
 
     // Parameters to be added in list should be in same way as below
     params.add(context.userIdFromURL());
@@ -97,8 +177,6 @@ public class ListQuestionsHandler implements DBHandler {
           .append(AJEntityContent.CRITERIA_PUBLIC);
     }
 
-    // Be defualt true to filter by in collection
-    boolean inCollectionFilter = true;
     query.append(HelperConstants.SPACE).append(AJEntityContent.CLAUSE_ORDERBY)
         .append(HelperConstants.SPACE)
         .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
@@ -109,60 +187,6 @@ public class ListQuestionsHandler implements DBHandler {
     LOGGER.debug(
         "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
         query, params.size(), sortOn, order, limit, offset);
-
-    LazyList<AJEntityContent> questionList = AJEntityContent
-        .findBySQL(query.toString(), params.toArray());
-    JsonArray questionArray = new JsonArray();
-    Set<String> ownerIdList = new HashSet<>();
-    if (!questionList.isEmpty()) {
-
-      Map<String, AJEntityCollection> assessmentMap = new HashMap<>();
-      if (inCollectionFilter) {
-        LOGGER.debug("in collection filter is ON, fetching collections/assessments");
-        Set<String> assessmentIdList = new HashSet<>();
-        questionList.stream()
-            .filter(question -> question.getString(AJEntityContent.COLLECTION_ID) != null)
-            .forEach(question -> assessmentIdList
-                .add(question.getString(AJEntityContent.COLLECTION_ID)));
-        LOGGER.debug("number of assessment found {}", assessmentIdList.size());
-
-        LazyList<AJEntityCollection> assessmentList =
-            AJEntityCollection.findBySQL(AJEntityCollection.SELECT_ASSESSMENT_FOR_QUESTION,
-                HelperUtility.toPostgresArrayString(assessmentIdList));
-        assessmentList
-            .forEach(assessment -> assessmentMap
-                .put(assessment.getString(AJEntityCollection.ID), assessment));
-        LOGGER.debug("assessment fetched from DB are {}", assessmentMap.size());
-      }
-
-      JsonFormatter questionFieldsFormatter =
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityContent.QUESTION_LIST);
-      JsonFormatter assessmentFieldsFormatter =
-          JsonFormatterBuilder
-              .buildSimpleJsonFormatter(false, AJEntityCollection.ASSESSMENT_FIELDS_FOR_QUESTION);
-
-      questionList.forEach(question -> {
-        JsonObject result = new JsonObject(questionFieldsFormatter.toJson(question));
-        String assessmentId = question.getString(AJEntityContent.COLLECTION_ID);
-        if (assessmentId != null && !assessmentId.isEmpty()) {
-          AJEntityCollection assessment = assessmentMap.get(assessmentId);
-          result.put(HelperConstants.RESP_JSON_KEY_ASSESSMENT,
-              new JsonObject(assessmentFieldsFormatter.toJson(assessment)));
-        }
-        questionArray.add(result);
-      });
-
-      questionList
-          .forEach(question -> ownerIdList.add(question.getString(AJEntityContent.CREATOR_ID)));
-    }
-
-    JsonObject responseBody = new JsonObject();
-    responseBody.put(HelperConstants.RESP_JSON_KEY_QUESTIONS, questionArray);
-    responseBody.put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS,
-        DBHelperUtility.getOwnerDemographics(ownerIdList));
-    responseBody.put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
-        ExecutionStatus.SUCCESSFUL);
   }
 
   @Override
