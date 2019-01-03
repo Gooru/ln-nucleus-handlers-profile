@@ -7,25 +7,26 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.tr
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 /**
- * @author szgooru
- * Created On: 01-Feb-2017
+ * @author szgooru Created On: 01-Feb-2017
  */
 public class AJPreferenceRepo implements PreferenceRepo {
 
-    private final ProcessorContext context;
-    
-    public AJPreferenceRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  private final ProcessorContext context;
 
-    @Override
-    public MessageResponse getPrefernce() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildGetPreferenceHandler(context));
-    }
+  public AJPreferenceRepo(ProcessorContext context) {
+    this.context = context;
+  }
 
-    @Override
-    public MessageResponse updatePreference() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildUpdatePreferenceHandler(context));
-    }
+  @Override
+  public MessageResponse getPrefernce() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildGetPreferenceHandler(context));
+  }
+
+  @Override
+  public MessageResponse updatePreference() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildUpdatePreferenceHandler(context));
+  }
 
 }
