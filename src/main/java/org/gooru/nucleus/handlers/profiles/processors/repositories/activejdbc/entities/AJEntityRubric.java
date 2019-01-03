@@ -45,17 +45,18 @@ public class AJEntityRubric extends Model {
     public static final String VISIBLE_ON_PROFILE = "visible_on_profile";
     public static final String IS_DELETED = "is_deleted";
     public static final String CREATOR_SYSTEM = "creator_system";
+    public static final String PRIMARY_LANGUAGE = "primary_language";
 
     public static final String SELECT_RUBRICS =
         "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false AND is_rubric = true";
+            + " visible_on_profile, primary_language FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false AND is_rubric = true";
 
     public static final String SELECT_RUBRICS_BY_TAXONOMY =
         "SELECT id, title, description, publish_status, thumbnail, taxonomy, creator_id, original_creator_id,"
-            + " visible_on_profile FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false  AND is_rubric = true AND taxonomy ?? ?";
+            + " visible_on_profile, primary_language FROM rubric WHERE creator_id = ?::uuid AND is_deleted = false  AND is_rubric = true AND taxonomy ?? ?";
 
     public static final List<String> RUBRIC_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
-        THUMBNAIL, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE);
+        THUMBNAIL, TAXONOMY, CREATOR_ID, ORIGINAL_CREATOR_ID, VISIBLE_ON_PROFILE, PRIMARY_LANGUAGE);
 
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "(title ilike ? OR description ilike ?)";

@@ -25,13 +25,14 @@ public class AJEntityOriginalResource extends Model {
     public static final String CONTENT_FORMAT = "content_format";
     public static final String ORIGINAL_CREATOR_ID = "original_creator_id";
     public static final String RESOURCE_CONTENT_FORMAT = "resource";
+    public static final String PRIMARY_LANGUAGE = "primary_language";
     
     public static final String SELECT_RESOURCES =
-        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile FROM original_resource"
+        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile, primary_language FROM original_resource"
         + " WHERE creator_id = ?::uuid AND is_deleted = false";
 
     public static final String SELECT_RESOURCES_BY_TAXONOMY =
-        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile FROM original_resource"
+        "SELECT id, title, description, publish_status, content_subformat, taxonomy, creator_id, visible_on_profile, primary_language FROM original_resource"
         + " WHERE creator_id = ?::uuid AND is_deleted = false AND taxonomy ?? ?";
     
     public static final String SELECT_TAXONOMY_FOR_RESOURCES =
@@ -41,7 +42,7 @@ public class AJEntityOriginalResource extends Model {
         "SELECT DISTINCT(jsonb_object_keys(taxonomy)) FROM original_resource WHERE creator_id = ?::uuid AND is_deleted = false AND visible_on_profile = true";
     
     public static final List<String> RESOURCE_LIST = Arrays.asList(ID, TITLE, DESCRIPTION, PUBLISH_STATUS,
-        CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, VISIBLE_ON_PROFILE);
+        CONTENT_SUBFORMAT, TAXONOMY, CREATOR_ID, VISIBLE_ON_PROFILE, PRIMARY_LANGUAGE);
     
     public static final String OP_AND = "AND";
     public static final String CRITERIA_TITLE = "(title ilike ? OR description ilike ?)";
