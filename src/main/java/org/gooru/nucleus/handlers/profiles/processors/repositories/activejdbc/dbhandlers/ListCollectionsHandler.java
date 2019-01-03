@@ -88,7 +88,6 @@ public class ListCollectionsHandler implements DBHandler {
     return AuthorizerBuilder.buildUserAuthorizer(context).authorize(null);
   }
 
-  @SuppressWarnings("rawtypes")
   @Override
   public ExecutionResult<MessageResponse> executeRequest() {
     initializeQueryAndParams();

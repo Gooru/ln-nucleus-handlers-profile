@@ -29,11 +29,13 @@ public class AJEntityCollection extends Model {
 
   public static final String SELECT_COLLECTIONS =
       "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-          + " original_creator_id, primary_language FROM collection WHERE format = 'collection'::content_container_type AND is_deleted = false";
+          + " original_creator_id, primary_language, format FROM collection WHERE "
+          + " (format = 'collection'::content_container_type OR format = 'collection-external'::content_container_type) AND is_deleted = false";
 
   public static final String SELECT_ASSESSMENTS =
       "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
-          + " original_creator_id, primary_language FROM collection WHERE format = 'assessment'::content_container_type AND is_deleted = false";
+          + " original_creator_id, primary_language, format FROM collection WHERE "
+          + " (format = 'assessment'::content_container_type OR format = 'assessment-external'::content_container_type) AND is_deleted = false";
 
   public static final String SELECT_QUESTIONS_COUNT_FOR_COLLECTION =
       "SELECT count(id) as question_count, collection_id FROM content WHERE"
@@ -55,11 +57,11 @@ public class AJEntityCollection extends Model {
   public static final List<String> COLLECTION_LIST = Arrays
       .asList(ID, TITLE, COURSE_ID, PUBLISH_STATUS, THUMBNAIL,
           TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID,
-          ORIGINAL_CREATOR_ID, PRIMARY_LANGUAGE);
+          ORIGINAL_CREATOR_ID, PRIMARY_LANGUAGE, FORMAT);
   public static final List<String> ASSESSMENT_LIST = Arrays
       .asList(ID, TITLE, COURSE_ID, PUBLISH_STATUS, THUMBNAIL,
           TAXONOMY, COLLABORATOR, VISIBLE_ON_PROFILE, LEARNING_OBJECTIVE, OWNER_ID,
-          ORIGINAL_CREATOR_ID, PRIMARY_LANGUAGE);
+          ORIGINAL_CREATOR_ID, PRIMARY_LANGUAGE, FORMAT);
   public static final List<String> ASSESSMENT_FIELDS_FOR_QUESTION =
       Arrays.asList(ID, TITLE, VISIBLE_ON_PROFILE, FORMAT);
 
