@@ -3,7 +3,6 @@ package org.gooru.nucleus.handlers.profiles.constants;
 public final class HelperConstants {
 
     public static final String REQ_PARAM_PREVIEW = "preview";
-    public static final String REQ_PARAM_SEARCH_TEXT = "searchText";
     public static final String REQ_PARAM_LEVEL = "level";
     public static final String REQ_PARAM_SUBJECT = "subject";
     public static final String REQ_PARAM_STANDARD = "standard";

@@ -33,13 +33,10 @@ public class ListCollectionsHandler implements DBHandler {
     private final ProcessorContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(ListCollectionsHandler.class);
     private boolean isPublic = false;
-    private String searchText;
-    private String standard;
     private String sortOn;
     private String order;
     private int limit;
     private int offset;
-    private String filterBy;
 
     public ListCollectionsHandler(ProcessorContext context) {
         this.context = context;
@@ -55,7 +52,6 @@ public class ListCollectionsHandler implements DBHandler {
         }
 
         isPublic = HelperUtility.checkPublic(context);
-        searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
         String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
         sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityCollection.DEFAULT_SORTON;
@@ -76,9 +72,6 @@ public class ListCollectionsHandler implements DBHandler {
         limit = HelperUtility.getLimitFromRequest(context);
         offset = HelperUtility.getOffsetFromRequest(context);
 
-        filterBy = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_FILTERBY, context);
-        standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
-
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
@@ -93,18 +86,7 @@ public class ListCollectionsHandler implements DBHandler {
         StringBuilder query;
         List<Object> params = new ArrayList<>();
 
-        if (standard != null) {
-            query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS_BY_TAXONOMY);
-            params.add(standard);
-        } else {
-            query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
-        }
-
-        if (searchText != null) {
-            query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityCollection.CRITERIA_TITLE);
-            params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
-        }
+        query = new StringBuilder(AJEntityCollection.SELECT_COLLECTIONS);
 
         if (isPublic) {
             query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
@@ -119,16 +101,6 @@ public class ListCollectionsHandler implements DBHandler {
 
         // By default true to filter by course
         boolean inCourseFilter = true;
-        if (filterBy != null) {
-            if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_INCOURSE)) {
-                query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
-                    .append(AJEntityCollection.CRITERIA_INCOURSE);
-            } else if (filterBy.equalsIgnoreCase(HelperConstants.FILTERBY_NOT_INCOURSE)) {
-                query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND).append(HelperConstants.SPACE)
-                    .append(AJEntityCollection.CRITERIA_NOT_INCOURSE);
-                inCourseFilter = false;
-            }
-        }
 
         query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY).append(HelperConstants.SPACE)
             .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
@@ -137,8 +109,8 @@ public class ListCollectionsHandler implements DBHandler {
         params.add(offset);
 
         LOGGER.debug(
-            "SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, filterBy:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
-            query, params.size(), standard, searchText, filterBy, sortOn, order, limit, offset);
+            "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
+            query, params.size(), sortOn, order, limit, offset);
 
         LazyList<AJEntityCollection> collectionList = AJEntityCollection.findBySQL(query.toString(), params.toArray());
         JsonArray collectionArray = new JsonArray();
@@ -220,8 +192,7 @@ public class ListCollectionsHandler implements DBHandler {
     }
 
     private JsonObject getFiltersJson() {
-        return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
-            .put(HelperConstants.RESP_JSON_KEY_FILTERBY, filterBy).put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
+        return new JsonObject().put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn)
             .put(HelperConstants.RESP_JSON_KEY_ORDER, order).put(HelperConstants.RESP_JSON_KEY_LIMIT, limit)
             .put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }

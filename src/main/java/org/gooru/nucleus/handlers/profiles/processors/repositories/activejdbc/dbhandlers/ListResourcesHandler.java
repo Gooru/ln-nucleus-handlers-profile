@@ -29,8 +29,6 @@ public class ListResourcesHandler implements DBHandler {
     private final ProcessorContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(ListResourcesHandler.class);
     private boolean isPublic;
-    private String searchText;
-    private String standard;
     private String sortOn;
     private String order;
     private int limit;
@@ -50,7 +48,6 @@ public class ListResourcesHandler implements DBHandler {
         }
 
         isPublic = HelperUtility.checkPublic(context);
-        searchText = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SEARCH_TEXT, context);
 
         String sortOnFromRequest = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
         sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityOriginalResource.DEFAULT_SORTON;
@@ -71,8 +68,6 @@ public class ListResourcesHandler implements DBHandler {
         limit = HelperUtility.getLimitFromRequest(context);
         offset = HelperUtility.getOffsetFromRequest(context);
 
-        standard = HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_STANDARD, context);
-
         return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
     }
 
@@ -88,23 +83,7 @@ public class ListResourcesHandler implements DBHandler {
 
         // Parameters to be added in list should be in same way as below
         params.add(context.userIdFromURL());
-
-        if (standard != null) {
-            query = new StringBuilder(AJEntityOriginalResource.SELECT_RESOURCES_BY_TAXONOMY);
-            params.add(standard);
-        } else {
-            query = new StringBuilder(AJEntityOriginalResource.SELECT_RESOURCES);
-        }
-
-        if (searchText != null) {
-            query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.OP_AND).append(HelperConstants.SPACE)
-                .append(AJEntityOriginalResource.CRITERIA_TITLE);
-            // Purposefully adding same search text twice to fulfill the
-            // criteria of
-            // title and description search
-            params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
-            params.add(HelperConstants.PERCENTAGE + searchText + HelperConstants.PERCENTAGE);
-        }
+        query = new StringBuilder(AJEntityOriginalResource.SELECT_RESOURCES);
 
         if (isPublic) {
             query.append(HelperConstants.SPACE).append(AJEntityOriginalResource.OP_AND).append(HelperConstants.SPACE)
@@ -118,8 +97,8 @@ public class ListResourcesHandler implements DBHandler {
         params.add(offset);
 
         LOGGER.debug(
-            "SelectQuery:{}, paramSize:{}, standard:{}, searchText:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
-            query, params.size(), standard, searchText, sortOn, order, limit, offset);
+            "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
+            query, params.size(), sortOn, order, limit, offset);
 
         LazyList<AJEntityOriginalResource> resourceList =
             AJEntityOriginalResource.findBySQL(query.toString(), params.toArray());
@@ -154,7 +133,7 @@ public class ListResourcesHandler implements DBHandler {
     }
 
     private JsonObject getFiltersJson() {
-        return new JsonObject().put(HelperConstants.RESP_JSON_KEY_STANDARD, standard)
+        return new JsonObject()
             .put(HelperConstants.RESP_JSON_KEY_SORTON, sortOn).put(HelperConstants.RESP_JSON_KEY_ORDER, order)
             .put(HelperConstants.RESP_JSON_KEY_LIMIT, limit).put(HelperConstants.RESP_JSON_KEY_OFFSET, offset);
     }

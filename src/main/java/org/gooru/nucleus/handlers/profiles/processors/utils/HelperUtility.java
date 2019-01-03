@@ -28,9 +28,7 @@ public final class HelperUtility {
     }
     
     public static String toPostgresArrayString(Collection<String> input) {
-        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around
-                                                    // 36
-                                                    // chars
+        int approxSize = ((input.size() + 1) * 36); // Length of UUID is around 36 chars
         Iterator<String> it = input.iterator();
         if (!it.hasNext()) {
             return "{}";
@@ -77,9 +75,7 @@ public final class HelperUtility {
         }
 
         String preview = (String) previewArray.getValue(0);
-        // Assuming that preview parameter only exists when user want to view
-        // his
-        // profile as public
+        // Assuming that preview parameter only exists when user want to view his profile as public
         return Boolean.parseBoolean(preview);
     }
     
