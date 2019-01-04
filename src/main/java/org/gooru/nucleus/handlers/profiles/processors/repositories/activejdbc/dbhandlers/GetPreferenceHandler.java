@@ -58,9 +58,7 @@ public class GetPreferenceHandler implements DBHandler {
           userPreference.getString(AJEntityUserPreference.PREFERENCE_SETTINGS));
     }
 
-    JsonObject result = new JsonObject()
-        .put(AJEntityUserPreference.PREFERENCE_SETTINGS, userPreferenceJson);
-    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(userPreferenceJson),
         ExecutionStatus.SUCCESSFUL);
   }
 

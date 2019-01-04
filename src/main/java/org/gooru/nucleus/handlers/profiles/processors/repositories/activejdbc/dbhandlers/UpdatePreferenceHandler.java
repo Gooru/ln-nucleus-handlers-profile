@@ -1,7 +1,5 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +17,8 @@ import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author szgooru Created On: 01-Feb-2017
@@ -28,7 +28,6 @@ public class UpdatePreferenceHandler implements DBHandler {
   private final ProcessorContext context;
   private static final Logger LOGGER = LoggerFactory.getLogger(UpdatePreferenceHandler.class);
 
-  private static final String REQ_KEY_PREFERENCE_SETTING = "preference_settings";
   private static final String REQ_KEY_STANDARD_PREF = "standard_preference";
   private static final String REQ_KEY_LANGUAGE_PREF = "language_preference";
 
