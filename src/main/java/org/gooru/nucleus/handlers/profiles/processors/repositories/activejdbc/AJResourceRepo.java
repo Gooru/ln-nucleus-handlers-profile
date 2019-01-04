@@ -8,15 +8,16 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 public class AJResourceRepo implements ResourceRepo {
 
-    private final ProcessorContext context;
+  private final ProcessorContext context;
 
-    public AJResourceRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  public AJResourceRepo(ProcessorContext context) {
+    this.context = context;
+  }
 
-    @Override
-    public MessageResponse listResources() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListResourcesHandler(context));
-    }
+  @Override
+  public MessageResponse listResources() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildListResourcesHandler(context));
+  }
 
 }

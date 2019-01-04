@@ -4,6 +4,6 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 public interface AssessmentRepo {
 
-    MessageResponse listAssessments();
+  MessageResponse listAssessments();
 
 }

@@ -8,17 +8,18 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  * @author ashish on 2/1/17.
  */
 class FollowUserProcessor extends AbstractCommandProcessor {
-    public FollowUserProcessor(ProcessorContext context) {
-        super(context);
-    }
 
-    @Override
-    protected void setDeprecatedVersions() {
+  public FollowUserProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    }
+  @Override
+  protected void setDeprecatedVersions() {
 
-    @Override
-    protected MessageResponse processCommand() {
-        return RepoBuilder.buildProfileRepo(context).follow();
-    }
+  }
+
+  @Override
+  protected MessageResponse processCommand() {
+    return RepoBuilder.buildProfileRepo(context).follow();
+  }
 }

@@ -5,16 +5,16 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.en
 
 public final class AuthorizerBuilder {
 
-    private AuthorizerBuilder() {
-        throw new AssertionError();
-    }
+  private AuthorizerBuilder() {
+    throw new AssertionError();
+  }
 
-    public static Authorizer<AJEntityUsers> buildUserAuthorizer(ProcessorContext context) {
-        return new UserAuthorizer(context);
-    }
+  public static Authorizer<AJEntityUsers> buildUserAuthorizer(ProcessorContext context) {
+    return new UserAuthorizer(context);
+  }
 
-    public static Authorizer<AJEntityUsers> buildFollowUserAuthorizer(ProcessorContext context) {
-        return new FollowUserAuthorizer(context);
-    }
+  public static Authorizer<AJEntityUsers> buildFollowUserAuthorizer(ProcessorContext context) {
+    return new FollowUserAuthorizer(context);
+  }
 
 }

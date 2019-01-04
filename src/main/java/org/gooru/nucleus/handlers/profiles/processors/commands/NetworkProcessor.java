@@ -8,17 +8,18 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  * @author ashish on 2/1/17.
  */
 class NetworkProcessor extends AbstractCommandProcessor {
-    public NetworkProcessor(ProcessorContext context) {
-        super(context);
-    }
 
-    @Override
-    protected void setDeprecatedVersions() {
+  public NetworkProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    }
+  @Override
+  protected void setDeprecatedVersions() {
 
-    @Override
-    protected MessageResponse processCommand() {
-        return RepoBuilder.buildProfileRepo(context).getNetwork();
-    }
+  }
+
+  @Override
+  protected MessageResponse processCommand() {
+    return RepoBuilder.buildProfileRepo(context).getNetwork();
+  }
 }

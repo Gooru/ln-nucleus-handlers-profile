@@ -10,18 +10,18 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  */
 public class UserStateUpdateProcessor extends AbstractCommandProcessor implements Processor {
 
-    protected UserStateUpdateProcessor(ProcessorContext context) {
-        super(context);
-    }
+  protected UserStateUpdateProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    @Override
-    protected void setDeprecatedVersions() {
-        // NOOP
-    }
+  @Override
+  protected void setDeprecatedVersions() {
+    // NOOP
+  }
 
-    @Override
-    protected MessageResponse processCommand() {
-        return RepoBuilder.buildUserStateRepo(context).updateUserState();
-    }
+  @Override
+  protected MessageResponse processCommand() {
+    return RepoBuilder.buildUserStateRepo(context).updateUserState();
+  }
 
 }

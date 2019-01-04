@@ -17,27 +17,31 @@ import org.slf4j.LoggerFactory;
  */
 class FollowUserAuthorizer implements Authorizer<AJEntityUsers> {
 
-    private final ProcessorContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(FollowUserAuthorizer.class);
+  private final ProcessorContext context;
+  private static final Logger LOGGER = LoggerFactory.getLogger(FollowUserAuthorizer.class);
 
-    public FollowUserAuthorizer(ProcessorContext context) {
-        this.context = context;
+  public FollowUserAuthorizer(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public ExecutionResult<MessageResponse> authorize(AJEntityUsers model) {
+    TenantTree loggedInUserTenantTree = TenantTreeBuilder
+        .build(context.tenant(), context.tenantRoot());
+    TenantTree followOnUserTenantTree = TenantTreeBuilder
+        .build(model.getTenant(), model.getTenantRoot());
+
+    UserTenantAuthorization authorization =
+        UserTenantAuthorizationBuilder.build(loggedInUserTenantTree, followOnUserTenantTree);
+    if (authorization.canFollow()) {
+      return new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
     }
-
-    @Override
-    public ExecutionResult<MessageResponse> authorize(AJEntityUsers model) {
-        TenantTree loggedInUserTenantTree = TenantTreeBuilder.build(context.tenant(), context.tenantRoot());
-        TenantTree followOnUserTenantTree = TenantTreeBuilder.build(model.getTenant(), model.getTenantRoot());
-
-        UserTenantAuthorization authorization =
-            UserTenantAuthorizationBuilder.build(loggedInUserTenantTree, followOnUserTenantTree);
-        if (authorization.canFollow()) {
-            return new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
-        }
-        LOGGER
-            .info("User follow on tenancy auth check failed. Logged user: '{}', follow on user: '{}'", context.userId(),
-                model.getId());
-        return new ExecutionResult<>(MessageResponseFactory.createForbiddenResponse("User being followed not found"),
-            ExecutionResult.ExecutionStatus.FAILED);
-    }
+    LOGGER
+        .info("User follow on tenancy auth check failed. Logged user: '{}', follow on user: '{}'",
+            context.userId(),
+            model.getId());
+    return new ExecutionResult<>(
+        MessageResponseFactory.createForbiddenResponse("User being followed not found"),
+        ExecutionResult.ExecutionStatus.FAILED);
+  }
 }

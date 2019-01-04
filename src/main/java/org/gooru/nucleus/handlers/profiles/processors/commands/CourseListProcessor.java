@@ -8,17 +8,18 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  * @author ashish on 2/1/17.
  */
 class CourseListProcessor extends AbstractCommandProcessor {
-    public CourseListProcessor(ProcessorContext context) {
-        super(context);
-    }
 
-    @Override
-    protected void setDeprecatedVersions() {
+  public CourseListProcessor(ProcessorContext context) {
+    super(context);
+  }
 
-    }
+  @Override
+  protected void setDeprecatedVersions() {
 
-    @Override
-    protected MessageResponse processCommand() {
-        return RepoBuilder.buildCourseRepo(context).listCourses();
-    }
+  }
+
+  @Override
+  protected MessageResponse processCommand() {
+    return RepoBuilder.buildCourseRepo(context).listCourses();
+  }
 }

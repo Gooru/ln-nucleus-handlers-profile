@@ -4,5 +4,5 @@ import io.vertx.core.json.JsonObject;
 
 public interface EventBuilder {
 
-    JsonObject build();
+  JsonObject build();
 }
