@@ -7,5 +7,5 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  */
 public interface UserStateRepo {
 
-    MessageResponse updateUserState();
+  MessageResponse updateUserState();
 }

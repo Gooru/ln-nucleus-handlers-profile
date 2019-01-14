@@ -7,20 +7,20 @@ import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.tr
 import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 /**
- * @author szgooru
- * Created On: 01-Mar-2017
+ * @author szgooru Created On: 01-Mar-2017
  */
 public class AJRubricRepo implements RubricRepo {
 
-    private final ProcessorContext context;
-    
-    public AJRubricRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  private final ProcessorContext context;
 
-    @Override
-    public MessageResponse listRubrics() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildListRubricsHandler(context));
-    }
+  public AJRubricRepo(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public MessageResponse listRubrics() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildListRubricsHandler(context));
+  }
 
 }

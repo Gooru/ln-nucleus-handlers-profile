@@ -10,16 +10,17 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
  * @author szgooru Created On: 08-Dec-2017
  */
 public class AJUserStateRepo implements UserStateRepo {
-    
-    private final ProcessorContext context; 
 
-    public AJUserStateRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  private final ProcessorContext context;
 
-    @Override
-    public MessageResponse updateUserState() {
-        return new TransactionExecutor().executeTransaction(DBHandlerBuilder.buildUpdateUserStateHandler(context));
-    }
+  public AJUserStateRepo(ProcessorContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public MessageResponse updateUserState() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildUpdateUserStateHandler(context));
+  }
 
 }

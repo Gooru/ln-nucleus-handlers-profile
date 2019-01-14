@@ -8,16 +8,16 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 public class AJAssessmentRepo implements AssessmentRepo {
 
-    private final ProcessorContext context;
+  private final ProcessorContext context;
 
-    public AJAssessmentRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  public AJAssessmentRepo(ProcessorContext context) {
+    this.context = context;
+  }
 
-    @Override
-    public MessageResponse listAssessments() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildListAssessmentsHandler(context));
-    }
+  @Override
+  public MessageResponse listAssessments() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildListAssessmentsHandler(context));
+  }
 
 }

@@ -8,16 +8,16 @@ import org.gooru.nucleus.handlers.profiles.processors.responses.MessageResponse;
 
 public class AJCollectionRepo implements CollectionRepo {
 
-    private final ProcessorContext context;
+  private final ProcessorContext context;
 
-    public AJCollectionRepo(ProcessorContext context) {
-        this.context = context;
-    }
+  public AJCollectionRepo(ProcessorContext context) {
+    this.context = context;
+  }
 
-    @Override
-    public MessageResponse listCollections() {
-        return new TransactionExecutor()
-            .executeTransaction(DBHandlerBuilder.buildListCollectionsHandler(context));
-    }
+  @Override
+  public MessageResponse listCollections() {
+    return new TransactionExecutor()
+        .executeTransaction(DBHandlerBuilder.buildListCollectionsHandler(context));
+  }
 
 }
