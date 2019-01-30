@@ -3,6 +3,8 @@ package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.d
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
+import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityGooruLanguage;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityTaxonomySubject;
@@ -17,6 +19,7 @@ import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -40,7 +43,14 @@ public class UpdatePreferenceHandler implements DBHandler {
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
     // TODO: validation of the request JSON
-
+    // The user should not be anonymous
+    if (context.userId() == null || context.userId().isEmpty() || context.userId()
+        .equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+      LOGGER.warn("Anonymous or invalid user attempting to update preference");
+      return new ExecutionResult<>(
+          MessageResponseFactory.createForbiddenResponse("Not allowed"),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
