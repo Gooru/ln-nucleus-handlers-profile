@@ -1,7 +1,7 @@
 package org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.dbhandlers;
 
-import io.vertx.core.json.JsonObject;
 import org.gooru.nucleus.handlers.profiles.constants.HelperConstants;
+import org.gooru.nucleus.handlers.profiles.constants.MessageConstants;
 import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUserNetwork;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.activejdbc.entities.AJEntityUsers;
@@ -14,6 +14,8 @@ import org.javalite.activejdbc.Base;
 import org.javalite.activejdbc.LazyList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonObject;
 
 public class GetDemographicsHandler implements DBHandler {
 
@@ -28,7 +30,13 @@ public class GetDemographicsHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> checkSanity() {
-
+    if (context.userId() == null || context.userId().isEmpty() || context.userId()
+        .equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)) {
+      LOGGER.warn("Anonymous or invalid user attempting to access demographics");
+      return new ExecutionResult<>(
+          MessageResponseFactory.createForbiddenResponse("Not allowed"),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
     LOGGER.debug("checkSanity() OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
   }
