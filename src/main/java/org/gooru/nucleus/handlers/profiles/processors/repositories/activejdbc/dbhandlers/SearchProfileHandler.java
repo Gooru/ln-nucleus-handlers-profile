@@ -119,7 +119,7 @@ public class SearchProfileHandler implements DBHandler {
 
   private ExecutionResult<MessageResponse> searchByUsername(String username) {
     LazyList<AJEntityUsers> users = AJEntityUsers
-        .findBySQL(AJEntityUsers.SELECT_BY_USERNAME, username);
+        .findBySQL(AJEntityUsers.SELECT_BY_USERNAME, username, context.tenant());
     if (users.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
@@ -136,7 +136,8 @@ public class SearchProfileHandler implements DBHandler {
   }
 
   private ExecutionResult<MessageResponse> searchByEmail(String email) {
-    LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL, email);
+    LazyList<AJEntityUsers> users = AJEntityUsers
+        .findBySQL(AJEntityUsers.SELECT_BY_EMAIL, email, context.tenant());
     if (users.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
