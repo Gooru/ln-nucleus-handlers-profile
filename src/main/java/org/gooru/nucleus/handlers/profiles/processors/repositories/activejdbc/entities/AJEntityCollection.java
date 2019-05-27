@@ -31,8 +31,7 @@ public class AJEntityCollection extends Model {
   public static final String RESOURCE_COUNT = "resource_count";
   public static final String QUESTION_COUNT = "question_count";
   public static final String OA_ID = "oa_id";
-  public static final String OA_TASK_COUNT = "oa_task_count";
-  public static final String OA_TASK_REFERENCE_COUNT = "oa_task_reference_count";
+  public static final String TASK_COUNT = "task_count";
 
   public static final String SELECT_COLLECTIONS =
       "SELECT id, title, course_id, publish_status, thumbnail, taxonomy, collaborator, visible_on_profile, learning_objective, owner_id,"
@@ -58,10 +57,7 @@ public class AJEntityCollection extends Model {
           + " ELSE 0 END) AS question_count, collection_id FROM content WHERE collection_id = ANY (?::uuid[]) AND is_deleted = false GROUP BY collection_id";
   
   public static final String SELECT_TASK_COUNTS_FOR_OA =
-      "SELECT COUNT(1) as oa_task_count, oa_id FROM oa_tasks WHERE oa_id = ANY (?::uuid[])  GROUP BY oa_id";
-  
-  public static final String SELECT_TASK_REFERENCES_COUNTS_FOR_OA =
-      "SELECT COUNT(1) as oa_task_reference_count, oa_id FROM oa_references WHERE oa_id = ANY (?::uuid[])  GROUP BY oa_id";
+      "SELECT COUNT(1) as task_count, oa_id FROM oa_tasks WHERE oa_id = ANY (?::uuid[])  GROUP BY oa_id";
   
   public static final String SELECT_ASSESSMENT_FOR_QUESTION =
       "SELECT id, title, visible_on_profile, format FROM collection WHERE id = ANY (?::uuid[]) AND is_deleted = false";

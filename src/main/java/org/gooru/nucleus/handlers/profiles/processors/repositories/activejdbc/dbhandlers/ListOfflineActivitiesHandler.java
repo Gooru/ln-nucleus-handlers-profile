@@ -37,8 +37,7 @@ public class ListOfflineActivitiesHandler implements DBHandler {
   private int offset;
   private StringBuilder query;
   private List<Object> params;
-  private Map<String, Integer> taskReferenceCountByOfflineActivity;
-  private Map<String, Integer> oaTaskCountByOfflineActivity;
+  private Map<String, Integer> taskCountByOfflineActivity;
   private Map<String, AJEntityCourse> courseInfo;
 
   ListOfflineActivitiesHandler(ProcessorContext context) {
@@ -119,8 +118,6 @@ public class ListOfflineActivitiesHandler implements DBHandler {
     LOGGER.debug("# Courses are associated with offline activities: {}", courseIdList.size());
 
     initializeOATaskCount(offlineActivityIdList);
-    
-    initializeOATaskReferenceCount(offlineActivityIdList);
 
     initializeCourseInfo(courseIdList);
 
@@ -150,10 +147,8 @@ public class ListOfflineActivitiesHandler implements DBHandler {
       }
 
       String oaId = offlineActivity.getString(AJEntityCollection.ID);
-      Integer taskReferenceCount = taskReferenceCountByOfflineActivity.get(oaId);
-      Integer taskCount = oaTaskCountByOfflineActivity.get(oaId);
-      result.put(AJEntityCollection.OA_TASK_REFERENCE_COUNT, taskReferenceCount != null ? taskReferenceCount : 0);
-      result.put(AJEntityCollection.OA_TASK_COUNT, taskCount != null ? taskCount : 0);
+      Integer taskCount = taskCountByOfflineActivity.get(oaId);
+      result.put(AJEntityCollection.TASK_COUNT, taskCount != null ? taskCount : 0);
       offlineActivityArray.add(result);
     }
 
@@ -179,25 +174,14 @@ public class ListOfflineActivitiesHandler implements DBHandler {
     List<Map> taskCounts = Base
         .findAll(AJEntityCollection.SELECT_TASK_COUNTS_FOR_OA,
             HelperUtility.toPostgresArrayString(offlineActivitiesIdList));
-    oaTaskCountByOfflineActivity = new HashMap<>();
+    taskCountByOfflineActivity = new HashMap<>();
     taskCounts.forEach(entry -> {
       String offlineActivityId = entry.get(AJEntityCollection.OA_ID).toString();
-      oaTaskCountByOfflineActivity.put(offlineActivityId,
-          Integer.valueOf(entry.get(AJEntityCollection.OA_TASK_COUNT).toString()));
+      taskCountByOfflineActivity.put(offlineActivityId,
+          Integer.valueOf(entry.get(AJEntityCollection.TASK_COUNT).toString()));
     });
   }
-  
-  private void initializeOATaskReferenceCount(List<String> offlineActivitiesIdList) {
-      List<Map> taskReferenceCounts = Base
-          .findAll(AJEntityCollection.SELECT_TASK_REFERENCES_COUNTS_FOR_OA,
-              HelperUtility.toPostgresArrayString(offlineActivitiesIdList));
-      taskReferenceCountByOfflineActivity = new HashMap<>();
-      taskReferenceCounts.forEach(entry -> {
-        String offlineActivityId = entry.get(AJEntityCollection.OA_ID).toString();
-        taskReferenceCountByOfflineActivity.put(offlineActivityId,
-            Integer.valueOf(entry.get(AJEntityCollection.OA_TASK_REFERENCE_COUNT).toString()));
-      });
-    }
+ 
 
   @Override
   public boolean handlerReadOnly() {
