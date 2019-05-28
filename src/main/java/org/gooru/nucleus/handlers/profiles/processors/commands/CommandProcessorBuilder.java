@@ -109,6 +109,13 @@ public enum CommandProcessorBuilder {
       return new UserStateUpdateProcessor(context);
     }
 
+  },
+  PROFILE_OFFLINE_ACTIVITY_LIST(MessageConstants.MSG_OP_PROFILE_OFFLINE_ACTIVITES_LIST) {
+    @Override
+    public Processor build(ProcessorContext context) {
+      return new OfflineActivitiesListProcessor(context);
+    }
+
   };
 
   private String name;

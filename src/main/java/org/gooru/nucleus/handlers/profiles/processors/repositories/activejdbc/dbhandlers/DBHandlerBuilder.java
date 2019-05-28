@@ -63,4 +63,8 @@ public final class DBHandlerBuilder {
   public static DBHandler buildUpdateUserStateHandler(ProcessorContext context) {
     return new UpdateUserStateHandler(context);
   }
+
+  public static DBHandler buildListOfflineActivitiesHandler(ProcessorContext context) {
+    return new ListOfflineActivitiesHandler(context);
+  }
 }

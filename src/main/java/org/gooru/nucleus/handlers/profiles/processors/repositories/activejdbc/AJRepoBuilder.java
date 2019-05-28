@@ -4,6 +4,7 @@ import org.gooru.nucleus.handlers.profiles.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.AssessmentRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.CollectionRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.CourseRepo;
+import org.gooru.nucleus.handlers.profiles.processors.repositories.OfflineActivityRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.PreferenceRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.ProfileRepo;
 import org.gooru.nucleus.handlers.profiles.processors.repositories.QuestionRepo;
@@ -51,5 +52,9 @@ public final class AJRepoBuilder {
 
   public static UserStateRepo buildUserStateRepo(ProcessorContext context) {
     return new AJUserStateRepo(context);
+  }
+
+  public static OfflineActivityRepo buildOfflineActivityRepo(ProcessorContext context) {
+    return new AJOfflineActivityRepo(context);
   }
 }

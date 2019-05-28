@@ -42,6 +42,7 @@ public final class HelperConstants {
   public static final String RESP_JSON_KEY_FILTERBY = "filterBy";
   public static final String RESP_JSON_KEY_ISFOLLOWING = "isFollowing";
   public static final String RESP_JSON_KEY_OWNER_DETAILS = "owner_details";
+  public static final String RESP_JSON_KEY_OFFLINE_ACTIVITIES = "offline_activities";
 
   public static final String PERCENTAGE = "%";
   public static final String SPACE = " ";
