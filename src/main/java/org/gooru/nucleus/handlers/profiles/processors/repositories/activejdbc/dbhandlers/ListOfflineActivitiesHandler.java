@@ -56,8 +56,8 @@ public class ListOfflineActivitiesHandler implements DBHandler {
 
     isPublic = HelperUtility.checkPublic(context);
 
-    String sortOnFromRequest = HelperUtility
-        .readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
+    String sortOnFromRequest =
+        HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_SORTON, context);
     sortOn = sortOnFromRequest != null ? sortOnFromRequest : AJEntityCollection.DEFAULT_SORTON;
     if (!AJEntityCollection.VALID_SORTON_FIELDS.contains(sortOn)) {
       LOGGER.warn("Invalid value provided for sort");
@@ -66,8 +66,8 @@ public class ListOfflineActivitiesHandler implements DBHandler {
           ExecutionStatus.FAILED);
     }
 
-    String orderFromRequest = HelperUtility
-        .readRequestParam(HelperConstants.REQ_PARAM_ORDER, context);
+    String orderFromRequest =
+        HelperUtility.readRequestParam(HelperConstants.REQ_PARAM_ORDER, context);
     order = orderFromRequest != null ? orderFromRequest : AJEntityCollection.DEFAULT_ORDER;
     if (!AJEntityCollection.VALID_ORDER_FIELDS.contains(order)) {
       LOGGER.warn("Invalid value provided for order");
@@ -91,8 +91,8 @@ public class ListOfflineActivitiesHandler implements DBHandler {
   public ExecutionResult<MessageResponse> executeRequest() {
     initializeQueryAndParams();
 
-    LazyList<AJEntityCollection> offlineActivityList = AJEntityCollection
-        .findBySQL(query.toString(), params.toArray());
+    LazyList<AJEntityCollection> offlineActivityList =
+        AJEntityCollection.findBySQL(query.toString(), params.toArray());
     if (offlineActivityList.isEmpty()) {
       return sendEmptyResponse();
     }
@@ -126,11 +126,10 @@ public class ListOfflineActivitiesHandler implements DBHandler {
 
   private ExecutionResult<MessageResponse> createAndSendResponse(
       LazyList<AJEntityCollection> offlineActivitiesList, Set<String> ownerIdList) {
-    JsonFormatter offlineActivityFieldsFormatter =
-        JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityCollection.OFFLINE_ACTIVITY_LIST);
-    JsonFormatter courseFieldsFormatter =
-        JsonFormatterBuilder
-            .buildSimpleJsonFormatter(false, AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION);
+    JsonFormatter offlineActivityFieldsFormatter = JsonFormatterBuilder
+        .buildSimpleJsonFormatter(false, AJEntityCollection.OFFLINE_ACTIVITY_LIST);
+    JsonFormatter courseFieldsFormatter = JsonFormatterBuilder.buildSimpleJsonFormatter(false,
+        AJEntityCourse.COURSE_FIELDS_FOR_COLLECTION);
     JsonArray offlineActivityArray = new JsonArray();
 
     for (AJEntityCollection offlineActivity : offlineActivitiesList) {
@@ -163,17 +162,16 @@ public class ListOfflineActivitiesHandler implements DBHandler {
 
   private void initializeCourseInfo(Set<String> courseIdList) {
     courseInfo = new HashMap<>();
-    LazyList<AJEntityCourse> courseList = AJEntityCourse.findBySQL(
-        AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
-        HelperUtility.toPostgresArrayString(courseIdList));
+    LazyList<AJEntityCourse> courseList =
+        AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_FOR_COLLECTION,
+            HelperUtility.toPostgresArrayString(courseIdList));
     courseList.forEach(course -> courseInfo.put(course.getString(AJEntityCourse.ID), course));
     LOGGER.debug("# Courses returned from database: {}", courseInfo.size());
   }
 
   private void initializeOATaskCount(List<String> offlineActivitiesIdList) {
-    List<Map> taskCounts = Base
-        .findAll(AJEntityCollection.SELECT_TASK_COUNTS_FOR_OA,
-            HelperUtility.toPostgresArrayString(offlineActivitiesIdList));
+    List<Map> taskCounts = Base.findAll(AJEntityCollection.SELECT_TASK_COUNTS_FOR_OA,
+        HelperUtility.toPostgresArrayString(offlineActivitiesIdList));
     taskCountByOfflineActivity = new HashMap<>();
     taskCounts.forEach(entry -> {
       String offlineActivityId = entry.get(AJEntityCollection.OA_ID).toString();
@@ -181,7 +179,7 @@ public class ListOfflineActivitiesHandler implements DBHandler {
           Integer.valueOf(entry.get(AJEntityCollection.TASK_COUNT).toString()));
     });
   }
- 
+
 
   @Override
   public boolean handlerReadOnly() {
@@ -189,10 +187,10 @@ public class ListOfflineActivitiesHandler implements DBHandler {
   }
 
   private ExecutionResult<MessageResponse> sendEmptyResponse() {
-    JsonObject responseBody = new JsonObject()
-        .put(HelperConstants.RESP_JSON_KEY_OFFLINE_ACTIVITIES, new JsonArray())
-        .put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, new JsonArray())
-        .put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
+    JsonObject responseBody =
+        new JsonObject().put(HelperConstants.RESP_JSON_KEY_OFFLINE_ACTIVITIES, new JsonArray())
+            .put(HelperConstants.RESP_JSON_KEY_OWNER_DETAILS, new JsonArray())
+            .put(HelperConstants.RESP_JSON_KEY_FILTERS, getFiltersJson());
 
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(responseBody),
         ExecutionStatus.SUCCESSFUL);
@@ -206,27 +204,23 @@ public class ListOfflineActivitiesHandler implements DBHandler {
 
     if (isPublic) {
       query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND)
-          .append(HelperConstants.SPACE)
-          .append(AJEntityCollection.CRITERIA_PUBLIC);
+          .append(HelperConstants.SPACE).append(AJEntityCollection.CRITERIA_PUBLIC);
       params.add(context.userIdFromURL());
     } else {
       query.append(HelperConstants.SPACE).append(AJEntityCollection.OP_AND)
-          .append(HelperConstants.SPACE)
-          .append(AJEntityCollection.CRITERIA_MYPROFILE);
+          .append(HelperConstants.SPACE).append(AJEntityCollection.CRITERIA_MYPROFILE);
       params.add(context.userIdFromURL()); // for owner
       params.add(context.userIdFromURL()); // for collaborator
     }
 
     query.append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_ORDERBY)
-        .append(HelperConstants.SPACE)
-        .append(sortOn).append(HelperConstants.SPACE).append(order).append(HelperConstants.SPACE)
-        .append(AJEntityCollection.CLAUSE_LIMIT_OFFSET);
+        .append(HelperConstants.SPACE).append(sortOn).append(HelperConstants.SPACE).append(order)
+        .append(HelperConstants.SPACE).append(AJEntityCollection.CLAUSE_LIMIT_OFFSET);
     params.add(limit);
     params.add(offset);
 
-    LOGGER.debug(
-        "SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}",
-        query, params.size(), sortOn, order, limit, offset);
+    LOGGER.debug("SelectQuery:{}, paramSize:{}, sortOn: {}, order: {}, limit:{}, offset:{}", query,
+        params.size(), sortOn, order, limit, offset);
   }
 
   private JsonObject getFiltersJson() {
