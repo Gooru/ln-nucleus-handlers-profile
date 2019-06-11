@@ -60,10 +60,8 @@ public class AJEntityRubric extends Model {
           PRIMARY_LANGUAGE);
 
   public static final String OP_AND = "AND";
-  public static final String CRITERIA_TITLE = "(title ilike ? OR description ilike ?)";
   public static final String CRITERIA_PUBLIC = "visible_on_profile = true";
-  public static final String CRITERIA_STANDALONE = "content_id IS NULL";
-  public static final String CRITERIA_COPIES = "original_rubric_id IS NOT NULL AND content_id IS NOT NULL";
+  public static final String CRITERIA_STANDALONE = "content_id IS NULL and collection_id is null";
   public static final String CLAUSE_ORDERBY = "ORDER BY";
   public static final String CLAUSE_LIMIT_OFFSET = "LIMIT ? OFFSET ?";
 

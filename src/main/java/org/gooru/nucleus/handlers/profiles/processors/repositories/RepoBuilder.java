@@ -45,4 +45,8 @@ public final class RepoBuilder {
     return AJRepoBuilder.buildUserStateRepo(context);
   }
 
+  public static OfflineActivityRepo buildOfflineActivityRepo(ProcessorContext context) {
+    return AJRepoBuilder.buildOfflineActivityRepo(context);
+  }
+
 }
