@@ -170,7 +170,6 @@ public final class MessageResponse {
       result.put(MessageConstants.MSG_HTTP_STATUS, this.httpStatus.getCode())
           .put(MessageConstants.MSG_HTTP_HEADERS, this.headers)
           .put(MessageConstants.MSG_HTTP_BODY, buildHttpBody());
-      LOGGER.info("HTTP Status Code is {}", this.httpStatus.getCode());
       return result;
     }
 

@@ -50,9 +50,19 @@ public class AJEntityUsers extends Model {
   public static final String SELECT_BY_USERNAME =
       "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
           + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
+          + " roster_global_userid, created_at, updated_at FROM users WHERE username = ? AND tenant_id = ?::uuid AND is_deleted = false";
+  
+  public static final String SELECT_BY_USERNAME_PARTIAL =
+      "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+          + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
           + " roster_global_userid, created_at, updated_at FROM users WHERE username like ? AND tenant_id = ?::uuid AND is_deleted = false";
 
   public static final String SELECT_BY_EMAIL =
+      "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
+          + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
+          + " roster_global_userid, created_at, updated_at FROM users WHERE email = ? AND tenant_id = ?::uuid AND is_deleted = false";
+  
+  public static final String SELECT_BY_EMAIL_PARTIAL =
       "SELECT id, display_name as username, first_name, last_name, parent_user_id, user_category, birth_date, grade, course, thumbnail, gender, about,"
           + " school_id, school, school_district_id, school_district, email, country_id, country, state_id, state, metadata, roster_id, login_type,"
           + " roster_global_userid, created_at, updated_at FROM users WHERE email like ? AND tenant_id = ?::uuid AND is_deleted = false";

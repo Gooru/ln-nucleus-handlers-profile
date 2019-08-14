@@ -31,6 +31,7 @@ public class SearchProfileHandler implements DBHandler {
   private String searchValue;
   private SearchType searchType = SearchType.NONE;
   private List<String> userIds;
+  private boolean isPartial;
 
   SearchProfileHandler(ProcessorContext context) {
     this.context = context;
@@ -62,13 +63,19 @@ public class SearchProfileHandler implements DBHandler {
           MessageResponseFactory.createInvalidRequestResponse("Invalid search criteria"),
           ExecutionResult.ExecutionStatus.FAILED);
     }
-    
+
     if (searchValue.length() < 3) {
       LOGGER.warn("search string should be at least 3 chars long");
       return new ExecutionResult<>(
-          MessageResponseFactory.createInvalidRequestResponse("Search string should be at least 3 chars long"),
+          MessageResponseFactory
+              .createInvalidRequestResponse("Search string should be at least 3 chars long"),
           ExecutionResult.ExecutionStatus.FAILED);
     }
+
+    JsonArray partialArray = context.request().getJsonArray("partial");
+    String strPartial = partialArray != null ? partialArray.getString(0) : null;
+    this.isPartial =
+        (strPartial != null && !strPartial.isEmpty()) ? Boolean.valueOf(strPartial) : false;
 
     LOGGER.debug("checkSanity: OK");
     return new ExecutionResult<>(null, ExecutionStatus.CONTINUE_PROCESSING);
@@ -76,7 +83,8 @@ public class SearchProfileHandler implements DBHandler {
 
   @Override
   public ExecutionResult<MessageResponse> validateRequest() {
-    LOGGER.debug("Search BY: {}, SearchValue: {}", searchType, searchValue);
+    LOGGER.debug("Search BY: {}, SearchValue: {}, Partial: {}", searchType, searchValue,
+        this.isPartial);
     if (searchType == SearchType.USERIDS) {
       userIds = Arrays.asList(searchValue.split(","));
       if (userIds.size() > 50) {
@@ -87,10 +95,8 @@ public class SearchProfileHandler implements DBHandler {
 
       for (String userId : userIds) {
         if (!HelperUtility.validateUUID(userId)) {
-          return new ExecutionResult<>(
-              MessageResponseFactory
-                  .createInvalidRequestResponse("Invalid user id passed in the URL"),
-              ExecutionResult.ExecutionStatus.FAILED);
+          return new ExecutionResult<>(MessageResponseFactory.createInvalidRequestResponse(
+              "Invalid user id passed in the URL"), ExecutionResult.ExecutionStatus.FAILED);
         }
       }
     }
@@ -124,44 +130,80 @@ public class SearchProfileHandler implements DBHandler {
   }
 
   private ExecutionResult<MessageResponse> searchByUsername(String username) {
-    StringBuilder searchString = new StringBuilder(username).append("%");
-    LazyList<AJEntityUsers> users = AJEntityUsers
-        .findBySQL(AJEntityUsers.SELECT_BY_USERNAME, searchString.toString(), context.tenant());
+    if (this.isPartial) {
+      return searchByPartialUsername(username);
+    }
+
+    LazyList<AJEntityUsers> users =
+        AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_USERNAME, username, context.tenant());
     if (users.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
     }
 
     AJEntityUsers user = users.get(0);
-    JsonObject result =
-        new JsonObject(
-            JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
-                .toJson(user));
+    JsonObject result = new JsonObject(JsonFormatterBuilder
+        .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(user));
     result.mergeIn(getNetworkDetails(user.getString(AJEntityUsers.ID)));
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
 
-  private ExecutionResult<MessageResponse> searchByEmail(String email) {
-    StringBuilder searchString = new StringBuilder(email).append("%");
+  private ExecutionResult<MessageResponse> searchByPartialUsername(String username) {
+    StringBuilder searchString = new StringBuilder(username).append("%");
     LazyList<AJEntityUsers> users = AJEntityUsers
-        .findBySQL(AJEntityUsers.SELECT_BY_EMAIL, searchString.toString(), context.tenant());
+        .findBySQL(AJEntityUsers.SELECT_BY_USERNAME_PARTIAL, searchString.toString(), context.tenant());
     if (users.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
     }
 
-    JsonObject result = new JsonObject(
-        JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
-            .toJson(users.get(0)));
+    JsonArray resultArray = new JsonArray(JsonFormatterBuilder
+        .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
+    JsonObject result = new JsonObject();
+    result.put(HelperConstants.RESP_JSON_KEY_USERS, resultArray);
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
+
+
+  private ExecutionResult<MessageResponse> searchByEmail(String email) {
+    if (this.isPartial) {
+      return searchByPartialEmail(email);
+    }
+
+    LazyList<AJEntityUsers> users =
+        AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL, email, context.tenant());
+    if (users.isEmpty()) {
+      return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
+
+    JsonObject result = new JsonObject(JsonFormatterBuilder
+        .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users.get(0)));
+    return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
+        ExecutionResult.ExecutionStatus.SUCCESSFUL);
+  }
+
+  private ExecutionResult<MessageResponse> searchByPartialEmail(String email) {
+    StringBuilder searchString = new StringBuilder(email).append("%");
+    LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_EMAIL_PARTIAL,
+        searchString.toString(), context.tenant());
+    if (users.isEmpty()) {
+      return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
+          ExecutionResult.ExecutionStatus.FAILED);
+    }
+    JsonArray resultArray = new JsonArray(JsonFormatterBuilder
+        .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
+    JsonObject result = new JsonObject();
+    result.put(HelperConstants.RESP_JSON_KEY_USERS, resultArray);
     return new ExecutionResult<>(MessageResponseFactory.createGetResponse(result),
         ExecutionResult.ExecutionStatus.SUCCESSFUL);
   }
 
   private ExecutionResult<MessageResponse> searchByUserids(List<String> userIds) {
-    LazyList<AJEntityUsers> users =
-        AJEntityUsers
-            .findBySQL(AJEntityUsers.SELECT_BY_IDS, HelperUtility.toPostgresArrayString(userIds));
+    LazyList<AJEntityUsers> users = AJEntityUsers.findBySQL(AJEntityUsers.SELECT_BY_IDS,
+        HelperUtility.toPostgresArrayString(userIds));
     if (users.isEmpty()) {
       return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(),
           ExecutionResult.ExecutionStatus.FAILED);
@@ -173,15 +215,13 @@ public class SearchProfileHandler implements DBHandler {
     // request to search
     JsonArray resultArray;
     if (userIds.size() == 1) {
-      JsonObject userJson = new JsonObject(
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
-              .toJson(users.get(0)));
+      JsonObject userJson = new JsonObject(JsonFormatterBuilder
+          .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users.get(0)));
       userJson.mergeIn(getNetworkDetails(userIds.get(0)));
       resultArray = new JsonArray().add(userJson);
     } else {
-      resultArray = new JsonArray(
-          JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS)
-              .toJson(users));
+      resultArray = new JsonArray(JsonFormatterBuilder
+          .buildSimpleJsonFormatter(false, AJEntityUsers.ALL_FIELDS).toJson(users));
     }
 
     JsonObject result = new JsonObject();
@@ -206,9 +246,8 @@ public class SearchProfileHandler implements DBHandler {
     LOGGER.debug("current logged in user: " + context.userId());
     if (!context.userId().equalsIgnoreCase(MessageConstants.MSG_USER_ANONYMOUS)
         && !context.userId().equalsIgnoreCase(userId)) {
-      LazyList<AJEntityUserNetwork> userNetwork =
-          AJEntityUserNetwork
-              .where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), userId);
+      LazyList<AJEntityUserNetwork> userNetwork = AJEntityUserNetwork
+          .where(AJEntityUserNetwork.CHECK_IF_FOLLOWER, context.userId(), userId);
       if (!userNetwork.isEmpty()) {
         isFollowing = true;
       }

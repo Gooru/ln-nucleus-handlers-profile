@@ -47,7 +47,7 @@ class MessageProcessor implements Processor {
       LOGGER.error("User is not valid");
       return MessageResponseFactory.createForbiddenResponse();
     } catch (Throwable t) {
-      LOGGER.error("Exception while processing request");
+      LOGGER.error("Exception while processing request", t);
       return MessageResponseFactory.createInternalErrorResponse(t.getMessage());
     }
   }
